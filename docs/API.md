@@ -18,6 +18,11 @@ https://your-netlify-site.netlify.app/api
 
 - `GET /api/health`: scaffold health route for deployment and local smoke checks.
 
+## Shared Contracts
+
+Reusable request validation schemas and domain contracts live in `packages/shared`.
+They are platform-neutral so both the web app and mobile app can import them.
+
 ## Planned Route Areas
 
 - Authentication.

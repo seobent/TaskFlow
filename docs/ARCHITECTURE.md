@@ -6,7 +6,7 @@ TaskFlow is organized as an npm workspace monorepo with separate web, mobile, an
 
 - `apps/web`: Next.js App Router application for the browser UI and backend Route Handlers.
 - `apps/mobile`: Expo React Native application for mobile clients.
-- `packages/shared`: Shared TypeScript package for cross-platform types, constants, and lightweight utilities.
+- `packages/shared`: Shared TypeScript and Zod package for cross-platform enums, types, constants, and validation schemas.
 
 ## Backend Boundary
 

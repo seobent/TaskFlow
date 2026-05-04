@@ -10,7 +10,7 @@ This repository is intentionally at the scaffold stage. It defines the monorepo,
 - Monorepo: npm workspaces
 - Web: Next.js App Router, React, TypeScript, Tailwind CSS
 - Mobile: Expo, React Native, TypeScript
-- Shared code: TypeScript package for common types, constants, and utilities
+- Shared code: TypeScript and Zod package for common types, constants, and validation contracts
 - Planned database: PostgreSQL
 - Planned API: Next.js Route Handlers under `apps/web/app/api`
 - Planned deployment: Netlify for the web app and backend API, Expo tooling for mobile
@@ -72,6 +72,6 @@ npm run typecheck
 
 - Monorepo structure is in place.
 - Web and mobile app shells are present and can be run locally after dependency installation.
-- Shared package contains starter TypeScript definitions only.
+- Shared package contains common enums, domain types, and Zod validation schemas.
 - Documentation skeletons describe the planned system.
 - No business logic has been implemented yet.
