@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #f7f8fb;
+  color: #172033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(135deg, rgba(47, 159, 137, 0.12), transparent 32rem),
+    linear-gradient(315deg, rgba(159, 63, 104, 0.1), transparent 28rem),
+    #f7f8fb;
+  color: #172033;
+}

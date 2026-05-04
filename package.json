@@ -1,0 +1,28 @@
+{
+  "name": "taskflow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TaskFlow monorepo for a university capstone project and issue tracking system.",
+  "workspaces": [
+    "apps/web",
+    "apps/mobile",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev:web": "npm run dev -w @taskflow/web",
+    "dev:mobile": "npm run start -w @taskflow/mobile",
+    "dev:mobile:tunnel": "npm run start -w @taskflow/mobile -- --tunnel",
+    "build": "npm run build -w @taskflow/shared && npm run build:web",
+    "build:web": "npm run build -w @taskflow/web",
+    "build:shared": "npm run build -w @taskflow/shared",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.0.0",
+    "typescript": "~5.8.3"
+  },
+  "engines": {
+    "node": ">=20.11.0",
+    "npm": ">=10.0.0"
+  }
+}
