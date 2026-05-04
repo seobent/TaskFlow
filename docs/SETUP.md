@@ -20,6 +20,17 @@ Copy the web example environment file:
 cp apps/web/.env.local.example apps/web/.env.local
 ```
 
+Set local development values:
+
+```text
+DATABASE_URL=
+JWT_SECRET=
+NEXT_PUBLIC_API_URL=http://localhost:3000
+```
+
+`DATABASE_URL` should point to a Neon PostgreSQL database. Keep this value
+server-only and do not prefix it with `NEXT_PUBLIC_`.
+
 ## Mobile Environment
 
 Copy the mobile example environment file:
@@ -45,4 +56,13 @@ npm run dev:mobile
 
 ```bash
 npm run typecheck
+```
+
+## Database
+
+Generate and apply Drizzle migrations for the web app:
+
+```bash
+npm run db:generate -w @taskflow/web
+npm run db:migrate -w @taskflow/web
 ```

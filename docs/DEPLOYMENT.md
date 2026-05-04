@@ -17,9 +17,11 @@ The Netlify Next.js plugin is configured in `netlify.toml`.
 
 Add production values in the Netlify site settings before deploying.
 
-- `NEXT_PUBLIC_APP_ENV`
-- `TASKFLOW_DATABASE_URL`
-- `TASKFLOW_AUTH_SECRET`
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `NEXT_PUBLIC_API_URL`
+
+Do not expose `DATABASE_URL` or `JWT_SECRET` with `NEXT_PUBLIC_` prefixes.
 
 ## Backend API
 

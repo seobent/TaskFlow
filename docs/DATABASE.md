@@ -1,25 +1,39 @@
 # Database
 
-The database layer has not been implemented yet.
+TaskFlow uses Neon PostgreSQL with Drizzle ORM. Database schema definitions and
+database access code are owned by `apps/web`; mobile code must use the REST API
+and must not connect to PostgreSQL directly.
 
-## Planned Direction
+## Files
 
-- PostgreSQL is the planned relational database.
-- Migrations will be added after the capstone data model is approved.
-- Application code should not assume tables or fields until this document is updated.
+- Schema: `apps/web/db/schema.ts`
+- Database client: `apps/web/db/index.ts`
+- Drizzle config: `apps/web/drizzle.config.ts`
+- Migrations: `apps/web/drizzle`
 
-## Candidate Domains
+## Tables
 
-- Users and roles.
-- Teams and memberships.
-- Projects.
-- Issues and task status.
-- Comments, attachments, and activity history.
+- `users`: user identity, email, password hash, role, and timestamps.
+- `projects`: project name, optional description, owner reference, and timestamps.
+- `project_members`: project membership records with project and user references.
+- `tasks`: project tasks with status, priority, assignment, creator, due date, and timestamps.
+- `comments`: task comments with author references.
+- `attachments`: task attachment metadata with uploader references.
 
-## Future Sections
+## Indexes
 
-- Entity relationship diagram.
-- Table definitions.
-- Indexing strategy.
-- Migration commands.
-- Seed data strategy.
+Indexes are defined for email lookup, project ownership, project membership,
+task filtering, task assignment, comment lookup, and attachment lookup.
+
+## Commands
+
+Run database commands from the repository root:
+
+```bash
+npm run db:generate -w @taskflow/web
+npm run db:migrate -w @taskflow/web
+npm run db:studio -w @taskflow/web
+npm run db:seed -w @taskflow/web
+```
+
+`db:seed` is currently a placeholder.
