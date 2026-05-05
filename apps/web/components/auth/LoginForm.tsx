@@ -5,7 +5,7 @@ import { type FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
-import { readApiErrorMessage, readResponseJson } from "./api-error";
+import { readApiErrorMessage, readResponseJson } from "@/lib/api-client";
 
 export function LoginForm() {
   const router = useRouter();

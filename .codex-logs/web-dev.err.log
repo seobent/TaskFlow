@@ -1,2 +1,39 @@
  ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fa<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pac ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\server\app-paths-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\server\\app-paths-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\server\pages-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\server\\pages-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\server\pages-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\server\\pages-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\routes-manifest.json'
+}

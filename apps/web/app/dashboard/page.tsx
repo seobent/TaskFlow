@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import type { SafeUser } from "@taskflow/shared";
 
-import { DashboardLayout } from "@/components/DashboardLayout";
-import { AUTH_COOKIE_NAME, getCurrentUserFromToken } from "@/lib/auth";
+import { requireDashboardUser } from "@/lib/dashboard-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -21,19 +18,9 @@ const summaryCards = [
 const lanes = ["Backlog", "In progress", "Review", "Done"];
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(AUTH_COOKIE_NAME)?.value;
-  const user = await getCurrentUserFromToken(token);
+  const user = await requireDashboardUser();
 
-  if (!user) {
-    redirect("/login");
-  }
-
-  return (
-    <DashboardLayout user={user}>
-      <DashboardContent user={user} />
-    </DashboardLayout>
-  );
+  return <DashboardContent user={user} />;
 }
 
 function DashboardContent({ user }: { user: SafeUser }) {
