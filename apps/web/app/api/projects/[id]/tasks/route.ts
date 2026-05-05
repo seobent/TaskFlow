@@ -21,7 +21,7 @@ const projectIdSchema = idSchema.uuid("Invalid project id.");
 
 type ProjectTasksRouteContext = {
   params: Promise<{
-    projectId: string;
+    id: string;
   }>;
 };
 
@@ -138,8 +138,8 @@ async function isValidProjectAssignee(
 }
 
 async function parseProjectId(context: ProjectTasksRouteContext) {
-  const { projectId } = await context.params;
-  const parsed = projectIdSchema.safeParse(projectId);
+  const { id } = await context.params;
+  const parsed = projectIdSchema.safeParse(id);
 
   if (!parsed.success) {
     return {

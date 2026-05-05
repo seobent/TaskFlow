@@ -1,0 +1,571 @@
+"use client";
+
+import {
+  type CreateTaskInput,
+  type SafeUser,
+  type Task,
+  TaskPriority,
+  TaskStatus,
+  type UpdateTaskInput,
+} from "@taskflow/shared";
+import { useRouter } from "next/navigation";
+import {
+  type ReactNode,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react";
+
+import { StatusColumn } from "@/components/tasks/StatusColumn";
+import { TaskForm, type TaskFormValues } from "@/components/tasks/TaskForm";
+import { Button } from "@/components/ui/Button";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import {
+  readApiData,
+  readApiErrorMessage,
+  readResponseJson,
+} from "@/lib/api-client";
+
+type TaskBoardProps = {
+  currentUser: SafeUser;
+  projectId: string;
+};
+
+const taskColumns = [
+  TaskStatus.Todo,
+  TaskStatus.InProgress,
+  TaskStatus.Done,
+];
+
+const createTaskInitialValues: Partial<TaskFormValues> = {
+  priority: TaskPriority.Medium,
+  status: TaskStatus.Todo,
+};
+
+export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
+  const router = useRouter();
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
+  const [statusTaskId, setStatusTaskId] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadTasks() {
+      setActionError(null);
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const response = await fetch(`/api/projects/${projectId}/tasks`, {
+          credentials: "include",
+          signal: controller.signal,
+        });
+        const body = await readResponseJson(response);
+
+        if (response.status === 401) {
+          router.replace("/login");
+          return;
+        }
+
+        if (!response.ok) {
+          setLoadError(readApiErrorMessage(body, "Unable to load tasks."));
+          return;
+        }
+
+        const payload = readApiData<{ tasks: Task[] }>(body);
+        setTasks(sortTasks(Array.isArray(payload?.tasks) ? payload.tasks : []));
+      } catch {
+        if (!controller.signal.aborted) {
+          setLoadError("Unable to reach TaskFlow. Please try again.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadTasks();
+
+    return () => {
+      controller.abort();
+    };
+  }, [projectId, reloadToken, router]);
+
+  const groupedTasks = useMemo(
+    () =>
+      taskColumns.map((status) => ({
+        status,
+        tasks: tasks.filter((task) => task.status === status),
+      })),
+    [tasks],
+  );
+
+  const editTaskInitialValues = useMemo(
+    () => (editingTask ? taskToFormValues(editingTask) : undefined),
+    [editingTask],
+  );
+
+  async function handleCreateTask(values: TaskFormValues) {
+    setFormError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/projects/${projectId}/tasks`, {
+        body: JSON.stringify(buildTaskInput(values)),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      });
+      const body = await readResponseJson(response);
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        setFormError(readApiErrorMessage(body, "Unable to create task."));
+        return;
+      }
+
+      const payload = readApiData<{ task: Task }>(body);
+
+      if (payload?.task) {
+        setTasks((currentTasks) => sortTasks([payload.task, ...currentTasks]));
+      }
+
+      setIsCreateModalOpen(false);
+      router.refresh();
+    } catch {
+      setFormError("Unable to reach TaskFlow. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleUpdateTask(values: TaskFormValues) {
+    if (!editingTask) {
+      return;
+    }
+
+    setFormError(null);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`/api/tasks/${editingTask.id}`, {
+        body: JSON.stringify(buildTaskInput(values)),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "PATCH",
+      });
+      const body = await readResponseJson(response);
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        setFormError(readApiErrorMessage(body, "Unable to update task."));
+        return;
+      }
+
+      const payload = readApiData<{ task: Task }>(body);
+
+      if (payload?.task) {
+        setTasks((currentTasks) =>
+          sortTasks(
+            currentTasks.map((task) =>
+              task.id === payload.task.id ? payload.task : task,
+            ),
+          ),
+        );
+      }
+
+      setEditingTask(null);
+      router.refresh();
+    } catch {
+      setFormError("Unable to reach TaskFlow. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleStatusChange(task: Task, status: TaskStatus) {
+    if (task.status === status) {
+      return;
+    }
+
+    const previousTask = task;
+
+    setActionError(null);
+    setStatusTaskId(task.id);
+    setTasks((currentTasks) =>
+      sortTasks(
+        currentTasks.map((currentTask) =>
+          currentTask.id === task.id
+            ? {
+                ...currentTask,
+                status,
+                updatedAt: new Date().toISOString(),
+              }
+            : currentTask,
+        ),
+      ),
+    );
+
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        body: JSON.stringify({ status } satisfies UpdateTaskInput),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "PATCH",
+      });
+      const body = await readResponseJson(response);
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        setTasks((currentTasks) =>
+          currentTasks.map((currentTask) =>
+            currentTask.id === previousTask.id ? previousTask : currentTask,
+          ),
+        );
+        setActionError(readApiErrorMessage(body, "Unable to update task status."));
+        return;
+      }
+
+      const payload = readApiData<{ task: Task }>(body);
+
+      if (payload?.task) {
+        setTasks((currentTasks) =>
+          sortTasks(
+            currentTasks.map((currentTask) =>
+              currentTask.id === payload.task.id ? payload.task : currentTask,
+            ),
+          ),
+        );
+      }
+    } catch {
+      setTasks((currentTasks) =>
+        currentTasks.map((currentTask) =>
+          currentTask.id === previousTask.id ? previousTask : currentTask,
+        ),
+      );
+      setActionError("Unable to reach TaskFlow. Please try again.");
+    } finally {
+      setStatusTaskId(null);
+    }
+  }
+
+  async function handleDeleteTask() {
+    if (!deleteTarget) {
+      return;
+    }
+
+    setActionError(null);
+    setIsDeleting(true);
+
+    try {
+      const response = await fetch(`/api/tasks/${deleteTarget.id}`, {
+        credentials: "include",
+        method: "DELETE",
+      });
+      const body = await readResponseJson(response);
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return;
+      }
+
+      if (!response.ok) {
+        setActionError(readApiErrorMessage(body, "Unable to delete task."));
+        setDeleteTarget(null);
+        return;
+      }
+
+      setTasks((currentTasks) =>
+        currentTasks.filter((task) => task.id !== deleteTarget.id),
+      );
+      setDeleteTarget(null);
+      router.refresh();
+    } catch {
+      setActionError("Unable to reach TaskFlow. Please try again.");
+      setDeleteTarget(null);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  return (
+    <>
+      <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm sm:p-5">
+        <div className="flex flex-col gap-3 border-b border-ink/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wider text-mint">
+              Task board
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-ink">
+              Issue workflow
+            </h2>
+          </div>
+          <Button
+            onClick={() => {
+              setActionError(null);
+              setFormError(null);
+              setIsCreateModalOpen(true);
+            }}
+            type="button"
+          >
+            New task
+          </Button>
+        </div>
+
+        {actionError ? (
+          <div
+            className="mt-4 rounded-md border border-berry/25 bg-berry/10 px-3 py-2 text-sm font-medium text-berry"
+            role="alert"
+          >
+            {actionError}
+          </div>
+        ) : null}
+
+        {isLoading ? (
+          <div className="flex min-h-52 items-center justify-center text-ink/65" role="status">
+            <span
+              aria-hidden="true"
+              className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-mint border-r-transparent"
+            />
+            <span className="text-sm font-semibold">Loading tasks...</span>
+          </div>
+        ) : loadError ? (
+          <div className="mt-4 rounded-md border border-dashed border-ink/15 bg-surface p-6 text-center">
+            <h3 className="text-base font-semibold text-ink">
+              Tasks could not be loaded
+            </h3>
+            <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-ink/60">
+              {loadError}
+            </p>
+            <Button
+              className="mt-4"
+              onClick={() => setReloadToken((token) => token + 1)}
+              type="button"
+              variant="secondary"
+            >
+              Retry
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            {groupedTasks.map((column) => (
+              <StatusColumn
+                currentUser={currentUser}
+                isStatusUpdating={(taskId) => statusTaskId === taskId}
+                key={column.status}
+                onDeleteTask={setDeleteTarget}
+                onEditTask={(task) => {
+                  setActionError(null);
+                  setFormError(null);
+                  setEditingTask(task);
+                }}
+                onStatusChange={handleStatusChange}
+                status={column.status}
+                tasks={column.tasks}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <TaskModal
+        isOpen={isCreateModalOpen}
+        onClose={() => {
+          if (!isSubmitting) {
+            setIsCreateModalOpen(false);
+          }
+        }}
+        title="Create task"
+      >
+        <TaskForm
+          error={formError}
+          initialValues={createTaskInitialValues}
+          isSubmitting={isSubmitting}
+          onCancel={() => {
+            setFormError(null);
+            setIsCreateModalOpen(false);
+          }}
+          onSubmit={handleCreateTask}
+          submitLabel="Create task"
+          submittingLabel="Creating..."
+        />
+      </TaskModal>
+
+      <TaskModal
+        isOpen={Boolean(editingTask)}
+        onClose={() => {
+          if (!isSubmitting) {
+            setEditingTask(null);
+          }
+        }}
+        title="Edit task"
+      >
+        <TaskForm
+          error={formError}
+          initialValues={editTaskInitialValues}
+          isSubmitting={isSubmitting}
+          onCancel={() => {
+            setFormError(null);
+            setEditingTask(null);
+          }}
+          onSubmit={handleUpdateTask}
+          submitLabel="Save changes"
+        />
+      </TaskModal>
+
+      <ConfirmDialog
+        confirmLabel="Delete task"
+        description={
+          deleteTarget
+            ? `Delete "${deleteTarget.title}" from this project. This action cannot be undone.`
+            : "Delete this task from the project. This action cannot be undone."
+        }
+        isConfirming={isDeleting}
+        isOpen={Boolean(deleteTarget)}
+        onCancel={() => {
+          if (!isDeleting) {
+            setDeleteTarget(null);
+          }
+        }}
+        onConfirm={handleDeleteTask}
+        title="Delete this task?"
+      />
+    </>
+  );
+}
+
+function TaskModal({
+  children,
+  isOpen,
+  onClose,
+  title,
+}: {
+  children: ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+}) {
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center overflow-y-auto bg-ink/35 px-4 py-6">
+      <div
+        aria-labelledby={titleId}
+        aria-modal="true"
+        className="w-full max-w-2xl rounded-md border border-ink/10 bg-white p-5 shadow-xl"
+        role="dialog"
+      >
+        <div className="mb-5 border-b border-ink/10 pb-4">
+          <p className="text-sm font-semibold uppercase tracking-wider text-mint">
+            Task
+          </p>
+          <h2 className="mt-1 text-xl font-semibold text-ink" id={titleId}>
+            {title}
+          </h2>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function buildTaskInput(values: TaskFormValues): CreateTaskInput & UpdateTaskInput {
+  return {
+    assigneeId: values.assigneeId || null,
+    description: values.description || null,
+    dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : null,
+    priority: values.priority,
+    status: values.status,
+    title: values.title,
+  };
+}
+
+function taskToFormValues(task: Task): TaskFormValues {
+  return {
+    assigneeId: task.assigneeId ?? "",
+    description: task.description ?? "",
+    dueDate: task.dueDate ? toDateTimeLocalValue(task.dueDate) : "",
+    priority: task.priority,
+    status: task.status,
+    title: task.title,
+  };
+}
+
+function toDateTimeLocalValue(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = padDatePart(date.getMonth() + 1);
+  const day = padDatePart(date.getDate());
+  const hours = padDatePart(date.getHours());
+  const minutes = padDatePart(date.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function padDatePart(value: number) {
+  return value.toString().padStart(2, "0");
+}
+
+function sortTasks(tasks: Task[]) {
+  return [...tasks].sort(
+    (first, second) =>
+      new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime(),
+  );
+}

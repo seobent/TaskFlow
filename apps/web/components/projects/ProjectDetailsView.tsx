@@ -10,6 +10,7 @@ import {
   ProjectForm,
   type ProjectFormValues,
 } from "@/components/projects/ProjectForm";
+import { TaskBoard } from "@/components/tasks/TaskBoard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -23,8 +24,6 @@ type ProjectDetailsViewProps = {
   currentUser: SafeUser;
   projectId: string;
 };
-
-const boardLanes = ["Backlog", "In progress", "Review", "Done"];
 
 export function ProjectDetailsView({
   currentUser,
@@ -231,7 +230,7 @@ export function ProjectDetailsView({
           )}
         </section>
 
-        <TaskBoardPlaceholder />
+        <TaskBoard currentUser={currentUser} projectId={projectId} />
       </div>
 
       <ConfirmDialog
@@ -342,40 +341,6 @@ function ProjectOverview({
         </dl>
       </div>
     </div>
-  );
-}
-
-function TaskBoardPlaceholder() {
-  return (
-    <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-2 border-b border-ink/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wider text-mint">
-            Task board
-          </p>
-          <h2 className="mt-1 text-xl font-semibold text-ink">
-            Issue workflow
-          </h2>
-        </div>
-        <span className="rounded bg-ink/5 px-2 py-1 text-xs font-semibold text-ink/60">
-          Placeholder
-        </span>
-      </div>
-
-      <div className="mt-4 grid gap-3 md:grid-cols-4">
-        {boardLanes.map((lane) => (
-          <article
-            className="min-h-52 rounded-md border border-dashed border-ink/15 bg-surface p-3"
-            key={lane}
-          >
-            <h3 className="text-sm font-semibold text-ink">{lane}</h3>
-            <div className="mt-4 rounded border border-ink/10 bg-white px-3 py-4 text-sm text-ink/50">
-              No tasks yet
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
   );
 }
 
