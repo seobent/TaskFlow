@@ -167,11 +167,7 @@ export function verifyToken(token: string): AuthTokenPayload | null {
   }
 }
 
-export async function getCurrentUser(request: Request) {
-  const token =
-    readBearerToken(request.headers.get("authorization")) ??
-    readCookie(request.headers.get("cookie"), AUTH_COOKIE_NAME);
-
+export async function getCurrentUserFromToken(token: string | null | undefined) {
   if (!token) {
     return null;
   }
@@ -187,6 +183,14 @@ export async function getCurrentUser(request: Request) {
   });
 
   return user ? sanitizeUser(user) : null;
+}
+
+export async function getCurrentUser(request: Request) {
+  const token =
+    readBearerToken(request.headers.get("authorization")) ??
+    readCookie(request.headers.get("cookie"), AUTH_COOKIE_NAME);
+
+  return getCurrentUserFromToken(token);
 }
 
 export async function requireAuth(request: Request) {

@@ -7,27 +7,39 @@
 > next dev
 
    ▲ Next.js 15.5.15
-   - Local:        http://localhost:3002
-   - Network:      http://172.19.192.1:3002
+   - Local:        http://localhost:3000
+   - Network:      http://172.19.192.1:3000
    - Environments: .env.local
 
  ✓ Starting...
- ✓ Ready in 1745ms
- ○ Compiling /api/auth/register ...
- ✓ Compiled /api/auth/register in 674ms (499 modules)
- POST /api/auth/register 201 in 5920ms
- POST /api/auth/register 400 in 14ms
- POST /api/auth/register 400 in 9ms
- POST /api/auth/register 400 in 11ms
- ✓ Compiled /api/auth/login in 310ms (499 modules)
- POST /api/auth/login 401 in 763ms
- POST /api/auth/login 200 in 769ms
+ ✓ Ready in 1868ms
  ○ Compiling / ...
- ✓ Compiled / in 1236ms (548 modules)
- HEAD / 200 in 1535ms
- ✓ Compiled in 95ms (227 modules)
- ✓ Compiled /api/auth/login in 200ms (528 modules)
- GET /api/auth/login 405 in 407ms
- HEAD / 200 in 149ms
- ✓ Compiled /api/health in 261ms (743 modules)
- GET /api/health 200 in 304ms
+ ✓ Compiled / in 2.8s (548 modules)
+ GET / 200 in 786ms
+ GET / 200 in 49ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 1654ms (847 modules)
+ GET /dashboard 307 in 2009ms
+ GET /login 200 in 2071ms
+ GET / 200 in 400ms
+ GET / 200 in 49ms
+ GET / 200 in 39ms
+ GET /login 200 in 56ms
+ ✓ Compiled /register in 291ms (855 modules)
+ GET /register 200 in 424ms
+ GET /login 200 in 30ms
+ GET /register 200 in 28ms
+ GET /login 200 in 21ms
+ GET /register 200 in 22ms
+ GET /login 200 in 22ms
+ GET /dashboard 307 in 76ms
+ GET /login 200 in 45ms
+ ✓ Compiled /api/auth/login in 430ms (842 modules)
+ POST /api/auth/login 200 in 1055ms
+ ✓ Compiled /dashboard in 179ms (629 modules)
+ GET /dashboard 200 in 454ms
+ GET /dashboard 200 in 188ms
+ ✓ Compiled /api/auth/logout in 227ms (875 modules)
+ POST /api/auth/logout 200 in 321ms
+ GET /login 200 in 80ms
+ GET /login 200 in 26ms
