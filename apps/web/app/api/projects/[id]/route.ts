@@ -1,0 +1,162 @@
+import {
+  idSchema,
+  updateProjectInputSchema,
+} from "@taskflow/shared";
+import { eq } from "drizzle-orm";
+
+import { db, schema } from "@/db";
+import { apiError, apiSuccess, validationError } from "@/lib/api-response";
+import { AuthError, requireAuth } from "@/lib/auth";
+import { findProjectAccess, serializeProject } from "@/lib/projects";
+
+const { projects } = schema;
+const projectIdSchema = idSchema.uuid("Invalid project id.");
+
+type ProjectRouteContext = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export async function GET(request: Request, context: ProjectRouteContext) {
+  try {
+    const user = await requireAuth(request);
+    const projectId = await parseProjectId(context);
+
+    if (!projectId.ok) {
+      return projectId.response;
+    }
+
+    const access = await findProjectAccess(projectId.value, user);
+
+    if (!access.project) {
+      return apiError("Project not found.", 404);
+    }
+
+    if (!access.canView) {
+      return apiError("Project access denied.", 403);
+    }
+
+    return apiSuccess({ project: serializeProject(access.project) });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return apiError(error.message, error.status);
+    }
+
+    return apiError("Unable to load project.", 500);
+  }
+}
+
+export async function PATCH(request: Request, context: ProjectRouteContext) {
+  try {
+    const user = await requireAuth(request);
+    const projectId = await parseProjectId(context);
+
+    if (!projectId.ok) {
+      return projectId.response;
+    }
+
+    let body: unknown;
+
+    try {
+      body = await request.json();
+    } catch {
+      return apiError("Invalid JSON body.", 400);
+    }
+
+    const parsed = updateProjectInputSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const access = await findProjectAccess(projectId.value, user);
+
+    if (!access.project) {
+      return apiError("Project not found.", 404);
+    }
+
+    if (!access.canManage) {
+      return apiError("Project owner access required.", 403);
+    }
+
+    const [updatedProject] = await db
+      .update(projects)
+      .set({
+        ...parsed.data,
+        updatedAt: new Date(),
+      })
+      .where(eq(projects.id, projectId.value))
+      .returning();
+
+    if (!updatedProject) {
+      return apiError("Project not found.", 404);
+    }
+
+    return apiSuccess({ project: serializeProject(updatedProject) });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return apiError(error.message, error.status);
+    }
+
+    return apiError("Unable to update project.", 500);
+  }
+}
+
+export async function DELETE(request: Request, context: ProjectRouteContext) {
+  try {
+    const user = await requireAuth(request);
+    const projectId = await parseProjectId(context);
+
+    if (!projectId.ok) {
+      return projectId.response;
+    }
+
+    const access = await findProjectAccess(projectId.value, user);
+
+    if (!access.project) {
+      return apiError("Project not found.", 404);
+    }
+
+    if (!access.canManage) {
+      return apiError("Project owner access required.", 403);
+    }
+
+    const [deletedProject] = await db
+      .delete(projects)
+      .where(eq(projects.id, projectId.value))
+      .returning({ id: projects.id });
+
+    if (!deletedProject) {
+      return apiError("Project not found.", 404);
+    }
+
+    return apiSuccess({ ok: true });
+  } catch (error) {
+    if (error instanceof AuthError) {
+      return apiError(error.message, error.status);
+    }
+
+    return apiError("Unable to delete project.", 500);
+  }
+}
+
+async function parseProjectId(context: ProjectRouteContext) {
+  const { id } = await context.params;
+  const parsed = projectIdSchema.safeParse(id);
+
+  if (!parsed.success) {
+    return {
+      ok: false as const,
+      response: apiError("Invalid project id.", 400, parsed.error.flatten()),
+    };
+  }
+
+  return {
+    ok: true as const,
+    value: parsed.data,
+  };
+}

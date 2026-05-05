@@ -43,3 +43,51 @@
  POST /api/auth/logout 200 in 321ms
  GET /login 200 in 80ms
  GET /login 200 in 26ms
+ ✓ Compiled in 573ms (258 modules)
+ GET /login 200 in 48ms
+ ✓ Compiled in 1085ms (869 modules)
+ GET /login 200 in 1024ms
+ GET /login 200 in 59ms
+ GET /login 200 in 58ms
+ ○ Compiling /api/health ...
+ ✓ Compiled /api/health in 604ms (886 modules)
+ GET /api/health 200 in 956ms
+ GET /login 200 in 469ms
+ ○ Compiling /api/auth/register ...
+ ✓ Compiled /api/auth/register in 538ms (873 modules)
+ GET /api/auth/register 405 in 830ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 821ms (860 modules)
+ GET /health 404 in 1249ms
+ GET /login 200 in 198ms
+ GET / 200 in 73ms
+ GET /health 404 in 39ms
+ GET /health 404 in 38ms
+ POST /auth/register 404 in 36ms
+ POST /auth/register 404 in 39ms
+ GET /health 404 in 43ms
+ ✓ Compiled /api/health in 284ms (628 modules)
+ GET /api/health 200 in 430ms
+ ✓ Compiled /api/auth/register in 168ms (631 modules)
+ POST /api/auth/register 400 in 380ms
+ ✓ Compiled /api/auth/login in 324ms (629 modules)
+ POST /api/auth/login 400 in 514ms
+ ○ Compiling /api/projects/[id] ...
+ ✓ Compiled /api/projects/[id] in 648ms (888 modules)
+ GET / 200 in 312ms
+ GET /api/projects/:id 401 in 2862ms
+ GET / 200 in 157ms
+ GET /login 200 in 93ms
+ ✓ Compiled /api/auth/login in 251ms (629 modules)
+ POST /api/auth/login 200 in 1620ms
+ GET /dashboard 200 in 219ms
+ GET /dashboard 200 in 163ms
+ POST /api/auth/login 400 in 13ms
+ POST /api/auth/login 200 in 347ms
+ POST /api/auth/login 200 in 362ms
+ ✓ Compiled /api/projects in 376ms (876 modules)
+ GET /api/projects 200 in 854ms
+ ✓ Compiled /api/projects/[id] in 201ms (634 modules)
+ GET /api/projects/:id 400 in 484ms
+ GET /api/projects 200 in 231ms
+ GET /api/projects/all 400 in 133ms
