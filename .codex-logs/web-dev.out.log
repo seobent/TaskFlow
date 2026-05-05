@@ -62,11 +62,11 @@
  ✓ Compiled in 141ms (227 modules)
  ✓ Compiled in 354ms (227 modules)
  ✓ Compiled in 206ms (227 modules)
-er 404 in 36ms
- POST /auth/register 404 in 39ms
- GET /health 404 in 43ms
- ✓ Compiled /api/health in 284ms (628 modules)
- GET /api/health 200 in 430ms
+ ✓ Compiled in 283ms (227 modules)
+ ✓ Compiled in 159ms (227 modules)
+ ✓ Compiled in 199ms (227 modules)
+ ✓ Compiled in 205ms (213 modules)
+0ms
  ✓ Compiled /api/auth/register in 168ms (631 modules)
  POST /api/auth/register 400 in 380ms
  ✓ Compiled /api/auth/login in 324ms (629 modules)
@@ -130,3 +130,8 @@ er 404 in 36ms
  GET /dashboard/projects 500 in 3361ms
  GET / 500 in 453ms
  GET / 500 in 65ms
+ ✓ Compiled in 1107ms (1236 modules)
+ ✓ Compiled in 280ms (417 modules)
+ ✓ Compiled in 180ms (417 modules)
+ ✓ Compiled in 214ms (417 modules)
+ ✓ Compiled in 901ms (1222 modules)

@@ -74,7 +74,7 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   assigneeId: EntityId | null;
-  reporterId: EntityId;
+  createdById: EntityId;
   dueDate: ISODateString | null;
   createdAt: ISODateString;
   updatedAt: ISODateString;
@@ -112,12 +112,13 @@ export const projectDescriptionSchema = z.string().trim().max(2000);
 export const taskTitleSchema = z.string().trim().min(1).max(160);
 export const taskDescriptionSchema = z.string().trim().max(5000);
 export const commentBodySchema = z.string().trim().min(1).max(5000);
-export const dueDateSchema = z.string().trim().min(1).max(40);
+export const dueDateSchema = z.string().trim().datetime({ offset: true }).max(40);
 
 export const userRoleSchema = z.nativeEnum(UserRole);
 export const projectMemberRoleSchema = z.nativeEnum(ProjectMemberRole);
 export const taskStatusSchema = z.nativeEnum(TaskStatus);
 export const taskPrioritySchema = z.nativeEnum(TaskPriority);
+export const taskAssigneeIdSchema = idSchema.uuid("Invalid assignee id.");
 
 export const registerInputSchema = z.object({
   name: nameSchema,
@@ -142,12 +143,11 @@ export const updateProjectInputSchema = createProjectInputSchema
   });
 
 export const createTaskInputSchema = z.object({
-  projectId: idSchema,
   title: taskTitleSchema,
-  description: taskDescriptionSchema.optional(),
+  description: taskDescriptionSchema.nullable().optional(),
   status: taskStatusSchema.optional(),
   priority: taskPrioritySchema.optional(),
-  assigneeId: idSchema.nullable().optional(),
+  assigneeId: taskAssigneeIdSchema.nullable().optional(),
   dueDate: dueDateSchema.nullable().optional()
 });
 
@@ -157,7 +157,7 @@ export const updateTaskInputSchema = z
     description: taskDescriptionSchema.nullable().optional(),
     status: taskStatusSchema.optional(),
     priority: taskPrioritySchema.optional(),
-    assigneeId: idSchema.nullable().optional(),
+    assigneeId: taskAssigneeIdSchema.nullable().optional(),
     dueDate: dueDateSchema.nullable().optional()
   })
   .refine(hasAtLeastOneDefinedValue, {

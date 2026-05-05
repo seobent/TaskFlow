@@ -3,12 +3,9 @@
     at JSON.parse (<anonymous>)
  ⨯ [Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\server\app-paths-manifest.json'] {
   errno: -4058,
-  code: 'ENOENT',
-  syscall: 'open',
-  path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\server\\app-paths-manifest.json'
-}
- ⨯ [Error: ENOENT: no such file or directory, open 'D:\Work\PHP_Projects\TaskFlow\apps\web\.next\routes-manifest.json'] {
-  errno: -4058,
+  co ⚠ Failed to reload dynamic routes: [Error: You cannot use different slug names for the same dynamic path ('id' !== 'projectId').]
+ ⚠ Failed to reload dynamic routes: [Error: You cannot use different slug names for the same dynamic path ('id' !== 'projectId').]
+8,
   code: 'ENOENT',
   syscall: 'open',
   path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\routes-manifest.json'
@@ -37,3 +34,5 @@
   syscall: 'open',
   path: 'D:\\Work\\PHP_Projects\\TaskFlow\\apps\\web\\.next\\routes-manifest.json'
 }
+ ⚠ Failed to reload dynamic routes: [Error: You cannot use different slug names for the same dynamic path ('id' !== 'projectId').]
+ ⚠ Failed to reload dynamic routes: [Error: You cannot use different slug names for the same dynamic path ('id' !== 'projectId').]

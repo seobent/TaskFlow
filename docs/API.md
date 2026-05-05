@@ -48,6 +48,11 @@ Validation errors may include `error.details` from the shared Zod schema.
 - `GET /api/projects/[id]`: returns one visible project.
 - `PATCH /api/projects/[id]`: updates a project owned by the current user, or any project for admins.
 - `DELETE /api/projects/[id]`: deletes a project owned by the current user, or any project for admins.
+- `GET /api/projects/[projectId]/tasks`: lists tasks in a project where the current user is owner or member.
+- `POST /api/projects/[projectId]/tasks`: creates a task in a project where the current user is owner or member.
+- `GET /api/tasks/[taskId]`: returns one task visible to the current user.
+- `PATCH /api/tasks/[taskId]`: updates a task in a project where the current user is owner or member.
+- `DELETE /api/tasks/[taskId]`: deletes a task when the current user is admin, project owner, task creator, or task assignee.
 
 ## Authentication
 
@@ -311,6 +316,157 @@ Common errors:
 - `403 Forbidden`: authenticated user cannot manage the project.
 - `404 Not Found`: project does not exist.
 
+## Tasks
+
+Task routes require authentication with either the web cookie or mobile bearer token.
+Users can list, create, and update tasks only in projects where they are the owner or a member. A task can be deleted only by an admin, the project owner, the task creator, or the task assignee.
+
+Valid task statuses are `todo`, `in_progress`, and `done`.
+Valid priorities are `low`, `medium`, and `high`.
+`dueDate`, when present, must be an ISO datetime string such as `2026-05-05T12:00:00.000Z`.
+
+### List Project Tasks
+
+```http
+GET /api/projects/project-uuid/tasks
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "tasks": [
+      {
+        "id": "task-uuid",
+        "projectId": "project-uuid",
+        "title": "Draft API contract",
+        "description": "Document the task routes.",
+        "status": "todo",
+        "priority": "medium",
+        "assigneeId": "user-uuid",
+        "createdById": "creator-user-uuid",
+        "dueDate": "2026-05-05T12:00:00.000Z",
+        "createdAt": "2026-05-05T00:00:00.000Z",
+        "updatedAt": "2026-05-05T00:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid project id.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot access project tasks.
+- `404 Not Found`: project does not exist.
+
+### Create Task
+
+```http
+POST /api/projects/project-uuid/tasks
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+Request body:
+
+```json
+{
+  "title": "Draft API contract",
+  "description": "Document the task routes.",
+  "status": "todo",
+  "priority": "medium",
+  "assigneeId": "user-uuid",
+  "dueDate": "2026-05-05T12:00:00.000Z"
+}
+```
+
+Success status: `201 Created`
+
+The project id comes from the URL. If `assigneeId` is provided, that user must be the project owner or a project member.
+
+Common errors:
+
+- `400 Bad Request`: invalid project id, invalid JSON, schema validation failure, or assignee outside the project.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot create tasks in the project.
+- `404 Not Found`: project does not exist.
+
+### Get Task
+
+```http
+GET /api/tasks/task-uuid
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+Common errors:
+
+- `400 Bad Request`: invalid task id.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot access the task.
+- `404 Not Found`: task does not exist.
+
+### Update Task
+
+```http
+PATCH /api/tasks/task-uuid
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+Request body:
+
+```json
+{
+  "title": "Finalize API contract",
+  "description": "Document the task routes and error states.",
+  "status": "in_progress",
+  "priority": "high",
+  "assigneeId": null,
+  "dueDate": null
+}
+```
+
+Success status: `200 OK`
+
+At least one task field is required. `description`, `assigneeId`, and `dueDate` may be set to `null`.
+
+Common errors:
+
+- `400 Bad Request`: invalid task id, invalid JSON, schema validation failure, or assignee outside the project.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot update tasks in the project.
+- `404 Not Found`: task does not exist.
+
+### Delete Task
+
+```http
+DELETE /api/tasks/task-uuid
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "ok": true
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid task id.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot delete the task.
+- `404 Not Found`: task does not exist.
+
 ## Shared Contracts
 
 Reusable request validation schemas and domain contracts live in `packages/shared`.
@@ -319,7 +475,6 @@ They are platform-neutral so both the web app and mobile app can import them.
 ## Planned Route Areas
 
 - Users and teams.
-- Issues.
 - Comments and activity.
 - Reports.
 
