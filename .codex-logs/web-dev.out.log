@@ -1,0 +1,33 @@
+
+> taskflow@0.1.0 dev:web
+> npm run dev -w @taskflow/web
+
+
+> @taskflow/web@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.15
+   - Local:        http://localhost:3002
+   - Network:      http://172.19.192.1:3002
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1745ms
+ ○ Compiling /api/auth/register ...
+ ✓ Compiled /api/auth/register in 674ms (499 modules)
+ POST /api/auth/register 201 in 5920ms
+ POST /api/auth/register 400 in 14ms
+ POST /api/auth/register 400 in 9ms
+ POST /api/auth/register 400 in 11ms
+ ✓ Compiled /api/auth/login in 310ms (499 modules)
+ POST /api/auth/login 401 in 763ms
+ POST /api/auth/login 200 in 769ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1236ms (548 modules)
+ HEAD / 200 in 1535ms
+ ✓ Compiled in 95ms (227 modules)
+ ✓ Compiled /api/auth/login in 200ms (528 modules)
+ GET /api/auth/login 405 in 407ms
+ HEAD / 200 in 149ms
+ ✓ Compiled /api/health in 261ms (743 modules)
+ GET /api/health 200 in 304ms

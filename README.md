@@ -3,7 +3,7 @@
 
 TaskFlow is a multi-platform project and issue tracking system for a university capstone assignment. The goal is to help student teams, instructors, and project reviewers plan work, track issues, document progress, and keep capstone delivery transparent across web and mobile.
 
-This repository is intentionally at the scaffold stage. It defines the monorepo, application shells, shared TypeScript package, project documentation, and the initial Drizzle/Neon database schema. Business logic, authentication, and production API handlers will be added later.
+This repository is intentionally at the scaffold stage. It defines the monorepo, application shells, shared TypeScript package, project documentation, and the initial Drizzle/Neon database schema. JWT authentication API handlers are implemented under the web app; broader project and issue business logic will be added later.
 
 ## Technology Stack
 
@@ -81,6 +81,7 @@ npm run typecheck
 - Monorepo structure is in place.
 - Web and mobile app shells are present and can be run locally after dependency installation.
 - Initial Drizzle schema and migration are present for Neon PostgreSQL.
+- JWT authentication routes are implemented for register, login, logout, and current-user lookup.
 - Shared package contains common enums, domain types, and Zod validation schemas.
 - Documentation skeletons describe the planned system.
-- No API business logic has been implemented yet.
+- Project and issue API business logic has not been implemented yet.
