@@ -84,9 +84,8 @@ export interface Comment {
   id: EntityId;
   taskId: EntityId;
   authorId: EntityId;
-  body: string;
+  content: string;
   createdAt: ISODateString;
-  updatedAt: ISODateString;
 }
 
 export interface Attachment {
@@ -111,7 +110,13 @@ export const nameSchema = z.string().trim().min(1).max(120);
 export const projectDescriptionSchema = z.string().trim().max(2000);
 export const taskTitleSchema = z.string().trim().min(1).max(160);
 export const taskDescriptionSchema = z.string().trim().max(5000);
-export const commentBodySchema = z.string().trim().min(1).max(5000);
+export const commentContentSchema = z
+  .string({
+    required_error: "Comment content is required."
+  })
+  .trim()
+  .min(1, "Comment content is required.")
+  .max(2000, "Comment content must be at most 2000 characters.");
 export const dueDateSchema = z.string().trim().datetime({ offset: true }).max(40);
 
 export const userRoleSchema = z.nativeEnum(UserRole);
@@ -165,8 +170,7 @@ export const updateTaskInputSchema = z
   });
 
 export const createCommentInputSchema = z.object({
-  taskId: idSchema,
-  body: commentBodySchema
+  content: commentContentSchema
 });
 
 export const updateUserRoleInputSchema = z.object({

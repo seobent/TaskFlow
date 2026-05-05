@@ -53,6 +53,9 @@ Validation errors may include `error.details` from the shared Zod schema.
 - `GET /api/tasks/[taskId]`: returns one task visible to the current user.
 - `PATCH /api/tasks/[taskId]`: updates a task in a project where the current user is owner or member.
 - `DELETE /api/tasks/[taskId]`: deletes a task when the current user is admin, project owner, task creator, or task assignee.
+- `GET /api/tasks/[taskId]/comments`: lists comments on a task where the current user is admin, project owner, or project member.
+- `POST /api/tasks/[taskId]/comments`: creates a comment on a task where the current user is admin, project owner, or project member.
+- `DELETE /api/comments/[commentId]`: deletes a comment when the current user is the author or an admin.
 
 ## Authentication
 
@@ -467,6 +470,108 @@ Common errors:
 - `403 Forbidden`: authenticated user cannot delete the task.
 - `404 Not Found`: task does not exist.
 
+## Comments
+
+Comment routes require authentication with either the web cookie or mobile bearer token.
+Users can list and create comments only on tasks in projects where they are the owner or a member. Admins can list and create comments on any task. Users can delete their own comments, and admins can delete any comment.
+
+Comment content is required, trimmed, and must contain 1 to 2000 characters.
+
+### List Task Comments
+
+```http
+GET /api/tasks/task-uuid/comments
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "comments": [
+      {
+        "id": "comment-uuid",
+        "taskId": "task-uuid",
+        "authorId": "user-uuid",
+        "content": "This is ready for review.",
+        "createdAt": "2026-05-05T00:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid task id.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot access task comments.
+- `404 Not Found`: task does not exist.
+
+### Create Comment
+
+```http
+POST /api/tasks/task-uuid/comments
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+Request body:
+
+```json
+{
+  "content": "This is ready for review."
+}
+```
+
+Success status: `201 Created`
+
+```json
+{
+  "data": {
+    "comment": {
+      "id": "comment-uuid",
+      "taskId": "task-uuid",
+      "authorId": "user-uuid",
+      "content": "This is ready for review.",
+      "createdAt": "2026-05-05T00:00:00.000Z"
+    }
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid task id, invalid JSON, or schema validation failure.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot create comments on the task.
+- `404 Not Found`: task does not exist.
+
+### Delete Comment
+
+```http
+DELETE /api/comments/comment-uuid
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "ok": true
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid comment id.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot delete the comment.
+- `404 Not Found`: comment does not exist.
+
 ## Shared Contracts
 
 Reusable request validation schemas and domain contracts live in `packages/shared`.
@@ -475,7 +580,7 @@ They are platform-neutral so both the web app and mobile app can import them.
 ## Planned Route Areas
 
 - Users and teams.
-- Comments and activity.
+- Activity.
 - Reports.
 
 ## Notes
