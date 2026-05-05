@@ -1,0 +1,19 @@
+
+> taskflow@0.1.0 dev:web
+> npm run dev -w @taskflow/web
+
+
+> @taskflow/web@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.15
+   - Local:        http://localhost:3000
+   - Network:      http://172.17.192.1:3000
+
+ ✓ Starting...
+ ✓ Ready in 5.4s
+ ○ Compiling / ...
+ ✓ Compiled / in 8.8s (548 modules)
+ GET / 200 in 10112ms
+ ✓ Compiled in 249ms (227 modules)
+ GET / 200 in 155ms

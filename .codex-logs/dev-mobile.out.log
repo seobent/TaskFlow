@@ -1,0 +1,12 @@
+
+> taskflow@0.1.0 dev:mobile
+> npm run start -w @taskflow/mobile
+
+
+> @taskflow/mobile@0.1.0 start
+> expo start
+
+Starting project at C:\Work\Projects_PHP\TaskFlow\apps\mobile
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
