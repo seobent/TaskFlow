@@ -18,6 +18,7 @@ import {
 } from "react";
 
 import { StatusColumn } from "@/components/tasks/StatusColumn";
+import { TaskDetails } from "@/components/tasks/TaskDetails";
 import { TaskForm, type TaskFormValues } from "@/components/tasks/TaskForm";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -55,6 +56,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [statusTaskId, setStatusTaskId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -389,6 +391,10 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
                   setFormError(null);
                   setEditingTask(task);
                 }}
+                onOpenTask={(task) => {
+                  setActionError(null);
+                  setSelectedTaskId(task.id);
+                }}
                 onStatusChange={handleStatusChange}
                 status={column.status}
                 tasks={column.tasks}
@@ -443,6 +449,17 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
         />
       </TaskModal>
 
+      <TaskModal
+        isOpen={Boolean(selectedTaskId)}
+        onClose={() => setSelectedTaskId(null)}
+        size="lg"
+        title="Task details"
+      >
+        {selectedTaskId ? (
+          <TaskDetails currentUser={currentUser} taskId={selectedTaskId} />
+        ) : null}
+      </TaskModal>
+
       <ConfirmDialog
         confirmLabel="Delete task"
         description={
@@ -468,11 +485,13 @@ function TaskModal({
   children,
   isOpen,
   onClose,
+  size = "md",
   title,
 }: {
   children: ReactNode;
   isOpen: boolean;
   onClose: () => void;
+  size?: "md" | "lg";
   title: string;
 }) {
   const titleId = useId();
@@ -504,7 +523,10 @@ function TaskModal({
       <div
         aria-labelledby={titleId}
         aria-modal="true"
-        className="w-full max-w-2xl rounded-md border border-ink/10 bg-white p-5 shadow-xl"
+        className={[
+          "w-full rounded-md border border-ink/10 bg-white p-5 shadow-xl",
+          size === "lg" ? "max-w-4xl" : "max-w-2xl",
+        ].join(" ")}
         role="dialog"
       >
         <div className="mb-5 border-b border-ink/10 pb-4">

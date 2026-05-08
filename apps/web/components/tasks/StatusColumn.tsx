@@ -8,6 +8,7 @@ type StatusColumnProps = {
   isStatusUpdating: (taskId: string) => boolean;
   onDeleteTask: (task: Task) => void;
   onEditTask: (task: Task) => void;
+  onOpenTask: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
   status: TaskStatus;
   tasks: Task[];
@@ -18,6 +19,7 @@ export function StatusColumn({
   isStatusUpdating,
   onDeleteTask,
   onEditTask,
+  onOpenTask,
   onStatusChange,
   status,
   tasks,
@@ -40,6 +42,7 @@ export function StatusColumn({
               key={task.id}
               onDelete={onDeleteTask}
               onEdit={onEditTask}
+              onOpen={onOpenTask}
               onStatusChange={onStatusChange}
               task={task}
             />

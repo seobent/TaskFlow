@@ -4,6 +4,10 @@ import { type SafeUser, type Task, TaskStatus } from "@taskflow/shared";
 
 import { PriorityBadge } from "@/components/tasks/PriorityBadge";
 import { StatusBadge, statusLabels } from "@/components/tasks/StatusBadge";
+import {
+  formatTaskDate,
+  formatUserReference,
+} from "@/components/tasks/task-formatting";
 import { Button } from "@/components/ui/Button";
 
 type TaskCardProps = {
@@ -11,6 +15,7 @@ type TaskCardProps = {
   isStatusUpdating?: boolean;
   onDelete: (task: Task) => void;
   onEdit: (task: Task) => void;
+  onOpen: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
   task: Task;
 };
@@ -26,6 +31,7 @@ export function TaskCard({
   isStatusUpdating = false,
   onDelete,
   onEdit,
+  onOpen,
   onStatusChange,
   task,
 }: TaskCardProps) {
@@ -37,7 +43,13 @@ export function TaskCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="break-words text-base font-semibold leading-6 text-ink">
-            {task.title}
+            <button
+              className="text-left transition hover:text-mint focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+              onClick={() => onOpen(task)}
+              type="button"
+            >
+              {task.title}
+            </button>
           </h4>
           <p className="mt-1 text-xs font-medium text-ink/45">
             Updated {formatTaskDate(task.updatedAt)}
@@ -103,37 +115,31 @@ export function TaskCard({
       </div>
 
       <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button onClick={() => onEdit(task)} size="sm" type="button" variant="secondary">
+        <Button
+          onClick={() => onOpen(task)}
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
+          Details
+        </Button>
+        <Button
+          onClick={() => onEdit(task)}
+          size="sm"
+          type="button"
+          variant="secondary"
+        >
           Edit
         </Button>
-        <Button onClick={() => onDelete(task)} size="sm" type="button" variant="danger">
+        <Button
+          onClick={() => onDelete(task)}
+          size="sm"
+          type="button"
+          variant="danger"
+        >
           Delete
         </Button>
       </div>
     </article>
   );
-}
-
-function formatTaskDate(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatUserReference(userId: string | null, currentUser: SafeUser) {
-  if (!userId) {
-    return "Unassigned";
-  }
-
-  if (userId === currentUser.id) {
-    return currentUser.name || "You";
-  }
-
-  return `User ${shortId(userId)}`;
-}
-
-function shortId(value: string) {
-  return value.length > 8 ? `${value.slice(0, 8)}...` : value;
 }

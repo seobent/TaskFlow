@@ -1,0 +1,47 @@
+
+> taskflow@0.1.0 dev:web
+> npm run dev -w @taskflow/web
+
+
+> @taskflow/web@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.5.15
+   - Local:        http://localhost:3000
+   - Network:      http://172.23.112.1:3000
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.6s
+ ○ Compiling / ...
+ ✓ Compiled / in 4.8s (548 modules)
+ GET / 200 in 5299ms
+ GET / 200 in 151ms
+ ✓ Compiled in 261ms (548 modules)
+ GET / 200 in 62ms
+ GET / 200 in 68ms
+ GET / 200 in 125ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 1423ms (614 modules)
+ GET /login 200 in 2072ms
+ ○ Compiling /api/auth/login ...
+ ✓ Compiled /api/auth/login in 2.5s (821 modules)
+ POST /api/auth/login 200 in 4433ms
+ ○ Compiling /dashboard ...
+ ✓ Compiled /dashboard in 2.1s (870 modules)
+ GET /dashboard 200 in 2790ms
+ GET /dashboard 200 in 259ms
+ ○ Compiling /dashboard/projects ...
+ ✓ Compiled /dashboard/projects in 767ms (884 modules)
+ GET /dashboard/projects 200 in 1090ms
+ ○ Compiling /api/projects ...
+ ✓ Compiled /api/projects in 595ms (887 modules)
+ GET /api/projects 200 in 1087ms
+ GET /dashboard 200 in 188ms
+ GET /dashboard/projects 200 in 77ms
+ GET /api/projects 200 in 277ms
+ ○ Compiling /dashboard/projects/new ...
+ ✓ Compiled /dashboard/projects/new in 794ms (897 modules)
+ GET /dashboard/projects/new 200 in 1149ms
+ GET /dashboard/projects 200 in 86ms
+ GET /api/projects 200 in 264ms
