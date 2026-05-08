@@ -51,7 +51,10 @@ Run the mobile app:
 npm run dev:mobile
 ```
 
-The mobile app reads its API base URL from `EXPO_PUBLIC_API_URL`. During local development, point it at the web app API, for example `http://localhost:3000/api`.
+The mobile app reads its API base URL from `EXPO_PUBLIC_API_URL`.
+
+- If you are using an emulator/simulator on the same machine, `http://localhost:3000/api` is fine.
+- If you are using a physical device, `localhost` refers to the phone. Use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example `http://192.168.2.100:3000/api`.
 
 The web app reads server-side database settings from `apps/web/.env.local`:
 

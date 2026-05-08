@@ -45,12 +45,23 @@ For local development, set `EXPO_PUBLIC_API_URL` to the web API base URL:
 EXPO_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
+Note: `localhost` only works for emulators/simulators running on the same machine.
+If you are using a physical device, use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example:
+
+```text
+EXPO_PUBLIC_API_URL=http://192.168.2.100:3000/api
+```
+
 ## Run Locally
 
 ```bash
 npm run dev:web
 npm run dev:mobile
 ```
+
+The web dev server binds to `0.0.0.0` so Expo on a physical device can reach
+the API through your computer's LAN IP. After changing `apps/mobile/.env`,
+restart Expo so the `EXPO_PUBLIC_API_URL` value is rebuilt into the app.
 
 ## Type Checking
 
