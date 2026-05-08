@@ -56,6 +56,11 @@ Validation errors may include `error.details` from the shared Zod schema.
 - `GET /api/tasks/[taskId]/comments`: lists comments on a task where the current user is admin, project owner, or project member.
 - `POST /api/tasks/[taskId]/comments`: creates a comment on a task where the current user is admin, project owner, or project member.
 - `DELETE /api/comments/[commentId]`: deletes a comment when the current user is the author or an admin.
+- `GET /api/admin/stats`: returns system totals and task breakdowns for admins.
+- `GET /api/admin/users`: lists safe user objects for admins.
+- `PATCH /api/admin/users/[id]/role`: updates a user's role for admins.
+- `GET /api/admin/projects`: lists all projects for admins.
+- `DELETE /api/admin/projects/[id]`: deletes any project for admins.
 
 ## Authentication
 
@@ -572,6 +577,131 @@ Common errors:
 - `403 Forbidden`: authenticated user cannot delete the comment.
 - `404 Not Found`: comment does not exist.
 
+## Admin
+
+Admin routes require authentication with either the web cookie or mobile bearer token, and the authenticated user must have role `admin`.
+
+Common admin auth errors:
+
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user is not an admin.
+
+### Admin Stats
+
+```http
+GET /api/admin/stats
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "totalUsers": 12,
+    "totalProjects": 4,
+    "totalTasks": 36,
+    "totalComments": 81,
+    "tasksByStatus": {
+      "todo": 14,
+      "in_progress": 10,
+      "done": 12
+    },
+    "tasksByPriority": {
+      "low": 8,
+      "medium": 20,
+      "high": 8
+    }
+  }
+}
+```
+
+### Admin Users
+
+```http
+GET /api/admin/users
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "users": [
+      {
+        "id": "user-uuid",
+        "email": "ada@example.com",
+        "name": "Ada Lovelace",
+        "role": "admin",
+        "createdAt": "2026-05-05T00:00:00.000Z",
+        "updatedAt": "2026-05-05T00:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+The response never includes `passwordHash`.
+
+### Update User Role
+
+```http
+PATCH /api/admin/users/user-uuid/role
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+Request body:
+
+```json
+{
+  "role": "admin"
+}
+```
+
+Success status: `200 OK`
+
+Valid roles are `user` and `admin`.
+
+Common errors:
+
+- `400 Bad Request`: invalid user id, invalid JSON, or invalid role.
+- `404 Not Found`: user does not exist.
+
+### Admin Projects
+
+```http
+GET /api/admin/projects
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+Returns the same safe project shape as `GET /api/projects`, but without filtering by membership or ownership.
+
+### Admin Delete Project
+
+```http
+DELETE /api/admin/projects/project-uuid
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "ok": true
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid project id.
+- `404 Not Found`: project does not exist.
+
 ## Shared Contracts
 
 Reusable request validation schemas and domain contracts live in `packages/shared`.
@@ -579,7 +709,7 @@ They are platform-neutral so both the web app and mobile app can import them.
 
 ## Planned Route Areas
 
-- Users and teams.
+- Teams.
 - Activity.
 - Reports.
 

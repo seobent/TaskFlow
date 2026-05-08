@@ -174,7 +174,6 @@ export const createCommentInputSchema = z.object({
 });
 
 export const updateUserRoleInputSchema = z.object({
-  userId: idSchema,
   role: userRoleSchema
 });
 

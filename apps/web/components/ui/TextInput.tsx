@@ -23,13 +23,18 @@ export function TextInput({
   const describedBy = [hintId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className={["space-y-2", containerClassName].filter(Boolean).join(" ")}>
+    <div
+      className={["space-y-2", containerClassName].filter(Boolean).join(" ")}
+      suppressHydrationWarning
+    >
       <label className="block text-sm font-medium text-ink" htmlFor={inputId}>
         {label}
       </label>
       <input
         aria-describedby={describedBy}
         aria-invalid={error ? true : undefined}
+        data-lpignore="true"
+        suppressHydrationWarning
         className={[
           "w-full rounded-md border bg-white px-3 py-2.5 text-sm text-ink shadow-sm transition",
           "placeholder:text-ink/35 focus:border-mint focus:outline-none focus:ring-2 focus:ring-mint/20",
