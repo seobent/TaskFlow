@@ -77,3 +77,44 @@
  POST /api/auth/login 200 in 2545ms
  GET /dashboard 200 in 301ms
  GET /dashboard 200 in 227ms
+ ✓ Compiled in 219ms (265 modules)
+ ✓ Compiled in 228ms (265 modules)
+ GET / 200 in 285ms
+ GET /dashboard 200 in 388ms
+ ✓ Compiled in 187ms (265 modules)
+ GET / 200 in 302ms
+ GET /dashboard 200 in 351ms
+ ✓ Compiled in 1243ms (890 modules)
+ GET / 200 in 1478ms
+ GET /dashboard 200 in 1441ms
+ GET / 200 in 61ms
+ GET /dashboard 200 in 112ms
+ GET / 200 in 269ms
+ GET /dashboard 200 in 254ms
+ GET /dashboard 200 in 454ms
+ ✓ Compiled in 143ms (265 modules)
+ GET / 200 in 106ms
+ GET /dashboard 200 in 106ms
+ ○ Compiling /dashboard/admin ...
+ ✓ Compiled /dashboard/admin in 1018ms (908 modules)
+ GET /dashboard/admin 307 in 1491ms
+ GET / 200 in 454ms
+ GET /dashboard 200 in 455ms
+ ✓ Compiled in 390ms (908 modules)
+ GET / 200 in 214ms
+ GET /dashboard 200 in 219ms
+ GET /dashboard/admin 307 in 116ms
+ GET /dashboard/admin 200 in 1102ms
+ GET /dashboard/projects 200 in 101ms
+ ○ Compiling /api/projects ...
+ ✓ Compiled /api/projects in 1164ms (647 modules)
+ ✓ Compiled in 1ms (647 modules)
+ ✓ Compiled in 1ms (647 modules)
+ ✓ Compiled in 0ms (647 modules)
+ GET /dashboard 200 in 2089ms
+ GET /dashboard 200 in 2306ms
+ GET /api/projects 200 in 3618ms
+ ✓ Compiled in 1ms (647 modules)
+ GET / 200 in 2737ms
+ GET /dashboard 200 in 1430ms
+ GET /dashboard 200 in 138ms

@@ -15,7 +15,7 @@ export function DashboardLayout({ children, user }: DashboardLayoutProps) {
       <Navbar user={user} />
       <div className="mx-auto grid w-full max-w-7xl gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[220px_1fr] lg:px-10">
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <DashboardNav />
+          <DashboardNav user={user} />
         </aside>
         <main>{children}</main>
       </div>

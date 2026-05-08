@@ -7,6 +7,7 @@ Screenshots have not been captured yet.
 - Web dashboard shell.
 - Mobile home screen shell.
 - Project list.
+- Admin panel.
 - Issue detail.
 - Team workspace.
 
