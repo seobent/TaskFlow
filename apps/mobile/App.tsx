@@ -1,7 +1,7 @@
 import { SafeAreaView, StatusBar, StyleSheet, Text, View } from "react-native";
 import { TASKFLOW_APP_NAME } from "@taskflow/shared";
 
-const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000/api";
+const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
 export default function App() {
   return (

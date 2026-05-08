@@ -1,0 +1,8 @@
+Starting project at D:\Work\PHP_Projects\TaskFlow\apps\mobile
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+iOS apps\mobile\index.ts ░░░░░░░░░░░░░░░░  0.0% (0/1)
+iOS apps\mobile\index.ts ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.4% (1083/1118)
+iOS Bundled 4764ms apps\mobile\index.ts (1256 modules)
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
