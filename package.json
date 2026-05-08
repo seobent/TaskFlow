@@ -15,6 +15,7 @@
     "build": "npm run build -w @taskflow/shared && npm run build:web",
     "build:web": "npm run build -w @taskflow/web",
     "build:shared": "npm run build -w @taskflow/shared",
+    "db:seed": "npm run db:seed -w @taskflow/web",
     "typecheck": "npm run typecheck --workspaces --if-present"
   },
   "devDependencies": {

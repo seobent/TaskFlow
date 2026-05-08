@@ -66,3 +66,19 @@ Generate and apply Drizzle migrations for the web app:
 npm run db:generate -w @taskflow/web
 npm run db:migrate -w @taskflow/web
 ```
+
+Seed the local database with demo users, projects, tasks, and comments:
+
+```bash
+npm run db:seed
+```
+
+Seeded login accounts:
+
+```text
+admin@taskflow.dev / admin123
+demo@taskflow.dev / demo123
+```
+
+The seed uses bcrypt password hashes, Drizzle ORM, and fixed seed IDs so it can
+be run multiple times without duplicating the demo records.

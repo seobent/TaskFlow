@@ -61,6 +61,16 @@ JWT_SECRET=
 NEXT_PUBLIC_API_URL=http://localhost:3000
 ```
 
+After applying migrations, seed local demo data:
+
+```bash
+npm run db:seed
+```
+
+The seed creates `admin@taskflow.dev` with password `admin123` and
+`demo@taskflow.dev` with password `demo123`, plus demo projects, members,
+tasks, and comments. The command is safe to rerun.
+
 Type-check all workspaces:
 
 ```bash
