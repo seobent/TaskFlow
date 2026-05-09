@@ -1,171 +1,17 @@
 # API
 
-The TaskFlow API will be implemented with Next.js Route Handlers under `apps/web/app/api`.
+TaskFlow exposes a JSON REST API through Next.js Route Handlers in `apps/web/app/api`. The same API is used by the web dashboard and the Expo mobile client.
 
-## Local Base URL
-
-```text
-http://localhost:3000/api
-```
-
-## Netlify Base URL
+## Base URLs
 
 ```text
-https://your-netlify-site.netlify.app/api
+Local:      http://localhost:3000/api
+Production: https://your-taskflow-demo.netlify.app/api
 ```
 
-## Response Shape
+## Response Format
 
-Successful responses use a `data` envelope.
-
-```json
-{
-  "data": {}
-}
-```
-
-Error responses use an `error` envelope.
-
-```json
-{
-  "error": {
-    "message": "Invalid request body."
-  }
-}
-```
-
-Validation errors may include `error.details` from the shared Zod schema.
-
-## Current Routes
-
-- `GET /api/health`: scaffold health route for deployment and local smoke checks.
-- `POST /api/auth/register`: creates a user account, returns a safe user object and JWT, and sets the web auth cookie.
-- `POST /api/auth/login`: validates credentials, returns a safe user object and JWT, and sets the web auth cookie.
-- `POST /api/auth/logout`: clears the web auth cookie.
-- `GET /api/auth/me`: returns the current authenticated safe user.
-- `GET /api/projects`: lists projects visible to the current user.
-- `POST /api/projects`: creates a project owned by the current user.
-- `GET /api/projects/[id]`: returns one visible project.
-- `PATCH /api/projects/[id]`: updates a project owned by the current user, or any project for admins.
-- `DELETE /api/projects/[id]`: deletes a project owned by the current user, or any project for admins.
-- `GET /api/projects/[projectId]/tasks`: lists tasks in a project where the current user is owner or member.
-- `POST /api/projects/[projectId]/tasks`: creates a task in a project where the current user is owner or member.
-- `GET /api/tasks/[taskId]`: returns one task visible to the current user.
-- `PATCH /api/tasks/[taskId]`: updates a task in a project where the current user is owner or member.
-- `DELETE /api/tasks/[taskId]`: deletes a task when the current user is admin, project owner, task creator, or task assignee.
-- `GET /api/tasks/[taskId]/comments`: lists comments on a task where the current user is admin, project owner, or project member.
-- `POST /api/tasks/[taskId]/comments`: creates a comment on a task where the current user is admin, project owner, or project member.
-- `GET /api/tasks/[taskId]/attachments`: lists task attachments for admins, project owners, and project members.
-- `POST /api/tasks/[taskId]/attachments`: uploads a task attachment for admins, project owners, and project members.
-- `DELETE /api/comments/[commentId]`: deletes a comment when the current user is the author or an admin.
-- `GET /api/admin/stats`: returns system totals and task breakdowns for admins.
-- `GET /api/admin/users`: lists safe user objects for admins.
-- `PATCH /api/admin/users/[id]/role`: updates a user's role for admins.
-- `GET /api/admin/projects`: lists all projects for admins.
-- `DELETE /api/admin/projects/[id]`: deletes any project for admins.
-
-## Authentication
-
-TaskFlow uses JWT authentication.
-
-Web clients receive the JWT in an httpOnly cookie named `taskflow_token`.
-The cookie uses `sameSite: "lax"` and is marked `secure` in production.
-
-Mobile clients use the `token` returned by register and login responses and send it as:
-
-```text
-Authorization: Bearer <token>
-```
-
-API auth helpers read the bearer token first and then fall back to the httpOnly cookie.
-API responses never include `passwordHash`.
-
-### Register
-
-```http
-POST /api/auth/register
-Content-Type: application/json
-```
-
-Request body:
-
-```json
-{
-  "name": "Ada Lovelace",
-  "email": "ada@example.com",
-  "password": "secure-password"
-}
-```
-
-Success status: `201 Created`
-
-```json
-{
-  "data": {
-    "user": {
-      "id": "user-id",
-      "email": "ada@example.com",
-      "name": "Ada Lovelace",
-      "role": "user",
-      "createdAt": "2026-05-05T00:00:00.000Z",
-      "updatedAt": "2026-05-05T00:00:00.000Z"
-    },
-    "token": "jwt"
-  }
-}
-```
-
-Common errors:
-
-- `400 Bad Request`: invalid JSON or schema validation failure.
-- `409 Conflict`: email already exists.
-
-### Login
-
-```http
-POST /api/auth/login
-Content-Type: application/json
-```
-
-Request body:
-
-```json
-{
-  "email": "ada@example.com",
-  "password": "secure-password"
-}
-```
-
-Success status: `200 OK`
-
-```json
-{
-  "data": {
-    "user": {
-      "id": "user-id",
-      "email": "ada@example.com",
-      "name": "Ada Lovelace",
-      "role": "user",
-      "createdAt": "2026-05-05T00:00:00.000Z",
-      "updatedAt": "2026-05-05T00:00:00.000Z"
-    },
-    "token": "jwt"
-  }
-}
-```
-
-Common errors:
-
-- `400 Bad Request`: invalid JSON or schema validation failure.
-- `401 Unauthorized`: invalid email or password.
-
-### Logout
-
-```http
-POST /api/auth/logout
-```
-
-Success status: `200 OK`
+Success responses use a `data` envelope:
 
 ```json
 {
@@ -175,38 +21,195 @@ Success status: `200 OK`
 }
 ```
 
-### Me
+Error responses use an `error` envelope:
+
+```json
+{
+  "error": {
+    "message": "Invalid request body.",
+    "details": {}
+  }
+}
+```
+
+Validation errors may include `error.details` from Zod.
+
+## Authentication Requirements
+
+TaskFlow uses JWT authentication.
+
+Web clients authenticate through the `taskflow_token` httpOnly cookie set by login and registration responses. In production the cookie is secure, same-site lax, scoped to `/`, and expires after seven days.
+
+Mobile clients store the returned token in Expo SecureStore and send it on protected requests:
+
+```text
+Authorization: Bearer <token>
+```
+
+Protected route helpers read the bearer token first and then fall back to the web cookie. API responses never return `passwordHash`.
+
+## Authorization Rules
+
+- `admin` users can access admin endpoints and manage all projects.
+- `user` accounts can access only projects they own or where they have a `project_members` row.
+- Project owners can update and delete their projects.
+- Project participants can list, create, and update tasks in the project.
+- A task can be deleted by an admin, the project owner, the task creator, or the task assignee.
+- Comments can be listed and created by admins and project participants.
+- A comment can be deleted by its author or an admin.
+- Attachments can be listed and uploaded by admins and project participants.
+- The server derives the acting user from the JWT. Clients must not be trusted for `userId`, `role`, ownership, membership, or assignment decisions.
+
+## Endpoint Summary
+
+| Method | Path | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | Public | Deployment health check. |
+| `POST` | `/api/auth/register` | Public | Create account, return user and token, set web cookie. |
+| `POST` | `/api/auth/login` | Public | Authenticate credentials, return user and token, set web cookie. |
+| `POST` | `/api/auth/logout` | Public | Clear web auth cookie. |
+| `GET` | `/api/auth/me` | Required | Return current user. |
+| `GET` | `/api/projects` | Required | List visible projects. |
+| `POST` | `/api/projects` | Required | Create a project owned by current user. |
+| `GET` | `/api/projects/:id` | Required | Get one visible project. |
+| `PATCH` | `/api/projects/:id` | Required | Update an owned project, or any project for admins. |
+| `DELETE` | `/api/projects/:id` | Required | Delete an owned project, or any project for admins. |
+| `GET` | `/api/projects/:id/tasks` | Required | List tasks in an accessible project. |
+| `POST` | `/api/projects/:id/tasks` | Required | Create a task in an accessible project. |
+| `GET` | `/api/tasks/:taskId` | Required | Get one visible task. |
+| `PATCH` | `/api/tasks/:taskId` | Required | Update a task in an accessible project. |
+| `DELETE` | `/api/tasks/:taskId` | Required | Delete a task when authorized. |
+| `GET` | `/api/tasks/:taskId/comments` | Required | List task comments. |
+| `POST` | `/api/tasks/:taskId/comments` | Required | Create a task comment. |
+| `DELETE` | `/api/comments/:commentId` | Required | Delete own comment or any comment as admin. |
+| `GET` | `/api/tasks/:taskId/attachments` | Required | List task attachments. |
+| `POST` | `/api/tasks/:taskId/attachments` | Required | Upload task attachment. |
+| `GET` | `/api/admin/stats` | Admin | Return system totals and task breakdowns. |
+| `GET` | `/api/admin/users` | Admin | List safe user objects. |
+| `PATCH` | `/api/admin/users/:id/role` | Admin | Update a user's role. |
+| `GET` | `/api/admin/projects` | Admin | List all projects. |
+| `DELETE` | `/api/admin/projects/:id` | Admin | Delete any project. |
+
+## Auth Endpoints
+
+### Register
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+```
+
+Request:
+
+```json
+{
+  "name": "Ada Lovelace",
+  "email": "ada@example.com",
+  "password": "secure-password"
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "data": {
+    "user": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "email": "ada@example.com",
+      "name": "Ada Lovelace",
+      "role": "user",
+      "createdAt": "2026-05-09T09:00:00.000Z",
+      "updatedAt": "2026-05-09T09:00:00.000Z"
+    },
+    "token": "jwt-token"
+  }
+}
+```
+
+Common errors: `400` invalid JSON or schema validation failure, `409` email already exists.
+
+### Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+```
+
+Request:
+
+```json
+{
+  "email": "admin@taskflow.dev",
+  "password": "admin123"
+}
+```
+
+Response `200 OK`:
+
+```json
+{
+  "data": {
+    "user": {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "email": "admin@taskflow.dev",
+      "name": "TaskFlow Admin",
+      "role": "admin",
+      "createdAt": "2026-05-08T09:00:00.000Z",
+      "updatedAt": "2026-05-08T09:00:00.000Z"
+    },
+    "token": "jwt-token"
+  }
+}
+```
+
+Common errors: `400` invalid request, `401` invalid email or password.
+
+### Logout
+
+```http
+POST /api/auth/logout
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "ok": true
+  }
+}
+```
+
+### Current User
 
 ```http
 GET /api/auth/me
 Authorization: Bearer <token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
   "data": {
     "user": {
-      "id": "user-id",
-      "email": "ada@example.com",
-      "name": "Ada Lovelace",
+      "id": "00000000-0000-4000-8000-000000000002",
+      "email": "demo@taskflow.dev",
+      "name": "Demo User",
       "role": "user",
-      "createdAt": "2026-05-05T00:00:00.000Z",
-      "updatedAt": "2026-05-05T00:00:00.000Z"
+      "createdAt": "2026-05-08T09:00:00.000Z",
+      "updatedAt": "2026-05-08T09:00:00.000Z"
     }
   }
 }
 ```
 
-Common errors:
+Common error: `401` missing, invalid, or expired token.
 
-- `401 Unauthorized`: missing, invalid, or expired token.
+## Project Endpoints
 
-## Projects
-
-Project routes require authentication with either the web cookie or mobile bearer token.
-Admins can view, update, and delete every project. Normal users can list and view projects they own or belong to, and can update or delete only projects they own.
+Project inputs are validated with shared Zod schemas. Project names are required, and descriptions are optional.
 
 ### List Projects
 
@@ -215,19 +218,19 @@ GET /api/projects
 Authorization: Bearer <token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
   "data": {
     "projects": [
       {
-        "id": "project-uuid",
-        "name": "Website redesign",
-        "description": "Launch work for the new public site.",
-        "ownerId": "user-uuid",
-        "createdAt": "2026-05-05T00:00:00.000Z",
-        "updatedAt": "2026-05-05T00:00:00.000Z"
+        "id": "10000000-0000-4000-8000-000000000001",
+        "name": "TaskFlow Web Platform",
+        "description": "Demo project for the web dashboard, REST API, and admin workflows.",
+        "ownerId": "00000000-0000-4000-8000-000000000001",
+        "createdAt": "2026-05-08T09:00:00.000Z",
+        "updatedAt": "2026-05-08T09:00:00.000Z"
       }
     ]
   }
@@ -242,74 +245,53 @@ Content-Type: application/json
 Authorization: Bearer <token>
 ```
 
-Request body:
+Request:
 
 ```json
 {
-  "name": "Website redesign",
-  "description": "Launch work for the new public site."
+  "name": "Capstone Website",
+  "description": "Final project tracking board."
 }
 ```
 
-Success status: `201 Created`
-
-Creates the project with the current user as owner and adds the same user to `project_members` with role `manager`.
-
-Common errors:
-
-- `400 Bad Request`: invalid JSON or schema validation failure.
-- `401 Unauthorized`: missing, invalid, or expired token.
-
-### Get Project
-
-```http
-GET /api/projects/project-uuid
-Authorization: Bearer <token>
-```
-
-Success status: `200 OK`
-
-Common errors:
-
-- `400 Bad Request`: invalid project id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot view the project.
-- `404 Not Found`: project does not exist.
-
-### Update Project
-
-```http
-PATCH /api/projects/project-uuid
-Content-Type: application/json
-Authorization: Bearer <token>
-```
-
-Request body:
+Response `201 Created`:
 
 ```json
 {
-  "name": "Website launch",
+  "data": {
+    "project": {
+      "id": "project-uuid",
+      "name": "Capstone Website",
+      "description": "Final project tracking board.",
+      "ownerId": "current-user-uuid",
+      "createdAt": "2026-05-09T09:00:00.000Z",
+      "updatedAt": "2026-05-09T09:00:00.000Z"
+    }
+  }
+}
+```
+
+The API also adds the creator to `project_members` with role `manager`.
+
+### Get, Update, And Delete Project
+
+```http
+GET /api/projects/:id
+PATCH /api/projects/:id
+DELETE /api/projects/:id
+Authorization: Bearer <token>
+```
+
+Update request:
+
+```json
+{
+  "name": "Capstone Launch",
   "description": "Updated project brief."
 }
 ```
 
-Success status: `200 OK`
-
-Common errors:
-
-- `400 Bad Request`: invalid project id, invalid JSON, or schema validation failure.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot manage the project.
-- `404 Not Found`: project does not exist.
-
-### Delete Project
-
-```http
-DELETE /api/projects/project-uuid
-Authorization: Bearer <token>
-```
-
-Success status: `200 OK`
+Delete response:
 
 ```json
 {
@@ -319,122 +301,106 @@ Success status: `200 OK`
 }
 ```
 
-Common errors:
+Common errors: `400` invalid project id or request body, `401` unauthenticated, `403` access denied, `404` project not found.
 
-- `400 Bad Request`: invalid project id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot manage the project.
-- `404 Not Found`: project does not exist.
+## Task Endpoints
 
-## Tasks
+Valid statuses: `todo`, `in_progress`, `done`.
 
-Task routes require authentication with either the web cookie or mobile bearer token.
-Users can list, create, and update tasks only in projects where they are the owner or a member. A task can be deleted only by an admin, the project owner, the task creator, or the task assignee.
+Valid priorities: `low`, `medium`, `high`.
 
-Valid task statuses are `todo`, `in_progress`, and `done`.
-Valid priorities are `low`, `medium`, and `high`.
-`dueDate`, when present, must be an ISO datetime string such as `2026-05-05T12:00:00.000Z`.
+`dueDate` is optional and must be an ISO datetime string with an offset when provided.
 
 ### List Project Tasks
 
 ```http
-GET /api/projects/project-uuid/tasks
+GET /api/projects/:id/tasks
 Authorization: Bearer <token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
   "data": {
     "tasks": [
       {
-        "id": "task-uuid",
-        "projectId": "project-uuid",
-        "title": "Draft API contract",
-        "description": "Document the task routes.",
+        "id": "20000000-0000-4000-8000-000000000001",
+        "projectId": "10000000-0000-4000-8000-000000000001",
+        "title": "Define dashboard metrics",
+        "description": "Choose the project health, task volume, and completion metrics shown on the dashboard.",
         "status": "todo",
-        "priority": "medium",
-        "assigneeId": "user-uuid",
-        "createdById": "creator-user-uuid",
-        "dueDate": "2026-05-05T12:00:00.000Z",
-        "createdAt": "2026-05-05T00:00:00.000Z",
-        "updatedAt": "2026-05-05T00:00:00.000Z"
+        "priority": "high",
+        "assigneeId": "00000000-0000-4000-8000-000000000001",
+        "createdById": "00000000-0000-4000-8000-000000000001",
+        "dueDate": "2026-05-15T09:00:00.000Z",
+        "createdAt": "2026-05-08T09:00:00.000Z",
+        "updatedAt": "2026-05-08T09:00:00.000Z"
       }
     ]
   }
 }
 ```
 
-Common errors:
-
-- `400 Bad Request`: invalid project id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot access project tasks.
-- `404 Not Found`: project does not exist.
-
 ### Create Task
 
 ```http
-POST /api/projects/project-uuid/tasks
+POST /api/projects/:id/tasks
 Content-Type: application/json
 Authorization: Bearer <token>
 ```
 
-Request body:
+Request:
 
 ```json
 {
-  "title": "Draft API contract",
-  "description": "Document the task routes.",
+  "title": "Draft presentation slides",
+  "description": "Prepare the final capstone review deck.",
   "status": "todo",
-  "priority": "medium",
-  "assigneeId": "user-uuid",
-  "dueDate": "2026-05-05T12:00:00.000Z"
+  "priority": "high",
+  "assigneeId": "00000000-0000-4000-8000-000000000002",
+  "dueDate": "2026-05-20T09:00:00.000Z"
 }
 ```
 
-Success status: `201 Created`
-
-The project id comes from the URL. If `assigneeId` is provided, that user must be the project owner or a project member.
-
-Common errors:
-
-- `400 Bad Request`: invalid project id, invalid JSON, schema validation failure, or assignee outside the project.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot create tasks in the project.
-- `404 Not Found`: project does not exist.
-
-### Get Task
-
-```http
-GET /api/tasks/task-uuid
-Authorization: Bearer <token>
-```
-
-Success status: `200 OK`
-
-Common errors:
-
-- `400 Bad Request`: invalid task id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot access the task.
-- `404 Not Found`: task does not exist.
-
-### Update Task
-
-```http
-PATCH /api/tasks/task-uuid
-Content-Type: application/json
-Authorization: Bearer <token>
-```
-
-Request body:
+Response `201 Created`:
 
 ```json
 {
-  "title": "Finalize API contract",
-  "description": "Document the task routes and error states.",
+  "data": {
+    "task": {
+      "id": "task-uuid",
+      "projectId": "project-uuid",
+      "title": "Draft presentation slides",
+      "description": "Prepare the final capstone review deck.",
+      "status": "todo",
+      "priority": "high",
+      "assigneeId": "00000000-0000-4000-8000-000000000002",
+      "createdById": "current-user-uuid",
+      "dueDate": "2026-05-20T09:00:00.000Z",
+      "createdAt": "2026-05-09T09:00:00.000Z",
+      "updatedAt": "2026-05-09T09:00:00.000Z"
+    }
+  }
+}
+```
+
+If `assigneeId` is provided, the assignee must be the project owner or a project member.
+
+### Get, Update, And Delete Task
+
+```http
+GET /api/tasks/:taskId
+PATCH /api/tasks/:taskId
+DELETE /api/tasks/:taskId
+Authorization: Bearer <token>
+```
+
+Update request:
+
+```json
+{
+  "title": "Finalize presentation slides",
   "status": "in_progress",
   "priority": "high",
   "assigneeId": null,
@@ -442,25 +408,7 @@ Request body:
 }
 ```
 
-Success status: `200 OK`
-
-At least one task field is required. `description`, `assigneeId`, and `dueDate` may be set to `null`.
-
-Common errors:
-
-- `400 Bad Request`: invalid task id, invalid JSON, schema validation failure, or assignee outside the project.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot update tasks in the project.
-- `404 Not Found`: task does not exist.
-
-### Delete Task
-
-```http
-DELETE /api/tasks/task-uuid
-Authorization: Bearer <token>
-```
-
-Success status: `200 OK`
+Delete response:
 
 ```json
 {
@@ -470,61 +418,46 @@ Success status: `200 OK`
 }
 ```
 
-Common errors:
+Common errors: `400` invalid id or body, `401` unauthenticated, `403` access denied, `404` task not found.
 
-- `400 Bad Request`: invalid task id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot delete the task.
-- `404 Not Found`: task does not exist.
+## Comment Endpoints
 
-## Comments
+Comment content is required after trimming and must be at most 2000 characters.
 
-Comment routes require authentication with either the web cookie or mobile bearer token.
-Users can list and create comments only on tasks in projects where they are the owner or a member. Admins can list and create comments on any task. Users can delete their own comments, and admins can delete any comment.
-
-Comment content is required, trimmed, and must contain 1 to 2000 characters.
-
-### List Task Comments
+### List Comments
 
 ```http
-GET /api/tasks/task-uuid/comments
+GET /api/tasks/:taskId/comments
 Authorization: Bearer <token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
   "data": {
     "comments": [
       {
-        "id": "comment-uuid",
-        "taskId": "task-uuid",
-        "authorId": "user-uuid",
-        "content": "This is ready for review.",
-        "createdAt": "2026-05-05T00:00:00.000Z"
+        "id": "30000000-0000-4000-8000-000000000001",
+        "taskId": "20000000-0000-4000-8000-000000000001",
+        "authorId": "00000000-0000-4000-8000-000000000001",
+        "content": "Start with the metrics already visible to users so the dashboard stays explainable.",
+        "createdAt": "2026-05-08T09:00:00.000Z"
       }
     ]
   }
 }
 ```
 
-Common errors:
-
-- `400 Bad Request`: invalid task id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot access task comments.
-- `404 Not Found`: task does not exist.
-
 ### Create Comment
 
 ```http
-POST /api/tasks/task-uuid/comments
+POST /api/tasks/:taskId/comments
 Content-Type: application/json
 Authorization: Bearer <token>
 ```
 
-Request body:
+Request:
 
 ```json
 {
@@ -532,7 +465,7 @@ Request body:
 }
 ```
 
-Success status: `201 Created`
+Response `201 Created`:
 
 ```json
 {
@@ -540,29 +473,22 @@ Success status: `201 Created`
     "comment": {
       "id": "comment-uuid",
       "taskId": "task-uuid",
-      "authorId": "user-uuid",
+      "authorId": "current-user-uuid",
       "content": "This is ready for review.",
-      "createdAt": "2026-05-05T00:00:00.000Z"
+      "createdAt": "2026-05-09T09:00:00.000Z"
     }
   }
 }
 ```
 
-Common errors:
-
-- `400 Bad Request`: invalid task id, invalid JSON, or schema validation failure.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot create comments on the task.
-- `404 Not Found`: task does not exist.
-
 ### Delete Comment
 
 ```http
-DELETE /api/comments/comment-uuid
+DELETE /api/comments/:commentId
 Authorization: Bearer <token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
@@ -572,30 +498,27 @@ Success status: `200 OK`
 }
 ```
 
-Common errors:
+Common errors: `400` invalid id or body, `401` unauthenticated, `403` access denied, `404` task or comment not found.
 
-- `400 Bad Request`: invalid comment id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot delete the comment.
-- `404 Not Found`: comment does not exist.
+## Attachment Endpoints
 
-## Attachments
+Attachments require object storage environment variables to be configured. The API accepts a `multipart/form-data` request with a `file` field.
 
-Attachment routes require authentication with either the web cookie or mobile bearer token.
-Admins, project owners, and project members can list and upload attachments.
-Uploaded files are stored in Cloudflare R2 or another S3-compatible object store, while metadata is stored in the `attachments` table.
+Allowed files:
 
-Allowed uploads are images, PDF files, and supported text files up to 10 MB.
-The upload request must be `multipart/form-data` with a `file` field.
+- Images: PNG, JPEG, GIF, WebP.
+- Documents: PDF.
+- Text formats: plain text, Markdown, CSV, JSON, XML, YAML, and log files.
+- Maximum size: 10 MB.
 
-### List Task Attachments
+### List Attachments
 
 ```http
-GET /api/tasks/task-uuid/attachments
+GET /api/tasks/:taskId/attachments
 Authorization: Bearer <token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
@@ -609,33 +532,28 @@ Success status: `200 OK`
         "fileUrl": "https://files.example.com/tasks/task-uuid/object-key.pdf",
         "fileType": "application/pdf",
         "fileSize": 24576,
-        "createdAt": "2026-05-05T00:00:00.000Z"
+        "createdAt": "2026-05-09T09:00:00.000Z"
       }
     ]
   }
 }
 ```
 
-Common errors:
-
-- `400 Bad Request`: invalid task id.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot access task attachments.
-- `404 Not Found`: task does not exist.
-
-### Upload Task Attachment
+### Upload Attachment
 
 ```http
-POST /api/tasks/task-uuid/attachments
+POST /api/tasks/:taskId/attachments
 Content-Type: multipart/form-data
 Authorization: Bearer <token>
 ```
 
-Form fields:
+Form data:
 
-- `file`: image, PDF, or supported text file.
+```text
+file=<image-pdf-or-text-file>
+```
 
-Success status: `201 Created`
+Response `201 Created`:
 
 ```json
 {
@@ -648,54 +566,43 @@ Success status: `201 Created`
       "fileUrl": "https://files.example.com/tasks/task-uuid/object-key.pdf",
       "fileType": "application/pdf",
       "fileSize": 24576,
-      "createdAt": "2026-05-05T00:00:00.000Z"
+      "createdAt": "2026-05-09T09:00:00.000Z"
     }
   }
 }
 ```
 
-Common errors:
+Common errors: `400` invalid task id, invalid multipart form data, missing file, unsupported file type, empty file, or file over 10 MB; `500` storage not configured or upload failure.
 
-- `400 Bad Request`: invalid task id, invalid multipart form data, missing file, unsupported file type, empty file, or file over 10 MB.
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user cannot upload task attachments.
-- `404 Not Found`: task does not exist.
-- `500 Internal Server Error`: attachment storage is not configured or the upload fails.
+## Admin Endpoints
 
-## Admin
-
-Admin routes require authentication with either the web cookie or mobile bearer token, and the authenticated user must have role `admin`.
-
-Common admin auth errors:
-
-- `401 Unauthorized`: missing, invalid, or expired token.
-- `403 Forbidden`: authenticated user is not an admin.
+All admin endpoints require an authenticated user with role `admin`.
 
 ### Admin Stats
 
 ```http
 GET /api/admin/stats
-Authorization: Bearer <token>
+Authorization: Bearer <admin-token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
   "data": {
-    "totalUsers": 12,
-    "totalProjects": 4,
-    "totalTasks": 36,
-    "totalComments": 81,
+    "totalUsers": 2,
+    "totalProjects": 2,
+    "totalTasks": 8,
+    "totalComments": 6,
     "tasksByStatus": {
-      "todo": 14,
-      "in_progress": 10,
-      "done": 12
+      "todo": 3,
+      "in_progress": 2,
+      "done": 3
     },
     "tasksByPriority": {
-      "low": 8,
-      "medium": 20,
-      "high": 8
+      "low": 2,
+      "medium": 3,
+      "high": 3
     }
   }
 }
@@ -705,39 +612,37 @@ Success status: `200 OK`
 
 ```http
 GET /api/admin/users
-Authorization: Bearer <token>
+Authorization: Bearer <admin-token>
 ```
 
-Success status: `200 OK`
+Response:
 
 ```json
 {
   "data": {
     "users": [
       {
-        "id": "user-uuid",
-        "email": "ada@example.com",
-        "name": "Ada Lovelace",
+        "id": "00000000-0000-4000-8000-000000000001",
+        "email": "admin@taskflow.dev",
+        "name": "TaskFlow Admin",
         "role": "admin",
-        "createdAt": "2026-05-05T00:00:00.000Z",
-        "updatedAt": "2026-05-05T00:00:00.000Z"
+        "createdAt": "2026-05-08T09:00:00.000Z",
+        "updatedAt": "2026-05-08T09:00:00.000Z"
       }
     ]
   }
 }
 ```
 
-The response never includes `passwordHash`.
-
 ### Update User Role
 
 ```http
-PATCH /api/admin/users/user-uuid/role
+PATCH /api/admin/users/:id/role
 Content-Type: application/json
-Authorization: Bearer <token>
+Authorization: Bearer <admin-token>
 ```
 
-Request body:
+Request:
 
 ```json
 {
@@ -745,34 +650,32 @@ Request body:
 }
 ```
 
-Success status: `200 OK`
+Response:
 
-Valid roles are `user` and `admin`.
-
-Common errors:
-
-- `400 Bad Request`: invalid user id, invalid JSON, or invalid role.
-- `404 Not Found`: user does not exist.
+```json
+{
+  "data": {
+    "user": {
+      "id": "user-uuid",
+      "email": "demo@taskflow.dev",
+      "name": "Demo User",
+      "role": "admin",
+      "createdAt": "2026-05-08T09:00:00.000Z",
+      "updatedAt": "2026-05-09T09:00:00.000Z"
+    }
+  }
+}
+```
 
 ### Admin Projects
 
 ```http
 GET /api/admin/projects
-Authorization: Bearer <token>
+DELETE /api/admin/projects/:id
+Authorization: Bearer <admin-token>
 ```
 
-Success status: `200 OK`
-
-Returns the same safe project shape as `GET /api/projects`, but without filtering by membership or ownership.
-
-### Admin Delete Project
-
-```http
-DELETE /api/admin/projects/project-uuid
-Authorization: Bearer <token>
-```
-
-Success status: `200 OK`
+`GET /api/admin/projects` returns all projects without membership filtering. `DELETE /api/admin/projects/:id` deletes any project and returns:
 
 ```json
 {
@@ -782,22 +685,20 @@ Success status: `200 OK`
 }
 ```
 
-Common errors:
+Common admin errors: `401` unauthenticated, `403` admin access required, `400` invalid id or body, `404` record not found.
 
-- `400 Bad Request`: invalid project id.
-- `404 Not Found`: project does not exist.
+## Health Endpoint
 
-## Shared Contracts
+```http
+GET /api/health
+```
 
-Reusable request validation schemas and domain contracts live in `packages/shared`.
-They are platform-neutral so both the web app and mobile app can import them.
+Response:
 
-## Planned Route Areas
-
-- Teams.
-- Activity.
-- Reports.
-
-## Notes
-
-Authentication is implemented. Add request and response contracts here before adding additional production route handlers.
+```json
+{
+  "ok": true,
+  "service": "taskflow-web",
+  "version": "0.1.0"
+}
+```

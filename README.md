@@ -1,42 +1,248 @@
-
 # TaskFlow
 
-TaskFlow is a multi-platform project and issue tracking system for a university capstone assignment. The goal is to help student teams, instructors, and project reviewers plan work, track issues, document progress, and keep capstone delivery transparent across web and mobile.
+TaskFlow is a multi-platform project and issue tracking system built for a university capstone project. It helps teams organize projects, assign tasks, track progress, discuss work through comments, upload task attachments, and administer users from a shared web and mobile experience.
 
-This repository is intentionally at the scaffold stage. It defines the monorepo, application shells, shared TypeScript package, project documentation, and the initial Drizzle/Neon database schema. JWT authentication API handlers are implemented under the web app; broader project and issue business logic will be added later.
+The repository contains a Next.js web application, a Next.js REST API backend, an Expo mobile client, shared TypeScript contracts, Drizzle ORM schema and migrations, and deployment documentation for Netlify and Neon PostgreSQL.
+
+## Live Demo
+
+```text
+Netlify demo URL: https://your-taskflow-demo.netlify.app
+```
+
+Demo credentials:
+
+```text
+Admin:
+admin@taskflow.dev
+admin123
+
+User:
+demo@taskflow.dev
+demo123
+```
+
+## Features
+
+- Email and password registration and login.
+- JWT authentication for web and mobile clients.
+- Web JWT storage through secure httpOnly cookies.
+- Mobile JWT storage through Expo SecureStore.
+- Role-based access control with `admin` and `user` roles.
+- Project creation, listing, detail, update, and deletion.
+- Project membership records for user access control.
+- Task creation, assignment, status tracking, priority tracking, due dates, updates, and deletion.
+- Task board views grouped by status.
+- Task comments for project collaboration.
+- Task attachment uploads with metadata stored in PostgreSQL and files stored in an S3-compatible object store such as Cloudflare R2.
+- Admin dashboard statistics.
+- Admin user list and role management.
+- Admin project list and project deletion.
+- Shared TypeScript types and Zod validation contracts for API input.
+- Web dashboard and Expo mobile client that both consume the same REST API.
+
+## User Roles
+
+- `user`: Can access projects they own or belong to. Users can create projects, manage their owned projects, view project tasks, create and update tasks in accessible projects, comment on accessible tasks, and upload attachments to accessible tasks.
+- `admin`: Can view and manage all projects, view admin statistics, list users, update user roles, and delete any project. Admins still authenticate through the same JWT flow as normal users.
 
 ## Technology Stack
 
-- Monorepo: npm workspaces
-- Web: Next.js App Router, React, TypeScript, Tailwind CSS
-- Mobile: Expo, React Native, TypeScript
-- Shared code: TypeScript and Zod package for common types, constants, and validation contracts
-- Database: Neon PostgreSQL with Drizzle ORM
-- Planned API: Next.js Route Handlers under `apps/web/app/api`
-- Planned deployment: Netlify for the web app and backend API, Expo tooling for mobile
+- Monorepo: npm workspaces.
+- Language: TypeScript.
+- Web frontend: Next.js App Router, React, Tailwind CSS.
+- Backend API: Next.js Route Handlers in `apps/web/app/api`.
+- Mobile client: Expo, React Native, Expo Router.
+- Shared contracts: `packages/shared`, Zod, TypeScript types.
+- Database: Neon PostgreSQL.
+- ORM and migrations: Drizzle ORM and Drizzle Kit.
+- Authentication: JWT, bcrypt password hashing.
+- Web deployment: Netlify with `@netlify/plugin-nextjs`.
+- Object storage: Cloudflare R2 or another S3-compatible storage service for task attachments.
 
-## Repository Layout
+## Architecture
 
-```text
-taskflow/
-  apps/
-    web/               Next.js App Router application
-    mobile/            Expo React Native application
-  packages/
-    shared/            Shared TypeScript types and validation schemas
-  docs/                Architecture, API, database, setup, deployment, screenshots
-  AGENTS.md            Contributor and coding-agent guidance
-  package.json         npm workspace root
-  netlify.toml         Netlify build configuration
-  tsconfig.base.json   Shared TypeScript compiler settings
+```mermaid
+flowchart LR
+  Web[Next.js Web UI<br/>apps/web] --> Api[Next.js REST API<br/>apps/web/app/api]
+  Mobile[Expo Mobile App<br/>apps/mobile] --> Api
+  Api --> Auth[JWT Auth Helpers<br/>cookie or bearer token]
+  Api --> Drizzle[Drizzle ORM<br/>apps/web/db]
+  Drizzle --> Neon[(Neon PostgreSQL)]
+  Api --> Storage[Optional R2 / S3 Object Storage]
+  Web --> Shared[Shared Types and Zod Schemas<br/>packages/shared]
+  Mobile --> Shared
+  Api --> Shared
+  Netlify[Netlify] -. deploys .-> Web
+  Netlify -. deploys .-> Api
 ```
 
-## Getting Started
+The web application and backend API are deployed together to Netlify. The mobile app is an API client and calls the deployed Netlify API in production through `EXPO_PUBLIC_API_URL`; it never connects directly to Neon.
 
-Install dependencies from the repository root:
+## Database ER Diagram
+
+```mermaid
+erDiagram
+  USERS ||--o{ PROJECTS : owns
+  USERS ||--o{ PROJECT_MEMBERS : joins
+  PROJECTS ||--o{ PROJECT_MEMBERS : has
+  PROJECTS ||--o{ TASKS : contains
+  USERS ||--o{ TASKS : assigned
+  USERS ||--o{ TASKS : creates
+  TASKS ||--o{ COMMENTS : has
+  USERS ||--o{ COMMENTS : writes
+  TASKS ||--o{ ATTACHMENTS : has
+  USERS ||--o{ ATTACHMENTS : uploads
+
+  USERS {
+    uuid id PK
+    text name
+    text email UK
+    text password_hash
+    text role
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  PROJECTS {
+    uuid id PK
+    text name
+    text description
+    uuid owner_id FK
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  PROJECT_MEMBERS {
+    uuid id PK
+    uuid project_id FK
+    uuid user_id FK
+    text role
+    timestamp created_at
+  }
+
+  TASKS {
+    uuid id PK
+    uuid project_id FK
+    text title
+    text description
+    text status
+    text priority
+    uuid assignee_id FK
+    uuid created_by_id FK
+    timestamp due_date
+    timestamp created_at
+    timestamp updated_at
+  }
+
+  COMMENTS {
+    uuid id PK
+    uuid task_id FK
+    uuid author_id FK
+    text content
+    timestamp created_at
+  }
+
+  ATTACHMENTS {
+    uuid id PK
+    uuid task_id FK
+    uuid uploaded_by_id FK
+    text file_name
+    text file_url
+    text file_type
+    integer file_size
+    timestamp created_at
+  }
+```
+
+## API Overview
+
+All REST API routes live under `apps/web/app/api` and are served from `/api/...`.
+
+Successful responses use:
+
+```json
+{
+  "data": {}
+}
+```
+
+Error responses use:
+
+```json
+{
+  "error": {
+    "message": "Invalid request body."
+  }
+}
+```
+
+Main route groups:
+
+- Health: `GET /api/health`
+- Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- Projects: `GET /api/projects`, `POST /api/projects`, `GET/PATCH/DELETE /api/projects/:id`
+- Tasks: `GET/POST /api/projects/:id/tasks`, `GET/PATCH/DELETE /api/tasks/:taskId`
+- Comments: `GET/POST /api/tasks/:taskId/comments`, `DELETE /api/comments/:commentId`
+- Attachments: `GET/POST /api/tasks/:taskId/attachments`
+- Admin: `GET /api/admin/stats`, `GET /api/admin/users`, `PATCH /api/admin/users/:id/role`, `GET /api/admin/projects`, `DELETE /api/admin/projects/:id`
+
+Web requests authenticate with the `taskflow_token` httpOnly cookie. Mobile requests authenticate with:
+
+```text
+Authorization: Bearer <token>
+```
+
+See [API documentation](docs/API.md) for request examples, response examples, and authorization rules.
+
+## Local Setup
+
+Prerequisites:
+
+- Node.js 20 or newer.
+- npm 10 or newer.
+- Neon PostgreSQL database.
+- Expo Go or a local iOS/Android simulator for mobile development.
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Create `apps/web/.env.local`:
+
+```text
+DATABASE_URL=<local-or-neon-postgres-url>
+JWT_SECRET=<local-development-secret>
+NEXT_PUBLIC_API_URL=http://localhost:3000
+NODE_ENV=development
+
+# Required only when testing attachment uploads:
+R2_ACCOUNT_ID=<cloudflare-account-id>
+R2_ACCESS_KEY_ID=<r2-access-key-id>
+R2_SECRET_ACCESS_KEY=<r2-secret-access-key>
+R2_BUCKET_NAME=<r2-bucket-name>
+R2_PUBLIC_URL=https://files.example.com
+```
+
+Create `apps/mobile/.env`:
+
+```text
+EXPO_PUBLIC_API_URL=http://localhost:3000
+```
+
+For a physical phone, replace `localhost` with your computer LAN IP, for example:
+
+```text
+EXPO_PUBLIC_API_URL=http://192.168.2.100:3000
+```
+
+Apply migrations and seed demo data:
+
+```bash
+npm run db:migrate -w @taskflow/web
+npm run db:seed
 ```
 
 Run the web app:
@@ -51,42 +257,15 @@ Run the mobile app:
 npm run dev:mobile
 ```
 
-The mobile app reads its API base URL from `EXPO_PUBLIC_API_URL`.
-
-- If you are using an emulator/simulator on the same machine, `http://localhost:3000` is fine.
-- If you are using a physical device, `localhost` refers to the phone. Use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example `http://192.168.2.100:3000`.
-- For production mobile builds, point it at the deployed Netlify API URL, for example `https://your-netlify-site-name.netlify.app`.
-- The Expo mobile app uses the deployed Netlify API in production; it never connects directly to the database.
-
-The web app reads server-side database settings from `apps/web/.env.local`:
-
-```text
-DATABASE_URL=
-JWT_SECRET=
-NEXT_PUBLIC_API_URL=http://localhost:3000
-NODE_ENV=development
-```
-
-After applying migrations, seed local demo data:
-
-```bash
-npm run db:seed
-```
-
-The seed creates `admin@taskflow.dev` with password `admin123` and
-`demo@taskflow.dev` with password `demo123`, plus demo projects, members,
-tasks, and comments. The command is safe to rerun.
-
 Type-check all workspaces:
 
 ```bash
 npm run typecheck
 ```
 
-## Deployment
+## Netlify Deployment
 
-TaskFlow deploys `apps/web` to Netlify. The root `netlify.toml` is configured
-for the web workspace:
+TaskFlow deploys the web frontend and REST API from `apps/web` to Netlify. The root `netlify.toml` contains the production build settings:
 
 ```toml
 [build]
@@ -94,50 +273,65 @@ for the web workspace:
   publish = "apps/web/.next"
 
 [build.environment]
+  NPM_FLAGS = "--include=dev"
   NODE_VERSION = "20"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 ```
 
-Set these production environment variables in Netlify site settings:
+Configure these Netlify environment variables:
 
 ```text
-DATABASE_URL=
-JWT_SECRET=
-NEXT_PUBLIC_API_URL=https://your-netlify-site.netlify.app
+DATABASE_URL=<production-neon-postgres-url>
+JWT_SECRET=<strong-production-secret>
+NEXT_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
 NODE_ENV=production
+R2_ACCOUNT_ID=<cloudflare-account-id>
+R2_ACCESS_KEY_ID=<r2-access-key-id>
+R2_SECRET_ACCESS_KEY=<r2-secret-access-key>
+R2_BUCKET_NAME=<r2-bucket-name>
+R2_PUBLIC_URL=https://files.example.com
 ```
 
-`DATABASE_URL` and `JWT_SECRET` are server-only secrets. Do not prefix them with
-`NEXT_PUBLIC_`, do not expose them to Expo, and do not commit `.env` or
-`.env.local` files. The `.gitignore` file ignores `.env.local`.
-
-Before deploying, run:
+Run production migrations intentionally against the production database after reviewing committed Drizzle migrations:
 
 ```bash
-npm run build --workspace apps/web
+DATABASE_URL="production_neon_url" npm run db:migrate -w @taskflow/web
+DATABASE_URL="production_neon_url" npm run db:seed
 ```
 
-After deployment, verify `https://your-netlify-site.netlify.app/api/health`.
+PowerShell users can set `$env:DATABASE_URL="production_neon_url"` first, then run the same `npm` commands without the inline environment prefix.
+
 Configure production mobile builds with:
 
 ```text
-EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app
+EXPO_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
 ```
 
-Production checklist:
+Never expose `DATABASE_URL`, `JWT_SECRET`, or R2 credentials to browser JavaScript or the mobile app.
 
-- Netlify uses Node.js 20, the configured web workspace build command, and the
-  `@netlify/plugin-nextjs` plugin.
-- Netlify has `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`, and
-  `NODE_ENV=production` configured.
-- No real secrets are committed or documented.
-- Drizzle migrations are reviewed and applied to the production Neon database.
-- The deployed `/api/health` route responds successfully.
-- Protected API routes still require JWT authentication.
-- Mobile production builds point `EXPO_PUBLIC_API_URL` to the deployed Netlify
-  API URL.
+## Key Folders And Files
+
+```text
+apps/web/app/                         Next.js App Router pages and layouts
+apps/web/app/api/                     REST API Route Handlers
+apps/web/components/                  Web UI components
+apps/web/components/admin/            Admin dashboard components
+apps/web/components/projects/         Project web UI components
+apps/web/components/tasks/            Task, comment, and attachment web UI components
+apps/web/db/schema.ts                 Drizzle database schema
+apps/web/db/seed.ts                   Idempotent demo seed script
+apps/web/drizzle/                     Generated Drizzle migrations
+apps/web/lib/auth.ts                  JWT, cookie, password, and auth helper logic
+apps/web/lib/r2-storage.ts            S3-compatible R2 upload helper
+apps/mobile/app/                      Expo Router screens
+apps/mobile/lib/api.ts                Typed mobile API client
+apps/mobile/lib/auth-storage.ts       SecureStore token persistence
+packages/shared/src/index.ts          Shared enums, types, constants, and Zod schemas
+docs/                                Capstone project documentation
+netlify.toml                         Netlify build and Next.js runtime configuration
+```
 
 ## Documentation
 
@@ -147,13 +341,3 @@ Production checklist:
 - [Setup](docs/SETUP.md)
 - [Deployment](docs/DEPLOYMENT.md)
 - [Screenshots](docs/SCREENSHOTS.md)
-
-## Current Status
-
-- Monorepo structure is in place.
-- Web and mobile app shells are present and can be run locally after dependency installation.
-- Initial Drizzle schema and migration are present for Neon PostgreSQL.
-- JWT authentication routes are implemented for register, login, logout, and current-user lookup.
-- Shared package contains common enums, domain types, and Zod validation schemas.
-- Documentation skeletons describe the planned system.
-- Project and issue API business logic has not been implemented yet.

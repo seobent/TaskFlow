@@ -1,106 +1,218 @@
 # Setup
 
+This guide explains how to run TaskFlow locally for development, testing, and university capstone review.
+
 ## Prerequisites
 
-- Node.js 20 or newer.
+- Node.js 20.11 or newer.
 - npm 10 or newer.
-- Expo Go or a local mobile simulator for mobile development.
+- Git.
+- A Neon PostgreSQL database, or another PostgreSQL database for local testing.
+- Expo Go on a phone, or an iOS/Android simulator for mobile development.
+- Optional: Cloudflare R2 or another S3-compatible bucket for testing task attachment uploads.
+
+## Clone Repository
+
+```bash
+git clone <repository-url>
+cd TaskFlow
+```
 
 ## Install Dependencies
+
+Install all npm workspace dependencies from the repository root:
 
 ```bash
 npm install
 ```
 
-## Web Environment
+The workspace includes:
 
-Copy the web example environment file:
+- `@taskflow/web` in `apps/web`
+- `@taskflow/mobile` in `apps/mobile`
+- `@taskflow/shared` in `packages/shared`
 
-```bash
-cp apps/web/.env.local.example apps/web/.env.local
-```
+## Configure Web Environment Variables
 
-Set local development values:
+Create `apps/web/.env.local`:
 
 ```text
-DATABASE_URL=
-JWT_SECRET=
+DATABASE_URL=<local-or-neon-postgres-url>
+JWT_SECRET=<development-secret-at-least-32-characters>
 NEXT_PUBLIC_API_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
-`DATABASE_URL` should point to a Neon PostgreSQL database. Keep this value
-server-only and do not prefix it with `NEXT_PUBLIC_`.
+Optional attachment storage variables:
 
-## Mobile Environment
-
-Copy the mobile example environment file:
-
-```bash
-cp apps/mobile/.env.example apps/mobile/.env
+```text
+R2_ACCOUNT_ID=<cloudflare-account-id>
+R2_ACCESS_KEY_ID=<r2-access-key-id>
+R2_SECRET_ACCESS_KEY=<r2-secret-access-key>
+R2_BUCKET_NAME=<r2-bucket-name>
+R2_PUBLIC_URL=https://files.example.com
 ```
 
-For local development, set `EXPO_PUBLIC_API_URL` to the web API base URL:
+Important security notes:
+
+- Do not commit `.env.local`.
+- Do not prefix `DATABASE_URL`, `JWT_SECRET`, or R2 credential variables with `NEXT_PUBLIC_`.
+- `NEXT_PUBLIC_API_URL` is safe because it is only the public web/API origin.
+
+## Configure Mobile Environment Variables
+
+Create `apps/mobile/.env`:
 
 ```text
 EXPO_PUBLIC_API_URL=http://localhost:3000
 ```
 
-Note: `localhost` only works for emulators/simulators running on the same machine.
-If you are using a physical device, use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example:
+For a physical phone, `localhost` points to the phone itself. Use your computer LAN IP instead:
 
 ```text
 EXPO_PUBLIC_API_URL=http://192.168.2.100:3000
 ```
 
-## Run Locally
-
-```bash
-npm run dev:web
-npm run dev:mobile
-```
-
-The web dev server binds to `0.0.0.0` so Expo on a physical device can reach
-the API through your computer's LAN IP. After changing `apps/mobile/.env`,
-restart Expo so the `EXPO_PUBLIC_API_URL` value is rebuilt into the app.
-
-For production mobile builds, set `EXPO_PUBLIC_API_URL` to the deployed Netlify
-API URL:
+For production mobile builds, use the Netlify URL:
 
 ```text
-EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app
+EXPO_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
 ```
 
-Do not add `DATABASE_URL`, `JWT_SECRET`, or other server-only values to the
-mobile environment.
+Only public, non-secret mobile variables should be placed in Expo environment files.
 
-## Type Checking
+## Neon Setup
 
-```bash
-npm run typecheck
+1. Create a Neon project.
+2. Create a development database branch or use the default branch for local development.
+3. Copy the pooled PostgreSQL connection string.
+4. Paste it into `apps/web/.env.local` as `DATABASE_URL`.
+5. Keep the connection string private.
+
+The mobile app must never receive the Neon connection string. All database access goes through the Next.js API.
+
+## Drizzle Migrations
+
+The Drizzle schema is defined in:
+
+```text
+apps/web/db/schema.ts
 ```
 
-## Database
+Generated migrations live in:
 
-Generate and apply Drizzle migrations for the web app:
+```text
+apps/web/drizzle
+```
+
+Apply existing migrations:
 
 ```bash
-npm run db:generate -w @taskflow/web
 npm run db:migrate -w @taskflow/web
 ```
 
-Seed the local database with demo users, projects, tasks, and comments:
+After changing the schema, generate a new migration:
+
+```bash
+npm run db:generate -w @taskflow/web
+```
+
+Then review and apply it:
+
+```bash
+npm run db:migrate -w @taskflow/web
+```
+
+Optional database browser:
+
+```bash
+npm run db:studio -w @taskflow/web
+```
+
+## Seed Script
+
+Seed demo users, projects, project memberships, tasks, and comments:
 
 ```bash
 npm run db:seed
 ```
 
-Seeded login accounts:
+Seeded accounts:
 
 ```text
-admin@taskflow.dev / admin123
-demo@taskflow.dev / demo123
+Admin:
+admin@taskflow.dev
+admin123
+
+User:
+demo@taskflow.dev
+demo123
 ```
 
-The seed uses bcrypt password hashes, Drizzle ORM, and fixed seed IDs so it can
-be run multiple times without duplicating the demo records.
+The seed script is idempotent. It uses fixed IDs and upserts records so it can be run repeatedly without duplicating the demo data.
+
+## Run Web App
+
+Start the Next.js web app and API:
+
+```bash
+npm run dev:web
+```
+
+The web app runs on:
+
+```text
+http://localhost:3000
+```
+
+The API health check is:
+
+```text
+http://localhost:3000/api/health
+```
+
+The web dev server binds to `0.0.0.0`, which allows physical mobile devices on the same network to call the API through your computer LAN IP.
+
+## Run Mobile App
+
+Start Expo:
+
+```bash
+npm run dev:mobile
+```
+
+Alternative tunnel mode:
+
+```bash
+npm run dev:mobile:tunnel
+```
+
+Open the app in Expo Go or a simulator. After changing `apps/mobile/.env`, restart Expo so `EXPO_PUBLIC_API_URL` is rebuilt into the app.
+
+## Type Checking
+
+Run TypeScript checks across all workspaces:
+
+```bash
+npm run typecheck
+```
+
+Run a production web build:
+
+```bash
+npm run build
+```
+
+## Local Verification Checklist
+
+- `npm install` completes successfully.
+- `npm run db:migrate -w @taskflow/web` applies the Drizzle migration.
+- `npm run db:seed` creates the demo accounts.
+- `npm run dev:web` starts the web app.
+- `http://localhost:3000/api/health` returns `ok: true`.
+- Web login works with both seeded accounts.
+- Project and task pages show seeded data.
+- Admin panel is available only to `admin@taskflow.dev`.
+- Expo app can log in with the seeded user.
+- Expo app can list projects, open project details, view tasks, update task status, and create comments.
+- Attachment uploads work only when R2 variables are configured.

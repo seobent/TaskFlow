@@ -1,12 +1,20 @@
 # Deployment
 
-TaskFlow deploys the Next.js web app and REST API Route Handlers from
-`apps/web` to Netlify. The Expo mobile app is not deployed by Netlify; it calls
-the deployed Netlify API over HTTPS.
+TaskFlow deploys the Next.js web frontend and REST API backend from `apps/web` to Netlify. The Expo mobile app is configured separately and calls the deployed Netlify API over HTTPS.
 
-## Netlify Configuration
+## Netlify Deployment
 
-The root `netlify.toml` must stay aligned with the web workspace:
+1. Push the repository to GitHub or another Git provider supported by Netlify.
+2. Create a new Netlify site from the repository.
+3. Confirm the build command and publish directory match `netlify.toml`.
+4. Add production environment variables in Netlify site settings.
+5. Deploy the site.
+6. Verify the deployed API health endpoint.
+7. Configure Expo production builds with the deployed Netlify URL.
+
+## Netlify Build Settings
+
+The root `netlify.toml` contains the required settings:
 
 ```toml
 [build]
@@ -14,35 +22,44 @@ The root `netlify.toml` must stay aligned with the web workspace:
   publish = "apps/web/.next"
 
 [build.environment]
+  NPM_FLAGS = "--include=dev"
   NODE_VERSION = "20"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[dev]
+  command = "npm run dev:web"
+  port = 8888
+  targetPort = 3000
 ```
 
-The `@netlify/plugin-nextjs` plugin adapts the App Router build output,
-including Route Handlers under `apps/web/app/api`, for Netlify Functions.
-
-## Deployment Steps
-
-1. Create a Netlify site from the Git repository.
-2. Confirm the build command is `npm run build --workspace apps/web`.
-3. Confirm the publish directory is `apps/web/.next`.
-4. Confirm the Next.js Runtime plugin is installed through `netlify.toml`.
-5. Add the production environment variables in Netlify site settings.
-6. Trigger a deploy and verify `/api/health` on the deployed URL.
-7. Configure the mobile app with the deployed API URL before building Expo
-   artifacts.
-
-## Environment Variables
-
-Configure these values in Netlify site settings for production:
+Netlify should use:
 
 ```text
-DATABASE_URL=<neon-postgres-url>
+Base directory: repository root
+Build command: npm run build --workspace apps/web
+Publish directory: apps/web/.next
+Node version: 20
+Next.js plugin: @netlify/plugin-nextjs
+```
+
+The Next.js plugin adapts App Router pages and Route Handlers under `apps/web/app/api` for Netlify.
+
+## Netlify Environment Variables
+
+Set these values in Netlify site settings:
+
+```text
+DATABASE_URL=<production-neon-postgres-url>
 JWT_SECRET=<strong-production-secret>
-NEXT_PUBLIC_API_URL=https://your-netlify-site.netlify.app
+NEXT_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
 NODE_ENV=production
+```
+
+Set these only if attachment uploads are enabled:
+
+```text
 R2_ACCOUNT_ID=<cloudflare-account-id>
 R2_ACCESS_KEY_ID=<r2-access-key-id>
 R2_SECRET_ACCESS_KEY=<r2-secret-access-key>
@@ -50,60 +67,64 @@ R2_BUCKET_NAME=<r2-bucket-name>
 R2_PUBLIC_URL=https://files.example.com
 ```
 
-- `DATABASE_URL` is the Neon PostgreSQL connection string used only by
-  server-side web code.
-- `JWT_SECRET` signs and verifies authentication tokens and must be a strong
-  production-only secret.
-- `NEXT_PUBLIC_API_URL` is safe to expose because it is only the public web/API
-  origin, not a credential.
-- `NODE_ENV` should be `production` in production so secure cookie behavior is
-  enabled.
-- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and
-  `R2_BUCKET_NAME` are server-only values used by the attachment upload API.
-- `R2_PUBLIC_URL` is the public base URL for uploaded attachment objects. It is
-  stored in attachment metadata and returned to authenticated project members.
+Variable rules:
 
-Never prefix `DATABASE_URL`, `JWT_SECRET`, or R2 credential variables with
-`NEXT_PUBLIC_`, never add real secret values to documentation, and never commit
-`.env` or `.env.local` files.
+- `DATABASE_URL` is server-only and must point to the production Neon database.
+- `JWT_SECRET` is server-only and must be a strong production secret.
+- `NEXT_PUBLIC_API_URL` is public and should be the deployed Netlify origin.
+- `NODE_ENV=production` enables secure production cookie behavior.
+- R2 credential variables are server-only and must not use `NEXT_PUBLIC_`.
+- `R2_PUBLIC_URL` is returned in attachment metadata and should be a public file URL origin.
 
-## Backend API
+Never commit real environment variable values to the repository.
 
-API routes live in `apps/web/app/api` and are deployed with the web app. They
-use Next.js Route Handlers on `/api/...`, derive the acting user from JWT
-cookies or bearer tokens, and keep Neon access on the server side only.
+## Neon Production Database
 
-After deployment, confirm the API is reachable:
+Use a dedicated Neon production database or production branch. Keep local development and production data separated.
 
-```bash
-curl https://your-netlify-site.netlify.app/api/health
-```
+Recommended production database process:
 
-## Production Database Migration
+1. Create or select the production Neon database branch.
+2. Store its connection string only in Netlify and in the shell used to run production migrations.
+3. Review committed files in `apps/web/drizzle`.
+4. Apply migrations intentionally.
+5. Seed demo users only when the capstone demo requires them.
 
-Drizzle migrations are generated and committed in the repository under
-`apps/web/drizzle`. The production Neon database must be migrated before the
-deployed app is used.
+The web app and API connect to Neon from server-side code only. The mobile app must call the Netlify API and must never receive the Neon connection string.
 
-Do not automatically run migrations on every Netlify build. Netlify builds
-should compile and deploy the web app only. Production migrations should be run
-manually and intentionally against the production `DATABASE_URL` after reviewing
-the committed migration files.
+## Production Migration Command
 
-From `apps/web`, run:
+Run production migrations manually after reviewing the migration SQL:
 
 ```bash
-DATABASE_URL="production_neon_url" npm run db:migrate
+DATABASE_URL="production_neon_url" npm run db:migrate -w @taskflow/web
 ```
 
-Run the seed script once after the production migration if demo credentials are
-needed:
+PowerShell equivalent:
+
+```powershell
+$env:DATABASE_URL="production_neon_url"
+npm run db:migrate -w @taskflow/web
+```
+
+Do not automatically run migrations on every Netlify build. A deployment build should compile and deploy the application; schema changes should be reviewed separately.
+
+## Seed Demo Users
+
+For a university capstone demo, seed the production database after migrations:
 
 ```bash
 DATABASE_URL="production_neon_url" npm run db:seed
 ```
 
-The seed creates these demo credentials:
+PowerShell equivalent:
+
+```powershell
+$env:DATABASE_URL="production_neon_url"
+npm run db:seed
+```
+
+Seeded credentials:
 
 ```text
 Admin:
@@ -115,35 +136,62 @@ demo@taskflow.dev
 demo123
 ```
 
-## Mobile Configuration
+The seed script also creates demo projects, project memberships, tasks, and comments. It is idempotent and uses fixed IDs with upsert logic.
 
-Set the Expo public API URL to the deployed Netlify API base URL:
+If the public demo is long-lived, change demo passwords or restrict access according to the review requirements.
+
+## Mobile EXPO_PUBLIC_API_URL Configuration
+
+Production mobile builds must point to the deployed Netlify API origin:
 
 ```text
-EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app
+EXPO_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
 ```
 
-Only the API URL should be exposed to the mobile app. Do not add Neon database
-connection strings, JWT secrets, or other server-only values to Expo
-environment variables.
+The mobile client appends `/api/...` paths internally. Do not put `DATABASE_URL`, `JWT_SECRET`, R2 credentials, or any server-only values in Expo environment variables.
+
+## Post-Deploy Verification
+
+Check the health endpoint:
+
+```bash
+curl https://your-taskflow-demo.netlify.app/api/health
+```
+
+Expected response:
+
+```json
+{
+  "ok": true,
+  "service": "taskflow-web",
+  "version": "0.1.0"
+}
+```
+
+Verify core workflows:
+
+- Web registration creates a user and sets an httpOnly cookie.
+- Web login works with seeded credentials.
+- `/api/auth/me` returns the current user when authenticated.
+- Protected API routes return `401 Unauthorized` without a valid JWT.
+- Admin routes return `403 Forbidden` for non-admin users.
+- Project and task pages load seeded records.
+- Comments can be created on accessible tasks.
+- Attachment uploads succeed only when R2 variables are configured.
+- Mobile login works with `EXPO_PUBLIC_API_URL` set to the Netlify URL.
+- Mobile project and task screens load data from the deployed API.
 
 ## Production Checklist
 
-- `npm run build --workspace apps/web` succeeds locally before deployment.
-- Netlify uses Node.js 20 and the root `netlify.toml` settings above.
-- `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`, and `NODE_ENV` are set in
-  Netlify.
-- R2 attachment variables are set in Netlify when task attachments are enabled.
-- `DATABASE_URL`, `JWT_SECRET`, and R2 credentials are server-only and are not
-  committed.
-- `.env.local` remains ignored by Git.
-- Drizzle migrations are committed in `apps/web/drizzle`.
-- Production Drizzle migrations have been reviewed and manually applied to the
-  production Neon database before using the deployed app.
-- Production database migrations are not run automatically on every Netlify
-  build.
-- The seed script has been run once if demo credentials are required.
-- `/api/health` responds successfully on the deployed Netlify URL.
-- Protected API routes return `401 Unauthorized` without a valid JWT.
-- Web login sets an httpOnly cookie with secure production settings.
-- Production mobile testing uses `EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app`.
+- Netlify uses the repository root as the base directory.
+- Netlify build command is `npm run build --workspace apps/web`.
+- Netlify publish directory is `apps/web/.next`.
+- `@netlify/plugin-nextjs` is installed through `netlify.toml`.
+- `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`, and `NODE_ENV` are configured in Netlify.
+- R2 variables are configured if attachment uploads are part of the demo.
+- No `.env`, `.env.local`, Neon connection string, JWT secret, or R2 credentials are committed.
+- Drizzle migrations are committed under `apps/web/drizzle`.
+- Production migrations have been reviewed and applied.
+- Demo users have been seeded if required.
+- `https://your-taskflow-demo.netlify.app/api/health` responds successfully.
+- Expo production builds use `EXPO_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app`.

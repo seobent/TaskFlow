@@ -1,14 +1,106 @@
 # Screenshots
 
-Screenshots have not been captured yet.
+This file is a placeholder index for university capstone screenshots. Add exported images to `docs/screenshots/` and reference them below when final captures are available.
 
-## Planned Screens
+Recommended filename format:
 
-- Web dashboard shell.
-- Mobile home screen shell.
-- Project list.
-- Admin panel.
-- Issue detail.
-- Team workspace.
+```text
+docs/screenshots/01-login.png
+docs/screenshots/02-register.png
+docs/screenshots/03-dashboard.png
+```
 
-Add screenshots here as the UI becomes feature-complete.
+## Login
+
+Placeholder:
+
+```markdown
+![Login](screenshots/01-login.png)
+```
+
+## Register
+
+Placeholder:
+
+```markdown
+![Register](screenshots/02-register.png)
+```
+
+## Dashboard
+
+Placeholder:
+
+```markdown
+![Dashboard](screenshots/03-dashboard.png)
+```
+
+## Projects
+
+Placeholder:
+
+```markdown
+![Projects](screenshots/04-projects.png)
+```
+
+## Project Details
+
+Placeholder:
+
+```markdown
+![Project details](screenshots/05-project-details.png)
+```
+
+## Task Board
+
+Placeholder:
+
+```markdown
+![Task board](screenshots/06-task-board.png)
+```
+
+## Task Details
+
+Placeholder:
+
+```markdown
+![Task details](screenshots/07-task-details.png)
+```
+
+## Admin Panel
+
+Placeholder:
+
+```markdown
+![Admin panel](screenshots/08-admin-panel.png)
+```
+
+## Mobile Login
+
+Placeholder:
+
+```markdown
+![Mobile login](screenshots/09-mobile-login.png)
+```
+
+## Mobile Dashboard
+
+Placeholder:
+
+```markdown
+![Mobile dashboard](screenshots/10-mobile-dashboard.png)
+```
+
+## Mobile Project Details
+
+Placeholder:
+
+```markdown
+![Mobile project details](screenshots/11-mobile-project-details.png)
+```
+
+## Capture Checklist
+
+- Use seeded demo data so screenshots show realistic projects, tasks, comments, and admin totals.
+- Avoid showing real environment variables, JWTs, cookies, database URLs, or object storage credentials.
+- Capture both admin and normal user perspectives when possible.
+- Use the deployed Netlify demo URL for final capstone screenshots if available.
