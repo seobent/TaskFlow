@@ -26,6 +26,7 @@ Set local development values:
 DATABASE_URL=
 JWT_SECRET=
 NEXT_PUBLIC_API_URL=http://localhost:3000
+NODE_ENV=development
 ```
 
 `DATABASE_URL` should point to a Neon PostgreSQL database. Keep this value
@@ -62,6 +63,16 @@ npm run dev:mobile
 The web dev server binds to `0.0.0.0` so Expo on a physical device can reach
 the API through your computer's LAN IP. After changing `apps/mobile/.env`,
 restart Expo so the `EXPO_PUBLIC_API_URL` value is rebuilt into the app.
+
+For production mobile builds, set `EXPO_PUBLIC_API_URL` to the deployed Netlify
+API URL:
+
+```text
+EXPO_PUBLIC_API_URL=https://your-netlify-site.netlify.app/api
+```
+
+Do not add `DATABASE_URL`, `JWT_SECRET`, or other server-only values to the
+mobile environment.
 
 ## Type Checking
 

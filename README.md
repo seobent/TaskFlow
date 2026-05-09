@@ -55,6 +55,7 @@ The mobile app reads its API base URL from `EXPO_PUBLIC_API_URL`.
 
 - If you are using an emulator/simulator on the same machine, `http://localhost:3000/api` is fine.
 - If you are using a physical device, `localhost` refers to the phone. Use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example `http://192.168.2.100:3000/api`.
+- For production mobile builds, point it at the deployed Netlify API URL, for example `https://your-netlify-site.netlify.app/api`.
 
 The web app reads server-side database settings from `apps/web/.env.local`:
 
@@ -62,6 +63,7 @@ The web app reads server-side database settings from `apps/web/.env.local`:
 DATABASE_URL=
 JWT_SECRET=
 NEXT_PUBLIC_API_URL=http://localhost:3000
+NODE_ENV=development
 ```
 
 After applying migrations, seed local demo data:
@@ -79,6 +81,62 @@ Type-check all workspaces:
 ```bash
 npm run typecheck
 ```
+
+## Deployment
+
+TaskFlow deploys `apps/web` to Netlify. The root `netlify.toml` is configured
+for the web workspace:
+
+```toml
+[build]
+  command = "npm run build --workspace apps/web"
+  publish = "apps/web/.next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+```
+
+Set these production environment variables in Netlify site settings:
+
+```text
+DATABASE_URL=
+JWT_SECRET=
+NEXT_PUBLIC_API_URL=https://your-netlify-site.netlify.app
+NODE_ENV=production
+```
+
+`DATABASE_URL` and `JWT_SECRET` are server-only secrets. Do not prefix them with
+`NEXT_PUBLIC_`, do not expose them to Expo, and do not commit `.env` or
+`.env.local` files. The `.gitignore` file ignores `.env.local`.
+
+Before deploying, run:
+
+```bash
+npm run build --workspace apps/web
+```
+
+After deployment, verify `https://your-netlify-site.netlify.app/api/health`.
+Configure production mobile builds with:
+
+```text
+EXPO_PUBLIC_API_URL=https://your-netlify-site.netlify.app/api
+```
+
+Production checklist:
+
+- Netlify uses Node.js 20, the configured web workspace build command, and the
+  `@netlify/plugin-nextjs` plugin.
+- Netlify has `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`, and
+  `NODE_ENV=production` configured.
+- No real secrets are committed or documented.
+- Drizzle migrations are reviewed and applied to the production Neon database.
+- The deployed `/api/health` route responds successfully.
+- Protected API routes still require JWT authentication.
+- Mobile production builds point `EXPO_PUBLIC_API_URL` to the Netlify `/api`
+  URL.
 
 ## Documentation
 
