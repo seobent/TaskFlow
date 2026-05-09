@@ -110,7 +110,7 @@ demo123
 Set the Expo public API URL to the deployed Netlify API base URL:
 
 ```text
-EXPO_PUBLIC_API_URL=https://your-netlify-site.netlify.app/api
+EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app
 ```
 
 Only the API URL should be exposed to the mobile app. Do not add Neon database
@@ -134,4 +134,4 @@ environment variables.
 - `/api/health` responds successfully on the deployed Netlify URL.
 - Protected API routes return `401 Unauthorized` without a valid JWT.
 - Web login sets an httpOnly cookie with secure production settings.
-- Mobile builds use `EXPO_PUBLIC_API_URL=https://your-netlify-site.netlify.app/api`.
+- Production mobile testing uses `EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app`.

@@ -53,9 +53,10 @@ npm run dev:mobile
 
 The mobile app reads its API base URL from `EXPO_PUBLIC_API_URL`.
 
-- If you are using an emulator/simulator on the same machine, `http://localhost:3000/api` is fine.
-- If you are using a physical device, `localhost` refers to the phone. Use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example `http://192.168.2.100:3000/api`.
-- For production mobile builds, point it at the deployed Netlify API URL, for example `https://your-netlify-site.netlify.app/api`.
+- If you are using an emulator/simulator on the same machine, `http://localhost:3000` is fine.
+- If you are using a physical device, `localhost` refers to the phone. Use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example `http://192.168.2.100:3000`.
+- For production mobile builds, point it at the deployed Netlify API URL, for example `https://your-netlify-site-name.netlify.app`.
+- The Expo mobile app uses the deployed Netlify API in production; it never connects directly to the database.
 
 The web app reads server-side database settings from `apps/web/.env.local`:
 
@@ -122,7 +123,7 @@ After deployment, verify `https://your-netlify-site.netlify.app/api/health`.
 Configure production mobile builds with:
 
 ```text
-EXPO_PUBLIC_API_URL=https://your-netlify-site.netlify.app/api
+EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app
 ```
 
 Production checklist:
@@ -135,8 +136,8 @@ Production checklist:
 - Drizzle migrations are reviewed and applied to the production Neon database.
 - The deployed `/api/health` route responds successfully.
 - Protected API routes still require JWT authentication.
-- Mobile production builds point `EXPO_PUBLIC_API_URL` to the Netlify `/api`
-  URL.
+- Mobile production builds point `EXPO_PUBLIC_API_URL` to the deployed Netlify
+  API URL.
 
 ## Documentation
 

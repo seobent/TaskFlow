@@ -43,14 +43,14 @@ cp apps/mobile/.env.example apps/mobile/.env
 For local development, set `EXPO_PUBLIC_API_URL` to the web API base URL:
 
 ```text
-EXPO_PUBLIC_API_URL=http://localhost:3000/api
+EXPO_PUBLIC_API_URL=http://localhost:3000
 ```
 
 Note: `localhost` only works for emulators/simulators running on the same machine.
 If you are using a physical device, use your computer's LAN IP instead (the same IP Expo prints in the QR URL), for example:
 
 ```text
-EXPO_PUBLIC_API_URL=http://192.168.2.100:3000/api
+EXPO_PUBLIC_API_URL=http://192.168.2.100:3000
 ```
 
 ## Run Locally
@@ -68,7 +68,7 @@ For production mobile builds, set `EXPO_PUBLIC_API_URL` to the deployed Netlify
 API URL:
 
 ```text
-EXPO_PUBLIC_API_URL=https://your-netlify-site.netlify.app/api
+EXPO_PUBLIC_API_URL=https://your-netlify-site-name.netlify.app
 ```
 
 Do not add `DATABASE_URL`, `JWT_SECRET`, or other server-only values to the
