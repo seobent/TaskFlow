@@ -69,6 +69,42 @@ After deployment, confirm the API is reachable:
 curl https://your-netlify-site.netlify.app/api/health
 ```
 
+## Production Database Migration
+
+Drizzle migrations are generated and committed in the repository under
+`apps/web/drizzle`. The production Neon database must be migrated before the
+deployed app is used.
+
+Do not automatically run migrations on every Netlify build. Netlify builds
+should compile and deploy the web app only. Production migrations should be run
+manually and intentionally against the production `DATABASE_URL` after reviewing
+the committed migration files.
+
+From `apps/web`, run:
+
+```bash
+DATABASE_URL="production_neon_url" npm run db:migrate
+```
+
+Run the seed script once after the production migration if demo credentials are
+needed:
+
+```bash
+DATABASE_URL="production_neon_url" npm run db:seed
+```
+
+The seed creates these demo credentials:
+
+```text
+Admin:
+admin@taskflow.dev
+admin123
+
+User:
+demo@taskflow.dev
+demo123
+```
+
 ## Mobile Configuration
 
 Set the Expo public API URL to the deployed Netlify API base URL:
@@ -89,8 +125,12 @@ environment variables.
   Netlify.
 - `DATABASE_URL` and `JWT_SECRET` are server-only and are not committed.
 - `.env.local` remains ignored by Git.
-- Drizzle migrations have been reviewed and applied to the production Neon
-  database.
+- Drizzle migrations are committed in `apps/web/drizzle`.
+- Production Drizzle migrations have been reviewed and manually applied to the
+  production Neon database before using the deployed app.
+- Production database migrations are not run automatically on every Netlify
+  build.
+- The seed script has been run once if demo credentials are required.
 - `/api/health` responds successfully on the deployed Netlify URL.
 - Protected API routes return `401 Unauthorized` without a valid JWT.
 - Web login sets an httpOnly cookie with secure production settings.
