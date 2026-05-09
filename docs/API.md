@@ -55,6 +55,8 @@ Validation errors may include `error.details` from the shared Zod schema.
 - `DELETE /api/tasks/[taskId]`: deletes a task when the current user is admin, project owner, task creator, or task assignee.
 - `GET /api/tasks/[taskId]/comments`: lists comments on a task where the current user is admin, project owner, or project member.
 - `POST /api/tasks/[taskId]/comments`: creates a comment on a task where the current user is admin, project owner, or project member.
+- `GET /api/tasks/[taskId]/attachments`: lists task attachments for admins, project owners, and project members.
+- `POST /api/tasks/[taskId]/attachments`: uploads a task attachment for admins, project owners, and project members.
 - `DELETE /api/comments/[commentId]`: deletes a comment when the current user is the author or an admin.
 - `GET /api/admin/stats`: returns system totals and task breakdowns for admins.
 - `GET /api/admin/users`: lists safe user objects for admins.
@@ -576,6 +578,89 @@ Common errors:
 - `401 Unauthorized`: missing, invalid, or expired token.
 - `403 Forbidden`: authenticated user cannot delete the comment.
 - `404 Not Found`: comment does not exist.
+
+## Attachments
+
+Attachment routes require authentication with either the web cookie or mobile bearer token.
+Admins, project owners, and project members can list and upload attachments.
+Uploaded files are stored in Cloudflare R2 or another S3-compatible object store, while metadata is stored in the `attachments` table.
+
+Allowed uploads are images, PDF files, and supported text files up to 10 MB.
+The upload request must be `multipart/form-data` with a `file` field.
+
+### List Task Attachments
+
+```http
+GET /api/tasks/task-uuid/attachments
+Authorization: Bearer <token>
+```
+
+Success status: `200 OK`
+
+```json
+{
+  "data": {
+    "attachments": [
+      {
+        "id": "attachment-uuid",
+        "taskId": "task-uuid",
+        "uploadedById": "user-uuid",
+        "fileName": "brief.pdf",
+        "fileUrl": "https://files.example.com/tasks/task-uuid/object-key.pdf",
+        "fileType": "application/pdf",
+        "fileSize": 24576,
+        "createdAt": "2026-05-05T00:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid task id.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot access task attachments.
+- `404 Not Found`: task does not exist.
+
+### Upload Task Attachment
+
+```http
+POST /api/tasks/task-uuid/attachments
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+```
+
+Form fields:
+
+- `file`: image, PDF, or supported text file.
+
+Success status: `201 Created`
+
+```json
+{
+  "data": {
+    "attachment": {
+      "id": "attachment-uuid",
+      "taskId": "task-uuid",
+      "uploadedById": "user-uuid",
+      "fileName": "brief.pdf",
+      "fileUrl": "https://files.example.com/tasks/task-uuid/object-key.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 24576,
+      "createdAt": "2026-05-05T00:00:00.000Z"
+    }
+  }
+}
+```
+
+Common errors:
+
+- `400 Bad Request`: invalid task id, invalid multipart form data, missing file, unsupported file type, empty file, or file over 10 MB.
+- `401 Unauthorized`: missing, invalid, or expired token.
+- `403 Forbidden`: authenticated user cannot upload task attachments.
+- `404 Not Found`: task does not exist.
+- `500 Internal Server Error`: attachment storage is not configured or the upload fails.
 
 ## Admin
 

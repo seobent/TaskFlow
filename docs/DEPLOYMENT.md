@@ -43,6 +43,11 @@ DATABASE_URL=<neon-postgres-url>
 JWT_SECRET=<strong-production-secret>
 NEXT_PUBLIC_API_URL=https://your-netlify-site.netlify.app
 NODE_ENV=production
+R2_ACCOUNT_ID=<cloudflare-account-id>
+R2_ACCESS_KEY_ID=<r2-access-key-id>
+R2_SECRET_ACCESS_KEY=<r2-secret-access-key>
+R2_BUCKET_NAME=<r2-bucket-name>
+R2_PUBLIC_URL=https://files.example.com
 ```
 
 - `DATABASE_URL` is the Neon PostgreSQL connection string used only by
@@ -53,9 +58,14 @@ NODE_ENV=production
   origin, not a credential.
 - `NODE_ENV` should be `production` in production so secure cookie behavior is
   enabled.
+- `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, and
+  `R2_BUCKET_NAME` are server-only values used by the attachment upload API.
+- `R2_PUBLIC_URL` is the public base URL for uploaded attachment objects. It is
+  stored in attachment metadata and returned to authenticated project members.
 
-Never prefix `DATABASE_URL` or `JWT_SECRET` with `NEXT_PUBLIC_`, never add real
-secret values to documentation, and never commit `.env` or `.env.local` files.
+Never prefix `DATABASE_URL`, `JWT_SECRET`, or R2 credential variables with
+`NEXT_PUBLIC_`, never add real secret values to documentation, and never commit
+`.env` or `.env.local` files.
 
 ## Backend API
 
@@ -123,7 +133,9 @@ environment variables.
 - Netlify uses Node.js 20 and the root `netlify.toml` settings above.
 - `DATABASE_URL`, `JWT_SECRET`, `NEXT_PUBLIC_API_URL`, and `NODE_ENV` are set in
   Netlify.
-- `DATABASE_URL` and `JWT_SECRET` are server-only and are not committed.
+- R2 attachment variables are set in Netlify when task attachments are enabled.
+- `DATABASE_URL`, `JWT_SECRET`, and R2 credentials are server-only and are not
+  committed.
 - `.env.local` remains ignored by Git.
 - Drizzle migrations are committed in `apps/web/drizzle`.
 - Production Drizzle migrations have been reviewed and manually applied to the

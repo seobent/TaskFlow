@@ -18,7 +18,8 @@ and must not connect to PostgreSQL directly.
 - `project_members`: project membership records with project and user references.
 - `tasks`: project tasks with status, priority, assignment, creator, due date, and timestamps.
 - `comments`: task comments with author references.
-- `attachments`: task attachment metadata with uploader references.
+- `attachments`: task attachment metadata with task, uploader, file name,
+  public file URL, MIME type, size, and upload timestamp.
 
 ## Indexes
 

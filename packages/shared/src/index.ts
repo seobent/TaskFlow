@@ -34,6 +34,11 @@ export enum TaskPriority {
   High = "high"
 }
 
+export const MAX_ATTACHMENT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+export const ATTACHMENT_FILE_ACCEPT =
+  ".png,.jpg,.jpeg,.gif,.webp,application/pdf,text/plain,text/markdown," +
+  "text/csv,.txt,.md,.markdown,.csv,.json,.log,.xml,.yaml,.yml";
+
 export interface User {
   id: EntityId;
   email: string;
@@ -91,12 +96,11 @@ export interface Comment {
 export interface Attachment {
   id: EntityId;
   taskId: EntityId;
-  commentId: EntityId | null;
   uploadedById: EntityId;
   fileName: string;
   fileUrl: string;
-  contentType: string;
-  sizeBytes: number;
+  fileType: string;
+  fileSize: number;
   createdAt: ISODateString;
 }
 

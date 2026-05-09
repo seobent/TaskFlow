@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type Attachment,
   type Comment,
   type CreateCommentInput,
   type SafeUser,
@@ -13,6 +14,7 @@ import { CommentForm } from "@/components/tasks/CommentForm";
 import { CommentList } from "@/components/tasks/CommentList";
 import { PriorityBadge } from "@/components/tasks/PriorityBadge";
 import { StatusBadge } from "@/components/tasks/StatusBadge";
+import { TaskAttachments } from "@/components/tasks/TaskAttachments";
 import {
   formatTaskDateTime,
   formatUserReference,
@@ -32,10 +34,17 @@ type TaskDetailsProps = {
 export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
   const router = useRouter();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [attachmentFormError, setAttachmentFormError] = useState<string | null>(
+    null,
+  );
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [commentFormError, setCommentFormError] = useState<string | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
-  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
+  const [isUploadingAttachment, setIsUploadingAttachment] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
@@ -46,27 +55,38 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
 
     async function loadTaskDetails() {
       setActionError(null);
+      setAttachmentFormError(null);
       setCommentFormError(null);
       setIsLoading(true);
       setLoadError(null);
 
       try {
-        const [taskResponse, commentsResponse] = await Promise.all([
-          fetch(`/api/tasks/${taskId}`, {
-            credentials: "include",
-            signal: controller.signal,
-          }),
-          fetch(`/api/tasks/${taskId}/comments`, {
-            credentials: "include",
-            signal: controller.signal,
-          }),
-        ]);
-        const [taskBody, commentsBody] = await Promise.all([
+        const [taskResponse, commentsResponse, attachmentsResponse] =
+          await Promise.all([
+            fetch(`/api/tasks/${taskId}`, {
+              credentials: "include",
+              signal: controller.signal,
+            }),
+            fetch(`/api/tasks/${taskId}/comments`, {
+              credentials: "include",
+              signal: controller.signal,
+            }),
+            fetch(`/api/tasks/${taskId}/attachments`, {
+              credentials: "include",
+              signal: controller.signal,
+            }),
+          ]);
+        const [taskBody, commentsBody, attachmentsBody] = await Promise.all([
           readResponseJson(taskResponse),
           readResponseJson(commentsResponse),
+          readResponseJson(attachmentsResponse),
         ]);
 
-        if (taskResponse.status === 401 || commentsResponse.status === 401) {
+        if (
+          taskResponse.status === 401 ||
+          commentsResponse.status === 401 ||
+          attachmentsResponse.status === 401
+        ) {
           router.replace("/login");
           return;
         }
@@ -83,9 +103,21 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
           return;
         }
 
+        if (!attachmentsResponse.ok) {
+          setLoadError(
+            readApiErrorMessage(
+              attachmentsBody,
+              "Unable to load attachments.",
+            ),
+          );
+          return;
+        }
+
         const taskPayload = readApiData<{ task: Task }>(taskBody);
         const commentsPayload =
           readApiData<{ comments: Comment[] }>(commentsBody);
+        const attachmentsPayload =
+          readApiData<{ attachments: Attachment[] }>(attachmentsBody);
 
         if (!taskPayload?.task) {
           setLoadError("This task could not be found.");
@@ -94,6 +126,7 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
 
         setTask(taskPayload.task);
         setComments(sortComments(commentsPayload?.comments ?? []));
+        setAttachments(sortAttachments(attachmentsPayload?.attachments ?? []));
       } catch {
         if (!controller.signal.aborted) {
           setLoadError("Unable to reach TaskFlow. Please try again.");
@@ -112,8 +145,57 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
     };
   }, [reloadToken, router, taskId]);
 
+  async function handleUploadAttachment(file: File) {
+    setActionError(null);
+    setAttachmentFormError(null);
+    setCommentFormError(null);
+    setIsUploadingAttachment(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(`/api/tasks/${taskId}/attachments`, {
+        body: formData,
+        credentials: "include",
+        method: "POST",
+      });
+      const body = await readResponseJson(response);
+
+      if (response.status === 401) {
+        router.replace("/login");
+        return false;
+      }
+
+      if (!response.ok) {
+        setAttachmentFormError(
+          readApiErrorMessage(body, "Unable to upload attachment."),
+        );
+        return false;
+      }
+
+      const payload = readApiData<{ attachment: Attachment }>(body);
+
+      if (!payload?.attachment) {
+        setAttachmentFormError("Attachment could not be saved.");
+        return false;
+      }
+
+      setAttachments((currentAttachments) =>
+        sortAttachments([...currentAttachments, payload.attachment]),
+      );
+      return true;
+    } catch {
+      setAttachmentFormError("Unable to reach TaskFlow. Please try again.");
+      return false;
+    } finally {
+      setIsUploadingAttachment(false);
+    }
+  }
+
   async function handleCreateComment(values: CreateCommentInput) {
     setActionError(null);
+    setAttachmentFormError(null);
     setCommentFormError(null);
     setIsSubmittingComment(true);
 
@@ -161,6 +243,7 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
 
   async function handleDeleteComment(comment: Comment) {
     setActionError(null);
+    setAttachmentFormError(null);
     setCommentFormError(null);
     setDeletingCommentId(comment.id);
 
@@ -182,7 +265,9 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
       }
 
       setComments((currentComments) =>
-        currentComments.filter((currentComment) => currentComment.id !== comment.id),
+        currentComments.filter(
+          (currentComment) => currentComment.id !== comment.id,
+        ),
       );
     } catch {
       setActionError("Unable to reach TaskFlow. Please try again.");
@@ -280,6 +365,13 @@ export function TaskDetails({ currentUser, taskId }: TaskDetailsProps) {
         </TaskDetailField>
       </dl>
 
+      <TaskAttachments
+        attachments={attachments}
+        error={attachmentFormError}
+        isUploading={isUploadingAttachment}
+        onUpload={handleUploadAttachment}
+      />
+
       <section className="space-y-4 border-t border-ink/10 pt-5">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -345,5 +437,13 @@ function sortComments(comments: Comment[]) {
     (first, second) =>
       new Date(first.createdAt).getTime() -
       new Date(second.createdAt).getTime(),
+  );
+}
+
+function sortAttachments(attachments: Attachment[]) {
+  return [...attachments].sort(
+    (first, second) =>
+      new Date(second.createdAt).getTime() -
+      new Date(first.createdAt).getTime(),
   );
 }
