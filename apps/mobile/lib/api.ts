@@ -197,7 +197,7 @@ async function apiRequest<TData>(
     });
   } catch {
     throw new ApiClientError(
-      `Unable to reach TaskFlow API at ${API_BASE_URL}. Check EXPO_PUBLIC_API_URL and your network connection.`,
+      `Unable to reach TaskFlow API at ${API_BASE_URL}. Make sure the web API is running (npm run dev:web), verify EXPO_PUBLIC_API_URL, and confirm you can open ${buildApiUrl("/api/health")} from your phone.`,
     );
   }
 
