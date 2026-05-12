@@ -282,8 +282,15 @@ function ProjectOverview({
           </h1>
         </div>
 
-        {canManage ? (
-          <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link
+            className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+            href={`/projects/${project.id}/settings/members`}
+          >
+            Members
+          </Link>
+          {canManage ? (
+            <>
             <button
               className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
               onClick={onEdit}
@@ -298,8 +305,9 @@ function ProjectOverview({
             >
               Delete
             </button>
-          </div>
-        ) : null}
+            </>
+          ) : null}
+        </div>
       </div>
 
       {deleteError ? (

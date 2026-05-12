@@ -329,6 +329,22 @@ Response:
 ```json
 {
   "data": {
+    "canManage": true,
+    "project": {
+      "id": "project-uuid",
+      "name": "Capstone Website",
+      "ownerId": "owner-user-uuid"
+    },
+    "assignableUsers": [
+      {
+        "id": "available-user-uuid",
+        "email": "student@example.com",
+        "name": "Student User",
+        "role": "user",
+        "createdAt": "2026-05-08T09:00:00.000Z",
+        "updatedAt": "2026-05-08T09:00:00.000Z"
+      }
+    ],
     "members": [
       {
         "id": "member-uuid",
@@ -350,6 +366,8 @@ Response:
   }
 }
 ```
+
+`assignableUsers` contains safe user objects only when the requester can manage project members. Project managers and members receive an empty list and can view the member table only.
 
 ### Assign Project Member
 

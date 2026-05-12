@@ -7,7 +7,7 @@ import { asc, eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
-import { AuthError, requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth, sanitizeUser } from "@/lib/auth";
 import {
   findProjectMemberAccess,
   safeMemberUserSelection,
@@ -65,10 +65,24 @@ export async function GET(
       .where(eq(projectMembers.projectId, projectId.value))
       .orderBy(asc(projectMembers.role), asc(users.name));
 
+    const assignableUsers = access.canManage
+      ? await db
+          .select(safeMemberUserSelection)
+          .from(users)
+          .orderBy(asc(users.name), asc(users.email))
+      : [];
+
     return apiSuccess({
+      assignableUsers: assignableUsers.map(sanitizeUser),
+      canManage: access.canManage,
       members: memberRows.map((row) =>
         serializeProjectMember(row.member, row.user),
       ),
+      project: {
+        id: access.project.id,
+        name: access.project.name,
+        ownerId: access.project.ownerId,
+      },
     });
   } catch (error) {
     if (error instanceof AuthError) {
