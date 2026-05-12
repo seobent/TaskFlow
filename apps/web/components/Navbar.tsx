@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
+import { TaskFlowLogo } from "@/components/TaskFlowLogo";
 
 type NavbarProps = {
   user: SafeUser;
@@ -44,8 +45,12 @@ export function Navbar({ user }: NavbarProps) {
   return (
     <header className="border-b border-ink/10 bg-white/85 backdrop-blur">
       <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
-        <Link className="text-lg font-semibold text-ink" href="/dashboard">
-          {TASKFLOW_APP_NAME}
+        <Link
+          aria-label={`${TASKFLOW_APP_NAME} dashboard`}
+          className="inline-flex shrink-0 items-center"
+          href="/dashboard"
+        >
+          <TaskFlowLogo className="h-11 w-auto" />
         </Link>
 
         <div className="flex items-center gap-3">

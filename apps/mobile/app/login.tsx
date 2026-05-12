@@ -12,8 +12,8 @@ import {
   View,
 } from "react-native";
 import { Link, router } from "expo-router";
-import { TASKFLOW_APP_NAME } from "@taskflow/shared";
 
+import { TaskFlowLogo } from "@/components/TaskFlowLogo";
 import { login } from "@/lib/api";
 
 export default function LoginScreen() {
@@ -50,7 +50,7 @@ export default function LoginScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.eyebrow}>Welcome back</Text>
-            <Text style={styles.title}>{TASKFLOW_APP_NAME}</Text>
+            <TaskFlowLogo style={styles.logo} />
             <Text style={styles.subtitle}>
               Sign in to review projects, issues, and team activity.
             </Text>
@@ -147,10 +147,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textTransform: "uppercase",
   },
-  title: {
-    color: "#172033",
-    fontSize: 40,
-    fontWeight: "700",
+  logo: {
     marginTop: 8,
   },
   subtitle: {

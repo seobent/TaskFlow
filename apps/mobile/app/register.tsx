@@ -12,8 +12,8 @@ import {
   View,
 } from "react-native";
 import { Link, router } from "expo-router";
-import { TASKFLOW_APP_NAME } from "@taskflow/shared";
 
+import { TaskFlowLogo } from "@/components/TaskFlowLogo";
 import { register } from "@/lib/api";
 
 export default function RegisterScreen() {
@@ -52,7 +52,7 @@ export default function RegisterScreen() {
         >
           <View style={styles.header}>
             <Text style={styles.eyebrow}>Create account</Text>
-            <Text style={styles.title}>{TASKFLOW_APP_NAME}</Text>
+            <TaskFlowLogo style={styles.logo} />
             <Text style={styles.subtitle}>
               Set up your mobile access for projects and issues.
             </Text>
@@ -163,10 +163,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textTransform: "uppercase",
   },
-  title: {
-    color: "#172033",
-    fontSize: 40,
-    fontWeight: "700",
+  logo: {
     marginTop: 8,
   },
   subtitle: {

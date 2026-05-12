@@ -4,6 +4,7 @@ dist/
 .expo/
 .expo-shared/
 web-build/
+01_Resources/
 
 .env
 .env.local

@@ -9,8 +9,9 @@ import {
   View,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
-import { Project, SafeUser, Task, TaskStatus, TASKFLOW_APP_NAME } from "@taskflow/shared";
+import { Project, SafeUser, Task, TaskStatus } from "@taskflow/shared";
 
+import { TaskFlowLogo } from "@/components/TaskFlowLogo";
 import { ProjectCard } from "@/components/ProjectCard";
 import {
   EmptyState,
@@ -86,7 +87,7 @@ export default function DashboardScreen() {
         <View style={styles.header}>
           <View style={styles.headerText}>
             <Text style={styles.eyebrow}>Dashboard</Text>
-            <Text style={styles.title}>{TASKFLOW_APP_NAME}</Text>
+            <TaskFlowLogo size="small" style={styles.logo} />
             {user ? <Text style={styles.subtitle}>Signed in as {user.name}</Text> : null}
           </View>
 
@@ -197,10 +198,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textTransform: "uppercase",
   },
-  title: {
-    color: "#172033",
-    fontSize: 36,
-    fontWeight: "700",
+  logo: {
     marginTop: 8,
   },
   subtitle: {
