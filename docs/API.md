@@ -697,8 +697,10 @@ Response:
 
 ```json
 {
-  "ok": true,
-  "service": "taskflow-web",
-  "version": "0.1.0"
+  "data": {
+    "ok": true,
+    "service": "taskflow-web",
+    "version": "0.1.0"
+  }
 }
 ```

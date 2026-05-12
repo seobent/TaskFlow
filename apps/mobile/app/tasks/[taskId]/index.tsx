@@ -17,7 +17,12 @@ import { Comment, Task } from "@taskflow/shared";
 import { CommentItem } from "@/components/CommentItem";
 import { formatDisplayDate } from "@/components/date-format";
 import { PriorityBadge } from "@/components/PriorityBadge";
-import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  readErrorMessage,
+} from "@/components/ScreenState";
 import { statusLabels } from "@/components/StatusSection";
 import { createComment, getProjectTasks, getTaskComments } from "@/lib/api";
 
@@ -180,7 +185,10 @@ export default function TaskDetailsScreen() {
                     <CommentItem comment={comment} key={comment.id} />
                   ))
                 ) : (
-                  <Text style={styles.empty}>No comments yet.</Text>
+                  <EmptyState
+                    message="No one has added comments to this task yet."
+                    title="No comments yet"
+                  />
                 )}
               </View>
             </>
@@ -320,11 +328,6 @@ const styles = StyleSheet.create({
   comments: {
     gap: 10,
     marginTop: 16,
-  },
-  empty: {
-    color: "#566176",
-    fontSize: 15,
-    lineHeight: 22,
   },
   errorText: {
     color: "#9a2d22",

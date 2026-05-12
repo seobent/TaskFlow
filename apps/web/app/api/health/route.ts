@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { apiSuccess } from "@/lib/api-response";
 
 export const runtime = "nodejs";
 
 export function GET() {
-  return NextResponse.json({
+  return apiSuccess({
     ok: true,
     service: "taskflow-web",
-    version: "0.1.0"
+    version: "0.1.0",
   });
 }

@@ -209,7 +209,7 @@ npm run build
 - `npm run db:migrate -w @taskflow/web` applies the Drizzle migration.
 - `npm run db:seed` creates the demo accounts.
 - `npm run dev:web` starts the web app.
-- `http://localhost:3000/api/health` returns `ok: true`.
+- `http://localhost:3000/api/health` returns `data.ok: true`.
 - Web login works with both seeded accounts.
 - Project and task pages show seeded data.
 - Admin panel is available only to `admin@taskflow.dev`.

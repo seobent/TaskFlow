@@ -12,7 +12,12 @@ import { router, useFocusEffect } from "expo-router";
 import { Project, SafeUser, Task, TaskStatus, TASKFLOW_APP_NAME } from "@taskflow/shared";
 
 import { ProjectCard } from "@/components/ProjectCard";
-import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  readErrorMessage,
+} from "@/components/ScreenState";
 import { getCurrentUser, getProjects, getProjectTasks, logout } from "@/lib/api";
 
 export default function DashboardScreen() {
@@ -149,7 +154,12 @@ export default function DashboardScreen() {
                 />
               ))}
               {projects.length === 0 ? (
-                <Text style={styles.empty}>No projects are available for your account yet.</Text>
+                <EmptyState
+                  actionLabel="Refresh"
+                  message="No projects are available for your account yet."
+                  onAction={loadDashboard}
+                  title="No projects yet"
+                />
               ) : null}
             </View>
           </>
@@ -275,10 +285,5 @@ const styles = StyleSheet.create({
   list: {
     gap: 14,
     marginTop: 14,
-  },
-  empty: {
-    color: "#566176",
-    fontSize: 15,
-    lineHeight: 22,
   },
 });

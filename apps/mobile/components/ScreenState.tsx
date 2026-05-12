@@ -9,6 +9,13 @@ type ErrorStateProps = {
   onRetry?: () => void;
 };
 
+type EmptyStateProps = {
+  actionLabel?: string;
+  message: string;
+  onAction?: () => void;
+  title: string;
+};
+
 export function LoadingState({ label = "Loading..." }: LoadingStateProps) {
   return (
     <View style={styles.state}>
@@ -26,6 +33,25 @@ export function ErrorState({ message, onRetry }: ErrorStateProps) {
       {onRetry ? (
         <Pressable accessibilityRole="button" onPress={onRetry} style={styles.button}>
           <Text style={styles.buttonText}>Try again</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  );
+}
+
+export function EmptyState({
+  actionLabel,
+  message,
+  onAction,
+  title,
+}: EmptyStateProps) {
+  return (
+    <View style={styles.emptyPanel}>
+      <Text style={styles.emptyTitle}>{title}</Text>
+      <Text style={styles.emptyText}>{message}</Text>
+      {actionLabel && onAction ? (
+        <Pressable accessibilityRole="button" onPress={onAction} style={styles.button}>
+          <Text style={styles.buttonText}>{actionLabel}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -62,6 +88,26 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: "#9a2d22",
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  emptyPanel: {
+    backgroundColor: "#ffffff",
+    borderColor: "rgba(23, 32, 51, 0.1)",
+    borderRadius: 8,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: 10,
+    marginTop: 18,
+    padding: 18,
+  },
+  emptyTitle: {
+    color: "#172033",
+    fontSize: 17,
+    fontWeight: "700",
+  },
+  emptyText: {
+    color: "#566176",
     fontSize: 14,
     lineHeight: 20,
   },

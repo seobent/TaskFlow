@@ -60,6 +60,31 @@ demo123
 - Web deployment: Netlify with `@netlify/plugin-nextjs`.
 - Object storage: Cloudflare R2 or another S3-compatible storage service for task attachments.
 
+## Capstone Requirement Checklist
+
+| Requirement | Status | Evidence |
+| --- | --- | --- |
+| Backend API with Next.js and PostgreSQL | Complete | Next.js Route Handlers in `apps/web/app/api` use Drizzle against PostgreSQL. |
+| Neon serverless PostgreSQL | Complete | Neon serverless client is configured in `apps/web/db/index.ts`. |
+| Drizzle ORM and migrations | Complete | Schema lives in `apps/web/db/schema.ts`; committed migration files live in `apps/web/drizzle`. |
+| Web app with Next.js, React, TypeScript, Tailwind | Complete | Web workspace is `apps/web` with App Router, React components, TypeScript, and Tailwind CSS. |
+| Mobile app with React Native and Expo | Complete | Expo Router app lives in `apps/mobile`. |
+| RESTful API communication | Complete | Web and mobile clients call `/api/...` JSON REST endpoints with shared envelopes. |
+| Monorepo structure | Complete | npm workspaces cover `apps/web`, `apps/mobile`, and `packages/shared`. |
+| Netlify deployment | Complete | `netlify.toml` deploys `apps/web` with `@netlify/plugin-nextjs`. |
+| JWT authentication | Complete | JWT helpers live in `apps/web/lib/auth.ts`; web uses an httpOnly cookie and mobile uses bearer tokens. |
+| Register, login, logout | Complete | Implemented under `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, plus web and mobile screens. |
+| Normal and admin roles | Complete | Shared role enum supports `user` and `admin`; server routes enforce authorization. |
+| Admin panel | Complete | Admin dashboard lives at `apps/web/app/dashboard/admin`. |
+| Minimum 5 screens | Complete | Web and mobile together include login, register, dashboard, project list, project details, task details, task creation, task status, and admin screens. |
+| Minimum 4 database tables | Complete | The schema includes users, projects, project members, tasks, comments, and attachments. |
+| Relationships and indexes | Complete | Foreign keys and indexes are documented in `docs/DATABASE.md` and defined in `apps/web/db/schema.ts`. |
+| Documentation in repository | Complete | Documentation lives in `README.md` and `docs/`. |
+| AGENTS.md file | Complete | `AGENTS.md` is present at the repository root. |
+| Demo credentials | Complete | Seeded demo accounts are listed below and in setup/deployment docs. |
+| Deployment guide | Complete | Netlify and Neon deployment steps are in `docs/DEPLOYMENT.md`. |
+| 15+ commits over 3+ days | Complete | Current history has more than 15 commits spanning May 4, May 5, May 8, and May 9, 2026. |
+
 ## Architecture
 
 ```mermaid

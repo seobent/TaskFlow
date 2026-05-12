@@ -4,7 +4,12 @@ import { router, useFocusEffect } from "expo-router";
 import { Project } from "@taskflow/shared";
 
 import { ProjectCard } from "@/components/ProjectCard";
-import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
+import {
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  readErrorMessage,
+} from "@/components/ScreenState";
 import { getProjects } from "@/lib/api";
 
 export default function ProjectsScreen() {
@@ -61,7 +66,12 @@ export default function ProjectsScreen() {
             ))}
           </View>
         ) : (
-          <Text style={styles.empty}>No projects are available for your account yet.</Text>
+          <EmptyState
+            actionLabel="Refresh"
+            message="No projects are available for your account yet."
+            onAction={loadProjects}
+            title="No projects yet"
+          />
         )}
       </ScrollView>
     </SafeAreaView>
@@ -112,11 +122,5 @@ const styles = StyleSheet.create({
   list: {
     gap: 14,
     marginTop: 20,
-  },
-  empty: {
-    color: "#566176",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 24,
   },
 });
