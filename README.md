@@ -207,7 +207,7 @@ Main route groups:
 - Health: `GET /api/health`
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
 - Projects: `GET /api/projects`, `POST /api/projects`, `GET/PATCH/DELETE /api/projects/:id`
-- Tasks: `GET/POST /api/projects/:id/tasks`, `GET/PATCH/DELETE /api/tasks/:taskId`
+- Tasks: `GET/POST /api/projects/:id/tasks`, `GET/POST /api/tasks`, `GET/PATCH/DELETE /api/tasks/:taskId`
 - Comments: `GET/POST /api/tasks/:taskId/comments`, `DELETE /api/comments/:commentId`
 - Attachments: `GET/POST /api/tasks/:taskId/attachments`
 - Admin: `GET /api/admin/stats`, `GET /api/admin/users`, `PATCH /api/admin/users/:id/role`, `GET /api/admin/projects`, `DELETE /api/admin/projects/:id`

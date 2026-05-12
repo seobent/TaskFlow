@@ -18,6 +18,7 @@ export type ProjectRecord = typeof projects.$inferSelect;
 export type ProjectTaskAccess = {
   project: ProjectRecord | null;
   isProjectParticipant: boolean;
+  canAccess: boolean;
 };
 
 export type TaskAccess = {
@@ -57,20 +58,39 @@ export async function findProjectTaskAccess(
   projectId: string,
   user: SafeUser,
 ): Promise<ProjectTaskAccess> {
-  const project = await db.query.projects.findFirst({
-    where: eq(projects.id, projectId),
-  });
+  const [accessRecord] = await db
+    .select({
+      project: projects,
+      membershipId: projectMembers.id,
+    })
+    .from(projects)
+    .leftJoin(
+      projectMembers,
+      and(
+        eq(projectMembers.projectId, projects.id),
+        eq(projectMembers.userId, user.id),
+      ),
+    )
+    .where(eq(projects.id, projectId))
+    .limit(1);
+
+  const project = accessRecord?.project ?? null;
 
   if (!project) {
     return {
       project: null,
       isProjectParticipant: false,
+      canAccess: false,
     };
   }
 
+  const isProjectParticipant =
+    project.ownerId === user.id || Boolean(accessRecord.membershipId);
+
   return {
     project,
-    isProjectParticipant: await isProjectParticipant(project, user.id),
+    isProjectParticipant,
+    canAccess: user.role === UserRole.Admin || isProjectParticipant,
   };
 }
 
@@ -78,9 +98,25 @@ export async function findTaskAccess(
   taskId: string,
   user: SafeUser,
 ): Promise<TaskAccess> {
-  const task = await db.query.tasks.findFirst({
-    where: eq(tasks.id, taskId),
-  });
+  const [accessRecord] = await db
+    .select({
+      task: tasks,
+      project: projects,
+      membershipId: projectMembers.id,
+    })
+    .from(tasks)
+    .leftJoin(projects, eq(tasks.projectId, projects.id))
+    .leftJoin(
+      projectMembers,
+      and(
+        eq(projectMembers.projectId, projects.id),
+        eq(projectMembers.userId, user.id),
+      ),
+    )
+    .where(eq(tasks.id, taskId))
+    .limit(1);
+
+  const task = accessRecord?.task ?? null;
 
   if (!task) {
     return {
@@ -93,26 +129,21 @@ export async function findTaskAccess(
     };
   }
 
-  const project = task.projectId
-    ? await db.query.projects.findFirst({
-        where: eq(projects.id, task.projectId),
-      })
-    : null;
-  const isParticipant = project
-    ? await isProjectParticipant(project, user.id)
-    : false;
-  const isCreator = task.createdById === user.id;
-  const isAssignee = task.assigneeId === user.id;
+  const project = accessRecord.project ?? null;
   const isAdmin = user.role === UserRole.Admin;
   const isProjectOwner = project?.ownerId === user.id;
+  const isParticipant = Boolean(
+    project && (isProjectOwner || accessRecord.membershipId),
+  );
+  const canAccessProjectTask = Boolean(project && (isAdmin || isParticipant));
 
   return {
     task,
     project: project ?? null,
     isProjectParticipant: isParticipant,
-    canView: isAdmin || isParticipant || isCreator || isAssignee,
-    canUpdate: isParticipant,
-    canDelete: isAdmin || isProjectOwner || isCreator || isAssignee,
+    canView: canAccessProjectTask,
+    canUpdate: canAccessProjectTask,
+    canDelete: canAccessProjectTask,
   };
 }
 

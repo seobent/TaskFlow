@@ -55,8 +55,8 @@ Protected route helpers read the bearer token first and then fall back to the we
 - Project owners can update and delete their projects.
 - Project owners and admins can assign, update, and remove project members.
 - Project managers and project members can list members only for projects where they are assigned.
-- Project participants can list, create, and update tasks in the project.
-- A task can be deleted by an admin, the project owner, the task creator, or the task assignee.
+- Admins can access all tasks.
+- Project owners and project members can list, view, create, update, and delete tasks in the project.
 - Comments can be listed and created by admins and project participants.
 - A comment can be deleted by its author or an admin.
 - Attachments can be listed and uploaded by admins and project participants.
@@ -82,9 +82,11 @@ Protected route helpers read the bearer token first and then fall back to the we
 | `DELETE` | `/api/projects/:id/members/:userId` | Required | Remove a member from an owned project, or any project for admins. |
 | `GET` | `/api/projects/:id/tasks` | Required | List tasks in an accessible project. |
 | `POST` | `/api/projects/:id/tasks` | Required | Create a task in an accessible project. |
+| `GET` | `/api/tasks` | Required | List accessible tasks, optionally filtered by query params. |
+| `POST` | `/api/tasks` | Required | Create a task using `projectId` from the request body. |
 | `GET` | `/api/tasks/:taskId` | Required | Get one visible task. |
 | `PATCH` | `/api/tasks/:taskId` | Required | Update a task in an accessible project. |
-| `DELETE` | `/api/tasks/:taskId` | Required | Delete a task when authorized. |
+| `DELETE` | `/api/tasks/:taskId` | Required | Delete a task in an accessible project. |
 | `GET` | `/api/tasks/:taskId/comments` | Required | List task comments. |
 | `POST` | `/api/tasks/:taskId/comments` | Required | Create a task comment. |
 | `DELETE` | `/api/comments/:commentId` | Required | Delete own comment or any comment as admin. |
@@ -446,6 +448,17 @@ Response:
 }
 ```
 
+### List Tasks
+
+```http
+GET /api/tasks?projectId=project-uuid&status=todo&priority=high
+Authorization: Bearer <token>
+```
+
+Supported filters are `projectId`, `status`, `priority`, `assigneeId`, and `createdById`. Admins can list all matching tasks. Normal users receive only tasks whose project they own or where they have a `project_members` row.
+
+Response uses the same `{ "data": { "tasks": [] } }` shape as project task lists.
+
 ### Create Task
 
 ```http
@@ -490,6 +503,8 @@ Response `201 Created`:
 ```
 
 If `assigneeId` is provided, the assignee must be the project owner or a project member.
+
+Tasks can also be created through `POST /api/tasks` by including a required `projectId` field in the JSON body. The current user must be an admin, the project owner, or a project member.
 
 ### Get, Update, And Delete Task
 

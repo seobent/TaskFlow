@@ -43,7 +43,7 @@ export async function GET(request: Request, context: ProjectTasksRouteContext) {
       return apiError("Project not found.", 404);
     }
 
-    if (!access.isProjectParticipant) {
+    if (!access.canAccess) {
       return apiError("Project task access denied.", 403);
     }
 
@@ -94,7 +94,7 @@ export async function POST(request: Request, context: ProjectTasksRouteContext) 
       return apiError("Project not found.", 404);
     }
 
-    if (!access.isProjectParticipant) {
+    if (!access.canAccess) {
       return apiError("Project task access denied.", 403);
     }
 
