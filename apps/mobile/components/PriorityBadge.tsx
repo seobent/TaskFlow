@@ -1,6 +1,8 @@
 import { StyleSheet, Text } from "react-native";
 import { TaskPriority } from "@taskflow/shared";
 
+import { useTheme } from "@/lib/theme";
+
 type PriorityBadgeProps = {
   priority: TaskPriority;
 };
@@ -27,16 +29,20 @@ const priorityStyles = {
 };
 
 export function PriorityBadge({ priority }: PriorityBadgeProps) {
+  const { isDark } = useTheme();
   const priorityStyle = priorityStyles[priority];
+  const darkStyle = darkPriorityStyles[priority];
 
   return (
     <Text
       style={[
         styles.badge,
         {
-          backgroundColor: priorityStyle.backgroundColor,
-          borderColor: priorityStyle.borderColor,
-          color: priorityStyle.color,
+          backgroundColor: isDark
+            ? darkStyle.backgroundColor
+            : priorityStyle.backgroundColor,
+          borderColor: isDark ? darkStyle.borderColor : priorityStyle.borderColor,
+          color: isDark ? darkStyle.color : priorityStyle.color,
         },
       ]}
     >
@@ -44,6 +50,24 @@ export function PriorityBadge({ priority }: PriorityBadgeProps) {
     </Text>
   );
 }
+
+const darkPriorityStyles = {
+  [TaskPriority.Low]: {
+    backgroundColor: "rgba(104, 211, 184, 0.14)",
+    borderColor: "rgba(104, 211, 184, 0.32)",
+    color: "#68d3b8",
+  },
+  [TaskPriority.Medium]: {
+    backgroundColor: "rgba(245, 178, 86, 0.14)",
+    borderColor: "rgba(245, 178, 86, 0.34)",
+    color: "#f5b256",
+  },
+  [TaskPriority.High]: {
+    backgroundColor: "rgba(231, 121, 166, 0.14)",
+    borderColor: "rgba(231, 121, 166, 0.34)",
+    color: "#e779a6",
+  },
+};
 
 const styles = StyleSheet.create({
   badge: {

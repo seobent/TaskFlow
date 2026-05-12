@@ -3,9 +3,25 @@
 @tailwind utilities;
 
 :root {
+  --color-ink: 23 32 51;
+  --color-surface: 247 248 251;
+  --color-mint: 47 159 137;
+  --color-amber: 212 138 44;
+  --color-berry: 159 63 104;
+  --color-panel: 255 255 255;
   color-scheme: light;
-  background: #f7f8fb;
-  color: #172033;
+  background: rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+}
+
+.dark {
+  --color-ink: 232 238 246;
+  --color-surface: 11 16 27;
+  --color-mint: 104 211 184;
+  --color-amber: 245 178 86;
+  --color-berry: 231 121 166;
+  --color-panel: 18 25 39;
+  color-scheme: dark;
 }
 
 * {
@@ -20,8 +36,37 @@ body {
 body {
   margin: 0;
   background:
-    linear-gradient(135deg, rgba(47, 159, 137, 0.12), transparent 32rem),
-    linear-gradient(315deg, rgba(159, 63, 104, 0.1), transparent 28rem),
-    #f7f8fb;
-  color: #172033;
+    linear-gradient(135deg, rgb(var(--color-mint) / 0.12), transparent 32rem),
+    linear-gradient(315deg, rgb(var(--color-berry) / 0.1), transparent 28rem),
+    rgb(var(--color-surface));
+  color: rgb(var(--color-ink));
+}
+
+.dark .bg-white {
+  background-color: rgb(var(--color-panel));
+}
+
+.dark .bg-white\/85 {
+  background-color: rgb(var(--color-panel) / 0.85);
+}
+
+.dark .bg-white\/80 {
+  background-color: rgb(var(--color-panel) / 0.8);
+}
+
+.dark .bg-white\/70 {
+  background-color: rgb(var(--color-panel) / 0.7);
+}
+
+.dark .bg-ink.text-white,
+.dark .bg-ink .text-white {
+  color: rgb(8 22 24);
+}
+
+.dark .bg-ink.text-white {
+  background-color: rgb(var(--color-mint));
+}
+
+.dark .hover\:bg-ink\/90:hover {
+  background-color: rgb(var(--color-mint) / 0.9);
 }

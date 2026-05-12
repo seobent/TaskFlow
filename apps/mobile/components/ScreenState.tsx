@@ -1,5 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useTheme } from "@/lib/theme";
+
 type LoadingStateProps = {
   label?: string;
 };
@@ -17,22 +19,42 @@ type EmptyStateProps = {
 };
 
 export function LoadingState({ label = "Loading..." }: LoadingStateProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.state}>
-      <ActivityIndicator color="#2f9f89" size="large" />
-      <Text style={styles.stateText}>{label}</Text>
+      <ActivityIndicator color={colors.primary} size="large" />
+      <Text style={[styles.stateText, { color: colors.muted }]}>{label}</Text>
     </View>
   );
 }
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.errorPanel}>
-      <Text style={styles.errorTitle}>Something went wrong</Text>
-      <Text style={styles.errorText}>{message}</Text>
+    <View
+      style={[
+        styles.errorPanel,
+        {
+          backgroundColor: colors.dangerBackground,
+          borderColor: colors.dangerBorder,
+        },
+      ]}
+    >
+      <Text style={[styles.errorTitle, { color: colors.danger }]}>
+        Something went wrong
+      </Text>
+      <Text style={[styles.errorText, { color: colors.danger }]}>{message}</Text>
       {onRetry ? (
-        <Pressable accessibilityRole="button" onPress={onRetry} style={styles.button}>
-          <Text style={styles.buttonText}>Try again</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onRetry}
+          style={[styles.button, { backgroundColor: colors.primary }]}
+        >
+          <Text style={[styles.buttonText, { color: colors.textOnPrimary }]}>
+            Try again
+          </Text>
         </Pressable>
       ) : null}
     </View>
@@ -45,13 +67,26 @@ export function EmptyState({
   onAction,
   title,
 }: EmptyStateProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.emptyPanel}>
-      <Text style={styles.emptyTitle}>{title}</Text>
-      <Text style={styles.emptyText}>{message}</Text>
+    <View
+      style={[
+        styles.emptyPanel,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}
+    >
+      <Text style={[styles.emptyTitle, { color: colors.text }]}>{title}</Text>
+      <Text style={[styles.emptyText, { color: colors.muted }]}>{message}</Text>
       {actionLabel && onAction ? (
-        <Pressable accessibilityRole="button" onPress={onAction} style={styles.button}>
-          <Text style={styles.buttonText}>{actionLabel}</Text>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onAction}
+          style={[styles.button, { backgroundColor: colors.primary }]}
+        >
+          <Text style={[styles.buttonText, { color: colors.textOnPrimary }]}>
+            {actionLabel}
+          </Text>
         </Pressable>
       ) : null}
     </View>

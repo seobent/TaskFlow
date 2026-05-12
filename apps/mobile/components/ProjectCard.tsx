@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Project } from "@taskflow/shared";
 
 import { formatDisplayDate } from "./date-format";
+import { useTheme } from "@/lib/theme";
 
 type ProjectCardProps = {
   project: Project;
@@ -10,30 +11,50 @@ type ProjectCardProps = {
 };
 
 export function ProjectCard({ project, taskCount, onPress }: ProjectCardProps) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}
+      style={({ pressed }) => [
+        styles.card,
+        {
+          backgroundColor: pressed ? colors.primarySoft : colors.card,
+          borderColor: colors.border,
+          borderLeftColor: colors.primary,
+        },
+      ]}
     >
       <View style={styles.header}>
-        <Text numberOfLines={2} style={styles.title}>
+        <Text numberOfLines={2} style={[styles.title, { color: colors.text }]}>
           {project.name}
         </Text>
         {typeof taskCount === "number" ? (
-          <Text style={styles.count}>{taskCount}</Text>
+          <Text
+            style={[
+              styles.count,
+              { backgroundColor: colors.primarySoft, color: colors.mutedStrong },
+            ]}
+          >
+            {taskCount}
+          </Text>
         ) : null}
       </View>
 
       {project.description ? (
-        <Text numberOfLines={3} style={styles.description}>
+        <Text numberOfLines={3} style={[styles.description, { color: colors.muted }]}>
           {project.description}
         </Text>
       ) : (
-        <Text style={styles.description}>No description yet.</Text>
+        <Text style={[styles.description, { color: colors.muted }]}>
+          No description yet.
+        </Text>
       )}
 
-      <Text style={styles.meta}>Updated {formatDisplayDate(project.updatedAt)}</Text>
+      <Text style={[styles.meta, { color: colors.muted }]}>
+        Updated {formatDisplayDate(project.updatedAt)}
+      </Text>
     </Pressable>
   );
 }
@@ -49,9 +70,6 @@ const styles = StyleSheet.create({
     gap: 10,
     minHeight: 132,
     padding: 16,
-  },
-  cardPressed: {
-    backgroundColor: "#f1f8f6",
   },
   header: {
     alignItems: "flex-start",

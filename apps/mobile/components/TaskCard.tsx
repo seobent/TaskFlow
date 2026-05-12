@@ -3,6 +3,7 @@ import { Task } from "@taskflow/shared";
 
 import { PriorityBadge } from "./PriorityBadge";
 import { formatDisplayDate } from "./date-format";
+import { useTheme } from "@/lib/theme";
 
 type TaskCardProps = {
   task: Task;
@@ -10,36 +11,52 @@ type TaskCardProps = {
 };
 
 export function TaskCard({ task, onPress }: TaskCardProps) {
+  const { colors } = useTheme();
   const content = (
     <>
       <View style={styles.header}>
-        <Text numberOfLines={2} style={styles.title}>
+        <Text numberOfLines={2} style={[styles.title, { color: colors.text }]}>
           {task.title}
         </Text>
         <PriorityBadge priority={task.priority} />
       </View>
 
       {task.description ? (
-        <Text numberOfLines={2} style={styles.description}>
+        <Text numberOfLines={2} style={[styles.description, { color: colors.muted }]}>
           {task.description}
         </Text>
       ) : null}
 
-      <Text style={styles.meta}>
+      <Text style={[styles.meta, { color: colors.muted }]}>
         Due {task.dueDate ? formatDisplayDate(task.dueDate) : "No due date"}
       </Text>
     </>
   );
 
   if (!onPress) {
-    return <View style={styles.card}>{content}</View>;
+    return (
+      <View
+        style={[
+          styles.card,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        {content}
+      </View>
+    );
   }
 
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}
+      style={({ pressed }) => [
+        styles.card,
+        {
+          backgroundColor: pressed ? colors.primarySoft : colors.card,
+          borderColor: colors.border,
+        },
+      ]}
     >
       {content}
     </Pressable>
@@ -55,9 +72,6 @@ const styles = StyleSheet.create({
     gap: 10,
     minHeight: 112,
     padding: 14,
-  },
-  cardPressed: {
-    backgroundColor: "#f1f8f6",
   },
   header: {
     alignItems: "flex-start",

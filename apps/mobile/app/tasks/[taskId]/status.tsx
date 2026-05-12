@@ -6,10 +6,12 @@ import { Task, TaskStatus } from "@taskflow/shared";
 import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
 import { statusLabels } from "@/components/StatusSection";
 import { getProjectTasks, updateTask } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 const statuses = [TaskStatus.Todo, TaskStatus.InProgress, TaskStatus.Done];
 
 export default function EditTaskStatusScreen() {
+  const { colors } = useTheme();
   const { projectId, taskId } = useLocalSearchParams<{
     projectId?: string;
     taskId: string;
@@ -69,15 +71,32 @@ export default function EditTaskStatusScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Back</Text>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              {
+                backgroundColor: pressed
+                  ? colors.primarySoftPressed
+                  : colors.primarySoft,
+              },
+            ]}
+          >
+            <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
+              Back
+            </Text>
           </Pressable>
-          <Text style={styles.eyebrow}>Status</Text>
-          <Text style={styles.title}>Edit task status</Text>
-          {task ? <Text style={styles.subtitle}>{task.title}</Text> : null}
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>Status</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Edit task status</Text>
+          {task ? (
+            <Text style={[styles.subtitle, { color: colors.muted }]}>
+              {task.title}
+            </Text>
+          ) : null}
         </View>
 
         {isLoading ? (
@@ -94,13 +113,23 @@ export default function EditTaskStatusScreen() {
                   onPress={() => setSelectedStatus(status)}
                   style={[
                     styles.option,
-                    selectedStatus === status ? styles.optionActive : null,
+                    {
+                      backgroundColor:
+                        selectedStatus === status ? colors.primary : colors.card,
+                      borderColor:
+                        selectedStatus === status ? colors.primary : colors.border,
+                    },
                   ]}
                 >
                   <Text
                     style={[
                       styles.optionText,
-                      selectedStatus === status ? styles.optionTextActive : null,
+                      {
+                        color:
+                          selectedStatus === status
+                            ? colors.textOnPrimary
+                            : colors.text,
+                      },
                     ]}
                   >
                     {statusLabels[status]}
@@ -109,18 +138,33 @@ export default function EditTaskStatusScreen() {
               ))}
             </View>
 
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
+            {error ? (
+              <Text style={[styles.errorText, { color: colors.danger }]}>
+                {error}
+              </Text>
+            ) : null}
 
             <Pressable
               accessibilityRole="button"
               disabled={isSaving}
               onPress={handleSave}
-              style={[styles.primaryButton, isSaving ? styles.buttonDisabled : null]}
+              style={[
+                styles.primaryButton,
+                { backgroundColor: colors.primary },
+                isSaving ? styles.buttonDisabled : null,
+              ]}
             >
               {isSaving ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={colors.textOnPrimary} />
               ) : (
-                <Text style={styles.primaryButtonText}>Save status</Text>
+                <Text
+                  style={[
+                    styles.primaryButtonText,
+                    { color: colors.textOnPrimary },
+                  ]}
+                >
+                  Save status
+                </Text>
               )}
             </Pressable>
           </>

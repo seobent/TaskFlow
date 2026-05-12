@@ -6,10 +6,12 @@ import { Project, Task, TaskStatus } from "@taskflow/shared";
 import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
 import { StatusSection } from "@/components/StatusSection";
 import { getProject, getProjectTasks } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 const statuses = [TaskStatus.Todo, TaskStatus.InProgress, TaskStatus.Done];
 
 export default function ProjectDetailsScreen() {
+  const { colors } = useTheme();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -64,16 +66,33 @@ export default function ProjectDetailsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Back</Text>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              {
+                backgroundColor: pressed
+                  ? colors.primarySoftPressed
+                  : colors.primarySoft,
+              },
+            ]}
+          >
+            <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
+              Back
+            </Text>
           </Pressable>
-          <Text style={styles.eyebrow}>Project</Text>
-          <Text style={styles.title}>{project?.name ?? "Project details"}</Text>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>Project</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            {project?.name ?? "Project details"}
+          </Text>
           {project?.description ? (
-            <Text style={styles.subtitle}>{project.description}</Text>
+            <Text style={[styles.subtitle, { color: colors.muted }]}>
+              {project.description}
+            </Text>
           ) : null}
         </View>
 
@@ -92,9 +111,23 @@ export default function ProjectDetailsScreen() {
                     params: { projectId },
                   })
                 }
-                style={styles.primaryButton}
+                style={({ pressed }) => [
+                  styles.primaryButton,
+                  {
+                    backgroundColor: pressed
+                      ? colors.primaryPressed
+                      : colors.primary,
+                  },
+                ]}
               >
-                <Text style={styles.primaryButtonText}>Create task</Text>
+                <Text
+                  style={[
+                    styles.primaryButtonText,
+                    { color: colors.textOnPrimary },
+                  ]}
+                >
+                  Create task
+                </Text>
               </Pressable>
             </View>
 

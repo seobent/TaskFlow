@@ -2,6 +2,8 @@ import { TASKFLOW_APP_NAME } from "@taskflow/shared";
 import type { StyleProp, ViewStyle } from "react-native";
 import { StyleSheet, Text, View } from "react-native";
 
+import { useTheme } from "@/lib/theme";
+
 type TaskFlowLogoProps = {
   showText?: boolean;
   size?: "small" | "large";
@@ -13,6 +15,7 @@ export function TaskFlowLogo({
   size = "large",
   style,
 }: TaskFlowLogoProps) {
+  const { colors } = useTheme();
   const isLarge = size === "large";
   const markSize = isLarge ? 82 : 48;
   const barHeight = isLarge ? 22 : 13;
@@ -118,7 +121,12 @@ export function TaskFlowLogo({
         />
       </View>
       {showText ? (
-        <Text style={[styles.wordmark, { fontSize: isLarge ? 36 : 23 }]}>
+        <Text
+          style={[
+            styles.wordmark,
+            { color: colors.text, fontSize: isLarge ? 36 : 23 },
+          ]}
+        >
           {TASKFLOW_APP_NAME}
         </Text>
       ) : null}

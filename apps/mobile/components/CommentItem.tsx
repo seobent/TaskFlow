@@ -2,16 +2,28 @@ import { StyleSheet, Text, View } from "react-native";
 import { Comment } from "@taskflow/shared";
 
 import { formatDisplayDateTime } from "./date-format";
+import { useTheme } from "@/lib/theme";
 
 type CommentItemProps = {
   comment: Comment;
 };
 
 export function CommentItem({ comment }: CommentItemProps) {
+  const { colors } = useTheme();
+
   return (
-    <View style={styles.item}>
-      <Text style={styles.content}>{comment.content}</Text>
-      <Text style={styles.meta}>{formatDisplayDateTime(comment.createdAt)}</Text>
+    <View
+      style={[
+        styles.item,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}
+    >
+      <Text style={[styles.content, { color: colors.text }]}>
+        {comment.content}
+      </Text>
+      <Text style={[styles.meta, { color: colors.muted }]}>
+        {formatDisplayDateTime(comment.createdAt)}
+      </Text>
     </View>
   );
 }

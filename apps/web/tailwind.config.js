@@ -10,11 +10,11 @@ const config = {
   theme: {
     extend: {
       colors: {
-        ink: "#172033",
-        surface: "#f7f8fb",
-        mint: "#2f9f89",
-        amber: "#d48a2c",
-        berry: "#9f3f68",
+        ink: "rgb(var(--color-ink) / <alpha-value>)",
+        surface: "rgb(var(--color-surface) / <alpha-value>)",
+        mint: "rgb(var(--color-mint) / <alpha-value>)",
+        amber: "rgb(var(--color-amber) / <alpha-value>)",
+        berry: "rgb(var(--color-berry) / <alpha-value>)",
       },
     },
   },

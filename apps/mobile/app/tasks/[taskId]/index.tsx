@@ -25,8 +25,10 @@ import {
 } from "@/components/ScreenState";
 import { statusLabels } from "@/components/StatusSection";
 import { createComment, getProjectTasks, getTaskComments } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 export default function TaskDetailsScreen() {
+  const { colors } = useTheme();
   const { projectId, taskId } = useLocalSearchParams<{
     projectId?: string;
     taskId: string;
@@ -100,15 +102,30 @@ export default function TaskDetailsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Back</Text>
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.back()}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                {
+                  backgroundColor: pressed
+                    ? colors.primarySoftPressed
+                    : colors.primarySoft,
+                },
+              ]}
+            >
+              <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
+                Back
+              </Text>
             </Pressable>
-            <Text style={styles.eyebrow}>Task</Text>
-            <Text style={styles.title}>{task?.title ?? "Task details"}</Text>
+            <Text style={[styles.eyebrow, { color: colors.primary }]}>Task</Text>
+            <Text style={[styles.title, { color: colors.text }]}>
+              {task?.title ?? "Task details"}
+            </Text>
           </View>
 
           {isLoading ? (
@@ -117,18 +134,29 @@ export default function TaskDetailsScreen() {
             <ErrorState message={error} onRetry={loadTask} />
           ) : task ? (
             <>
-              <View style={styles.panel}>
+              <View
+                style={[
+                  styles.panel,
+                  { backgroundColor: colors.card, borderColor: colors.border },
+                ]}
+              >
                 <View style={styles.row}>
                   <PriorityBadge priority={task.priority} />
-                  <Text style={styles.status}>{statusLabels[task.status]}</Text>
+                  <Text style={[styles.status, { color: colors.text }]}>
+                    {statusLabels[task.status]}
+                  </Text>
                 </View>
-                <Text style={styles.meta}>
+                <Text style={[styles.meta, { color: colors.muted }]}>
                   Due {task.dueDate ? formatDisplayDate(task.dueDate) : "No due date"}
                 </Text>
                 {task.description ? (
-                  <Text style={styles.description}>{task.description}</Text>
+                  <Text style={[styles.description, { color: colors.muted }]}>
+                    {task.description}
+                  </Text>
                 ) : (
-                  <Text style={styles.description}>No description yet.</Text>
+                  <Text style={[styles.description, { color: colors.muted }]}>
+                    No description yet.
+                  </Text>
                 )}
                 <Pressable
                   accessibilityRole="button"
@@ -138,15 +166,41 @@ export default function TaskDetailsScreen() {
                       params: { projectId, taskId },
                     })
                   }
-                  style={styles.primaryButton}
+                  style={({ pressed }) => [
+                    styles.primaryButton,
+                    {
+                      backgroundColor: pressed
+                        ? colors.primaryPressed
+                        : colors.primary,
+                    },
+                  ]}
                 >
-                  <Text style={styles.primaryButtonText}>Edit status</Text>
+                  <Text
+                    style={[
+                      styles.primaryButtonText,
+                      { color: colors.textOnPrimary },
+                    ]}
+                  >
+                    Edit status
+                  </Text>
                 </Pressable>
               </View>
 
               <View style={styles.commentsHeader}>
-                <Text style={styles.sectionTitle}>Comments</Text>
-                <Text style={styles.commentCount}>{comments.length}</Text>
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  Comments
+                </Text>
+                <Text
+                  style={[
+                    styles.commentCount,
+                    {
+                      backgroundColor: colors.primarySoft,
+                      color: colors.mutedStrong,
+                    },
+                  ]}
+                >
+                  {comments.length}
+                </Text>
               </View>
 
               <View style={styles.commentForm}>
@@ -154,27 +208,46 @@ export default function TaskDetailsScreen() {
                   multiline
                   onChangeText={setCommentContent}
                   placeholder="Add a comment"
-                  placeholderTextColor="#8c95a8"
-                  style={styles.commentInput}
+                  placeholderTextColor={colors.muted}
+                  style={[
+                    styles.commentInput,
+                    {
+                      backgroundColor: colors.input,
+                      borderColor: colors.border,
+                      color: colors.text,
+                    },
+                  ]}
                   textAlignVertical="top"
                   value={commentContent}
                 />
-                {commentError ? <Text style={styles.errorText}>{commentError}</Text> : null}
+                {commentError ? (
+                  <Text style={[styles.errorText, { color: colors.danger }]}>
+                    {commentError}
+                  </Text>
+                ) : null}
                 <Pressable
                   accessibilityRole="button"
                   disabled={commentContent.trim().length === 0 || isAddingComment}
                   onPress={handleAddComment}
                   style={[
                     styles.primaryButton,
+                    { backgroundColor: colors.primary },
                     commentContent.trim().length === 0 || isAddingComment
                       ? styles.buttonDisabled
                       : null,
                   ]}
                 >
                   {isAddingComment ? (
-                    <ActivityIndicator color="#ffffff" />
+                    <ActivityIndicator color={colors.textOnPrimary} />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Add comment</Text>
+                    <Text
+                      style={[
+                        styles.primaryButtonText,
+                        { color: colors.textOnPrimary },
+                      ]}
+                    >
+                      Add comment
+                    </Text>
                   )}
                 </Pressable>
               </View>

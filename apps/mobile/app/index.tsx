@@ -4,8 +4,10 @@ import { router } from "expo-router";
 import { TASKFLOW_APP_NAME } from "@taskflow/shared";
 
 import { getAuthToken } from "@/lib/auth-storage";
+import { useTheme } from "@/lib/theme";
 
 export default function IndexScreen() {
+  const { colors } = useTheme();
   useEffect(() => {
     let isMounted = true;
 
@@ -27,9 +29,11 @@ export default function IndexScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <Text style={styles.title}>{TASKFLOW_APP_NAME}</Text>
-      <ActivityIndicator color="#2f9f89" size="large" />
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.text }]}>
+        {TASKFLOW_APP_NAME}
+      </Text>
+      <ActivityIndicator color={colors.primary} size="large" />
     </SafeAreaView>
   );
 }

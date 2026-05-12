@@ -11,8 +11,10 @@ import {
   readErrorMessage,
 } from "@/components/ScreenState";
 import { getProjects } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 export default function ProjectsScreen() {
+  const { colors } = useTheme();
   const [projects, setProjects] = useState<Project[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,14 +43,29 @@ export default function ProjectsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
-          <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.secondaryButton}>
-            <Text style={styles.secondaryButtonText}>Back</Text>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.back()}
+            style={({ pressed }) => [
+              styles.secondaryButton,
+              {
+                backgroundColor: pressed
+                  ? colors.primarySoftPressed
+                  : colors.primarySoft,
+              },
+            ]}
+          >
+            <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
+              Back
+            </Text>
           </Pressable>
-          <Text style={styles.eyebrow}>Projects</Text>
-          <Text style={styles.title}>Workspace projects</Text>
+          <Text style={[styles.eyebrow, { color: colors.primary }]}>Projects</Text>
+          <Text style={[styles.title, { color: colors.text }]}>
+            Workspace projects
+          </Text>
         </View>
 
         {isLoading ? (

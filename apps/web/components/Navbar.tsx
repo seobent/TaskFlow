@@ -8,6 +8,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { TaskFlowLogo } from "@/components/TaskFlowLogo";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 type NavbarProps = {
   user: SafeUser;
@@ -72,6 +73,7 @@ export function Navbar({ user }: NavbarProps) {
           >
             Logout
           </Button>
+          <ThemeToggle />
         </div>
       </div>
       {error ? (

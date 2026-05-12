@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Task, TaskStatus } from "@taskflow/shared";
 
 import { TaskCard } from "./TaskCard";
+import { useTheme } from "@/lib/theme";
 
 type StatusSectionProps = {
   status: TaskStatus;
@@ -20,11 +21,22 @@ export function StatusSection({
   tasks,
   onTaskPress,
 }: StatusSectionProps) {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.section}>
       <View style={styles.header}>
-        <Text style={styles.title}>{statusLabels[status]}</Text>
-        <Text style={styles.count}>{tasks.length}</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          {statusLabels[status]}
+        </Text>
+        <Text
+          style={[
+            styles.count,
+            { backgroundColor: colors.primarySoft, color: colors.mutedStrong },
+          ]}
+        >
+          {tasks.length}
+        </Text>
       </View>
 
       {tasks.length > 0 ? (
@@ -38,7 +50,18 @@ export function StatusSection({
           ))}
         </View>
       ) : (
-        <Text style={styles.empty}>No tasks here yet.</Text>
+        <Text
+          style={[
+            styles.empty,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+              color: colors.muted,
+            },
+          ]}
+        >
+          No tasks here yet.
+        </Text>
       )}
     </View>
   );

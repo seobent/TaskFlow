@@ -16,6 +16,7 @@ import { TaskPriority, TaskStatus } from "@taskflow/shared";
 
 import { readErrorMessage } from "@/components/ScreenState";
 import { createTask } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 const priorities = [TaskPriority.Low, TaskPriority.Medium, TaskPriority.High];
 const priorityLabels = {
@@ -25,6 +26,7 @@ const priorityLabels = {
 };
 
 export default function CreateTaskScreen() {
+  const { colors } = useTheme();
   const { projectId } = useLocalSearchParams<{ projectId: string }>();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -62,44 +64,72 @@ export default function CreateTaskScreen() {
   const formIsReady = title.trim().length > 0 && dueDateIsValid && !isSaving;
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <View style={styles.header}>
-            <Pressable accessibilityRole="button" onPress={() => router.back()} style={styles.secondaryButton}>
-              <Text style={styles.secondaryButtonText}>Back</Text>
+          <View style={[styles.header, { borderBottomColor: colors.border }]}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.back()}
+              style={({ pressed }) => [
+                styles.secondaryButton,
+                {
+                  backgroundColor: pressed
+                    ? colors.primarySoftPressed
+                    : colors.primarySoft,
+                },
+              ]}
+            >
+              <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
+                Back
+              </Text>
             </Pressable>
-            <Text style={styles.eyebrow}>New task</Text>
-            <Text style={styles.title}>Create task</Text>
+            <Text style={[styles.eyebrow, { color: colors.primary }]}>New task</Text>
+            <Text style={[styles.title, { color: colors.text }]}>Create task</Text>
           </View>
 
           <View style={styles.form}>
             <View style={styles.field}>
-              <Text style={styles.label}>Title</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Title</Text>
               <TextInput
                 onChangeText={setTitle}
                 placeholder="Write task title"
-                placeholderTextColor="#8c95a8"
-                style={styles.input}
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.input,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
                 value={title}
               />
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Description</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Description</Text>
               <TextInput
                 multiline
                 onChangeText={setDescription}
                 placeholder="Add helpful context"
-                placeholderTextColor="#8c95a8"
-                style={[styles.input, styles.textArea]}
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.input,
+                  styles.textArea,
+                  {
+                    backgroundColor: colors.input,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
                 textAlignVertical="top"
                 value={description}
               />
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Priority</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Priority</Text>
               <View style={styles.segmentedControl}>
                 {priorities.map((nextPriority) => (
                   <Pressable
@@ -108,13 +138,23 @@ export default function CreateTaskScreen() {
                     onPress={() => setPriority(nextPriority)}
                     style={[
                       styles.segment,
-                      priority === nextPriority ? styles.segmentActive : null,
+                      {
+                        backgroundColor:
+                          priority === nextPriority ? colors.primary : colors.card,
+                        borderColor:
+                          priority === nextPriority ? colors.primary : colors.border,
+                      },
                     ]}
                   >
                     <Text
                       style={[
                         styles.segmentText,
-                        priority === nextPriority ? styles.segmentTextActive : null,
+                        {
+                          color:
+                            priority === nextPriority
+                              ? colors.textOnPrimary
+                              : colors.muted,
+                        },
                       ]}
                     >
                       {priorityLabels[nextPriority]}
@@ -125,32 +165,65 @@ export default function CreateTaskScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Due date</Text>
+              <Text style={[styles.label, { color: colors.text }]}>Due date</Text>
               <TextInput
                 autoCapitalize="none"
                 onChangeText={setDueDate}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#8c95a8"
-                style={styles.input}
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: colors.input,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
                 value={dueDate}
               />
               {!dueDateIsValid ? (
-                <Text style={styles.fieldError}>Enter a readable date or leave it blank.</Text>
+                <Text style={[styles.fieldError, { color: colors.danger }]}>
+                  Enter a readable date or leave it blank.
+                </Text>
               ) : null}
             </View>
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? (
+              <Text
+                style={[
+                  styles.error,
+                  {
+                    backgroundColor: colors.dangerBackground,
+                    borderColor: colors.dangerBorder,
+                    color: colors.danger,
+                  },
+                ]}
+              >
+                {error}
+              </Text>
+            ) : null}
 
             <Pressable
               accessibilityRole="button"
               disabled={!formIsReady}
               onPress={handleCreateTask}
-              style={[styles.primaryButton, !formIsReady ? styles.buttonDisabled : null]}
+              style={[
+                styles.primaryButton,
+                { backgroundColor: colors.primary },
+                !formIsReady ? styles.buttonDisabled : null,
+              ]}
             >
               {isSaving ? (
-                <ActivityIndicator color="#ffffff" />
+                <ActivityIndicator color={colors.textOnPrimary} />
               ) : (
-                <Text style={styles.primaryButtonText}>Create task</Text>
+                <Text
+                  style={[
+                    styles.primaryButtonText,
+                    { color: colors.textOnPrimary },
+                  ]}
+                >
+                  Create task
+                </Text>
               )}
             </Pressable>
           </View>

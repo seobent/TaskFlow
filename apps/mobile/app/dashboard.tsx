@@ -12,6 +12,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Project, SafeUser, Task, TaskStatus } from "@taskflow/shared";
 
 import { TaskFlowLogo } from "@/components/TaskFlowLogo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ProjectCard } from "@/components/ProjectCard";
 import {
   EmptyState,
@@ -20,8 +21,10 @@ import {
   readErrorMessage,
 } from "@/components/ScreenState";
 import { getCurrentUser, getProjects, getProjectTasks, logout } from "@/lib/api";
+import { useTheme } from "@/lib/theme";
 
 export default function DashboardScreen() {
+  const { colors } = useTheme();
   const [user, setUser] = useState<SafeUser | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -82,31 +85,47 @@ export default function DashboardScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <View style={styles.headerText}>
-            <Text style={styles.eyebrow}>Dashboard</Text>
+            <Text style={[styles.eyebrow, { color: colors.primary }]}>
+              Dashboard
+            </Text>
             <TaskFlowLogo size="small" style={styles.logo} />
-            {user ? <Text style={styles.subtitle}>Signed in as {user.name}</Text> : null}
+            {user ? (
+              <Text style={[styles.subtitle, { color: colors.muted }]}>
+                Signed in as {user.name}
+              </Text>
+            ) : null}
           </View>
 
-          <Pressable
-            accessibilityRole="button"
-            disabled={isLoggingOut}
-            onPress={handleLogout}
-            style={({ pressed }) => [
-              styles.logoutButton,
-              isLoggingOut ? styles.buttonDisabled : null,
-              pressed && !isLoggingOut ? styles.logoutButtonPressed : null,
-            ]}
-          >
-            {isLoggingOut ? (
-              <ActivityIndicator color="#2f7368" />
-            ) : (
-              <Text style={styles.logoutText}>Logout</Text>
-            )}
-          </Pressable>
+          <View style={styles.headerActions}>
+            <Pressable
+              accessibilityRole="button"
+              disabled={isLoggingOut}
+              onPress={handleLogout}
+              style={({ pressed }) => [
+                styles.logoutButton,
+                {
+                  backgroundColor: pressed
+                    ? colors.primarySoftPressed
+                    : colors.primarySoft,
+                  borderColor: colors.border,
+                },
+                isLoggingOut ? styles.buttonDisabled : null,
+              ]}
+            >
+              {isLoggingOut ? (
+                <ActivityIndicator color={colors.mutedStrong} />
+              ) : (
+                <Text style={[styles.logoutText, { color: colors.mutedStrong }]}>
+                  Logout
+                </Text>
+              )}
+            </Pressable>
+            <ThemeToggle compact />
+          </View>
         </View>
 
         {isLoading ? (
@@ -116,32 +135,100 @@ export default function DashboardScreen() {
         ) : (
           <>
             <View style={styles.grid}>
-              <View style={styles.tile}>
-                <Text style={styles.tileValue}>{projects.length}</Text>
-                <Text style={styles.tileLabel}>Projects</Text>
+              <View
+                style={[
+                  styles.tile,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    borderLeftColor: colors.primary,
+                  },
+                ]}
+              >
+                <Text style={[styles.tileValue, { color: colors.text }]}>
+                  {projects.length}
+                </Text>
+                <Text style={[styles.tileLabel, { color: colors.muted }]}>
+                  Projects
+                </Text>
               </View>
-              <View style={styles.tile}>
-                <Text style={styles.tileValue}>{taskCounts.todo}</Text>
-                <Text style={styles.tileLabel}>To Do</Text>
+              <View
+                style={[
+                  styles.tile,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    borderLeftColor: colors.primary,
+                  },
+                ]}
+              >
+                <Text style={[styles.tileValue, { color: colors.text }]}>
+                  {taskCounts.todo}
+                </Text>
+                <Text style={[styles.tileLabel, { color: colors.muted }]}>
+                  To Do
+                </Text>
               </View>
-              <View style={styles.tile}>
-                <Text style={styles.tileValue}>{taskCounts.inProgress}</Text>
-                <Text style={styles.tileLabel}>In Progress</Text>
+              <View
+                style={[
+                  styles.tile,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    borderLeftColor: colors.primary,
+                  },
+                ]}
+              >
+                <Text style={[styles.tileValue, { color: colors.text }]}>
+                  {taskCounts.inProgress}
+                </Text>
+                <Text style={[styles.tileLabel, { color: colors.muted }]}>
+                  In Progress
+                </Text>
               </View>
-              <View style={styles.tile}>
-                <Text style={styles.tileValue}>{taskCounts.done}</Text>
-                <Text style={styles.tileLabel}>Done</Text>
+              <View
+                style={[
+                  styles.tile,
+                  {
+                    backgroundColor: colors.card,
+                    borderColor: colors.border,
+                    borderLeftColor: colors.primary,
+                  },
+                ]}
+              >
+                <Text style={[styles.tileValue, { color: colors.text }]}>
+                  {taskCounts.done}
+                </Text>
+                <Text style={[styles.tileLabel, { color: colors.muted }]}>
+                  Done
+                </Text>
               </View>
             </View>
 
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent projects</Text>
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                Recent projects
+              </Text>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => router.push("/projects")}
-                style={styles.secondaryButton}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  {
+                    backgroundColor: pressed
+                      ? colors.primarySoftPressed
+                      : colors.primarySoft,
+                  },
+                ]}
               >
-                <Text style={styles.secondaryButtonText}>View all</Text>
+                <Text
+                  style={[
+                    styles.secondaryButtonText,
+                    { color: colors.mutedStrong },
+                  ]}
+                >
+                  View all
+                </Text>
               </Pressable>
             </View>
 
@@ -190,6 +277,11 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
+  },
+  headerActions: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
   },
   eyebrow: {
     color: "#2f9f89",

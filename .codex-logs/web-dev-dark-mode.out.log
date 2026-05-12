@@ -1,0 +1,15 @@
+
+> taskflow@0.1.0 dev:web
+> npm run dev -w @taskflow/web
+
+
+> @taskflow/web@0.1.0 dev
+> next dev -H 0.0.0.0
+
+   ▲ Next.js 15.5.15
+   - Local:        http://localhost:3002
+   - Network:      http://0.0.0.0:3002
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1475ms

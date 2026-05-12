@@ -2,6 +2,7 @@ import { TASKFLOW_APP_NAME, TaskPriority, TaskStatus } from "@taskflow/shared";
 import Link from "next/link";
 
 import { TaskFlowLogo } from "@/components/TaskFlowLogo";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 const workspaceStats = [
   {
@@ -142,6 +143,7 @@ export default function Home() {
             >
               Create account
             </Link>
+            <ThemeToggle />
           </nav>
         </header>
 
