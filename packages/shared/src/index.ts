@@ -126,6 +126,10 @@ export const dueDateSchema = z.string().trim().datetime({ offset: true }).max(40
 
 export const userRoleSchema = z.nativeEnum(UserRole);
 export const projectMemberRoleSchema = z.nativeEnum(ProjectMemberRole);
+export const assignableProjectMemberRoleSchema = z.enum([
+  ProjectMemberRole.Manager,
+  ProjectMemberRole.Member
+]);
 export const taskStatusSchema = z.nativeEnum(TaskStatus);
 export const taskPrioritySchema = z.nativeEnum(TaskPriority);
 export const taskAssigneeIdSchema = idSchema.uuid("Invalid assignee id.");
@@ -151,6 +155,15 @@ export const updateProjectInputSchema = createProjectInputSchema
   .refine(hasAtLeastOneDefinedValue, {
     message: "At least one project field is required."
   });
+
+export const assignProjectMemberSchema = z.object({
+  userId: idSchema.uuid("Invalid user id."),
+  role: assignableProjectMemberRoleSchema.default(ProjectMemberRole.Member)
+});
+
+export const updateProjectMemberSchema = z.object({
+  role: assignableProjectMemberRoleSchema
+});
 
 export const createTaskInputSchema = z.object({
   title: taskTitleSchema,
@@ -186,6 +199,8 @@ export type RegisterInput = z.infer<typeof registerInputSchema>;
 export type LoginInput = z.infer<typeof loginInputSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectInputSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectInputSchema>;
+export type AssignProjectMemberInput = z.infer<typeof assignProjectMemberSchema>;
+export type UpdateProjectMemberInput = z.infer<typeof updateProjectMemberSchema>;
 export type CreateTaskInput = z.infer<typeof createTaskInputSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskInputSchema>;
 export type CreateCommentInput = z.infer<typeof createCommentInputSchema>;
