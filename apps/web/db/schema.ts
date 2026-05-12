@@ -1,12 +1,16 @@
 import {
+  check,
   index,
   integer,
   pgTable,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const users = pgTable(
   "users",
@@ -39,16 +43,34 @@ export const projectMembers = pgTable(
   "project_members",
   {
     id: uuid("id").defaultRandom().primaryKey(),
-    projectId: uuid("project_id").references(() => projects.id, {
-      onDelete: "cascade",
-    }),
-    userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
-    role: text("role").notNull().default("member"),
-    createdAt: timestamp("created_at").defaultNow(),
+    projectId: uuid("project_id")
+      .notNull()
+      .references(() => projects.id, {
+        onDelete: "cascade",
+      }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    role: varchar("role", {
+      length: 24,
+      enum: ["owner", "manager", "member"],
+    })
+      .notNull()
+      .default("member"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => [
     index("project_members_project_id_idx").on(table.projectId),
     index("project_members_user_id_idx").on(table.userId),
+    unique("project_members_project_id_user_id_unique").on(
+      table.projectId,
+      table.userId,
+    ),
+    check(
+      "project_members_role_check",
+      sql`${table.role} in ('owner', 'manager', 'member')`,
+    ),
   ],
 );
 

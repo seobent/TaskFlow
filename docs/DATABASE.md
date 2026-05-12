@@ -49,10 +49,11 @@ Stores user access to projects.
 | Column | Type | Notes |
 | --- | --- | --- |
 | `id` | `uuid` | Primary key, default `gen_random_uuid()`. |
-| `project_id` | `uuid` | Foreign key to `projects.id`, cascades on project deletion. |
-| `user_id` | `uuid` | Foreign key to `users.id`, cascades on user deletion. |
-| `role` | `text` | Required application enum value, default `member`. |
-| `created_at` | `timestamp` | Defaults to `now()`. |
+| `project_id` | `uuid` | Required foreign key to `projects.id`, cascades on project deletion. |
+| `user_id` | `uuid` | Required foreign key to `users.id`, cascades on user deletion. |
+| `role` | `varchar(24)` | Required role value, default `member`. Allowed values are `owner`, `manager`, and `member`. |
+| `created_at` | `timestamp` | Required, defaults to `now()`. |
+| `updated_at` | `timestamp` | Required, defaults to `now()`. Updated by application code. |
 
 ### `tasks`
 
@@ -118,14 +119,16 @@ Cascade behavior:
 - Deleting a task cascades to its comments and attachment metadata.
 - Deleting a user cascades project membership records, but does not cascade owned projects, assigned tasks, created tasks, comments, or attachment metadata.
 
-## Indexes
+## Indexes And Constraints
 
-| Index | Table | Columns | Purpose |
+| Index/Constraint | Table | Columns | Purpose |
 | --- | --- | --- | --- |
 | `users_email_idx` | `users` | `email` | Unique login and registration lookup. |
 | `projects_owner_id_idx` | `projects` | `owner_id` | Project ownership and authorization checks. |
 | `project_members_project_id_idx` | `project_members` | `project_id` | Project member lookup. |
 | `project_members_user_id_idx` | `project_members` | `user_id` | User project list and authorization checks. |
+| `project_members_project_id_user_id_unique` | `project_members` | `project_id`, `user_id` | Prevents assigning the same user to a project more than once. |
+| `project_members_role_check` | `project_members` | `role` | Restricts member roles to `owner`, `manager`, and `member`. |
 | `tasks_project_id_idx` | `tasks` | `project_id` | Task board and project task list queries. |
 | `tasks_assignee_id_idx` | `tasks` | `assignee_id` | Assignment-based filtering and checks. |
 | `tasks_status_idx` | `tasks` | `status` | Status grouping for boards and admin stats. |
@@ -134,7 +137,7 @@ Cascade behavior:
 
 ## Enums
 
-The current schema stores enum-like values as `text` columns and validates them at the application layer through `packages/shared`.
+Most enum-like values are stored as `text` columns and validated at the application layer through `packages/shared`. Project member roles are stored as `varchar(24)` and also enforced with a database check constraint.
 
 ### User roles
 
@@ -146,6 +149,7 @@ admin
 ### Project member roles
 
 ```text
+owner
 member
 manager
 ```
@@ -204,8 +208,9 @@ erDiagram
     uuid id PK
     uuid project_id FK
     uuid user_id FK
-    text role
+    varchar role
     timestamp created_at
+    timestamp updated_at
   }
 
   TASKS {

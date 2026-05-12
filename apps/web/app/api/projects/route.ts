@@ -94,7 +94,7 @@ export async function POST(request: Request) {
       await tx.insert(projectMembers).values({
         projectId: createdProject.id,
         userId: user.id,
-        role: ProjectMemberRole.Manager,
+        role: ProjectMemberRole.Owner,
       });
 
       return createdProject;

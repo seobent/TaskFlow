@@ -271,7 +271,7 @@ Response `201 Created`:
 }
 ```
 
-The API also adds the creator to `project_members` with role `manager`.
+The API also adds the creator to `project_members` with role `owner`.
 
 ### Get, Update, And Delete Project
 

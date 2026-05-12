@@ -18,6 +18,7 @@ export enum UserRole {
 }
 
 export enum ProjectMemberRole {
+  Owner = "owner",
   Member = "member",
   Manager = "manager"
 }

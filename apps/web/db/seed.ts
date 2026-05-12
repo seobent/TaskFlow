@@ -169,6 +169,7 @@ async function upsertProjectMember(
       userId,
       role,
       createdAt: seedTimestamp,
+      updatedAt: seedTimestamp,
     })
     .onConflictDoUpdate({
       target: projectMembers.id,
@@ -176,6 +177,7 @@ async function upsertProjectMember(
         projectId,
         userId,
         role,
+        updatedAt: seedTimestamp,
       },
     });
 }
@@ -207,7 +209,7 @@ async function main() {
       seedIds.memberships.platformAdmin,
       seedIds.projects.platform,
       adminId,
-      ProjectMemberRole.Manager,
+      ProjectMemberRole.Owner,
     ),
     upsertProjectMember(
       db,
@@ -228,7 +230,7 @@ async function main() {
       seedIds.memberships.mobileDemo,
       seedIds.projects.mobile,
       demoUserId,
-      ProjectMemberRole.Manager,
+      ProjectMemberRole.Owner,
     ),
   ]);
 
