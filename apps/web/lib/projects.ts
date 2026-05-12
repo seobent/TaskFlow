@@ -37,9 +37,23 @@ export async function findProjectAccess(
   projectId: string,
   user: SafeUser,
 ): Promise<ProjectAccess> {
-  const project = await db.query.projects.findFirst({
-    where: eq(projects.id, projectId),
-  });
+  const [accessRecord] = await db
+    .select({
+      project: projects,
+      membershipId: projectMembers.id,
+    })
+    .from(projects)
+    .leftJoin(
+      projectMembers,
+      and(
+        eq(projectMembers.projectId, projects.id),
+        eq(projectMembers.userId, user.id),
+      ),
+    )
+    .where(eq(projects.id, projectId))
+    .limit(1);
+
+  const project = accessRecord?.project ?? null;
 
   if (!project) {
     return {
@@ -67,19 +81,9 @@ export async function findProjectAccess(
     };
   }
 
-  const membership = await db.query.projectMembers.findFirst({
-    columns: {
-      id: true,
-    },
-    where: and(
-      eq(projectMembers.projectId, projectId),
-      eq(projectMembers.userId, user.id),
-    ),
-  });
-
   return {
     project,
-    canView: Boolean(membership),
+    canView: Boolean(accessRecord.membershipId),
     canManage: false,
   };
 }

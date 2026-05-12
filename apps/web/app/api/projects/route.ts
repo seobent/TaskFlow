@@ -3,7 +3,7 @@ import {
   ProjectMemberRole,
   UserRole,
 } from "@taskflow/shared";
-import { and, desc, eq, or } from "drizzle-orm";
+import { and, desc, eq, exists, or } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
@@ -34,17 +34,23 @@ export async function GET(request: Request) {
             .from(projects)
             .orderBy(desc(projects.updatedAt), desc(projects.createdAt))
         : await db
-            .selectDistinct(projectSelection)
+            .select(projectSelection)
             .from(projects)
-            .leftJoin(
-              projectMembers,
-              and(
-                eq(projectMembers.projectId, projects.id),
-                eq(projectMembers.userId, user.id),
-              ),
-            )
             .where(
-              or(eq(projects.ownerId, user.id), eq(projectMembers.userId, user.id)),
+              or(
+                eq(projects.ownerId, user.id),
+                exists(
+                  db
+                    .select({ id: projectMembers.id })
+                    .from(projectMembers)
+                    .where(
+                      and(
+                        eq(projectMembers.projectId, projects.id),
+                        eq(projectMembers.userId, user.id),
+                      ),
+                    ),
+                ),
+              ),
             )
             .orderBy(desc(projects.updatedAt), desc(projects.createdAt));
 
