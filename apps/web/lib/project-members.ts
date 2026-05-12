@@ -3,11 +3,10 @@ import {
   type ProjectMember,
   projectMemberRoleSchema,
   type SafeUser,
-  UserRole,
 } from "@taskflow/shared";
-import { and, eq } from "drizzle-orm";
 
-import { db, schema } from "@/db";
+import { schema } from "@/db";
+import { getProjectAuthorization } from "@/lib/authorization";
 import { sanitizeUser } from "@/lib/auth";
 
 const { projectMembers, projects, users } = schema;
@@ -54,9 +53,8 @@ export async function findProjectMemberAccess(
   projectId: string,
   user: SafeUser,
 ): Promise<ProjectMemberAccess> {
-  const project = await db.query.projects.findFirst({
-    where: eq(projects.id, projectId),
-  });
+  const authorization = await getProjectAuthorization(user, projectId);
+  const project = authorization.project;
 
   if (!project) {
     return {
@@ -66,30 +64,10 @@ export async function findProjectMemberAccess(
     };
   }
 
-  const canManage = user.role === UserRole.Admin || project.ownerId === user.id;
-
-  if (canManage) {
-    return {
-      project,
-      canList: true,
-      canManage: true,
-    };
-  }
-
-  const membership = await db.query.projectMembers.findFirst({
-    columns: {
-      id: true,
-    },
-    where: and(
-      eq(projectMembers.projectId, projectId),
-      eq(projectMembers.userId, user.id),
-    ),
-  });
-
   return {
     project,
-    canList: Boolean(membership),
-    canManage: false,
+    canList: authorization.canAccess,
+    canManage: authorization.canManageMembers,
   };
 }
 

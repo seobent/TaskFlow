@@ -4,13 +4,16 @@ import {
   type Task,
   taskPrioritySchema,
   taskStatusSchema,
-  UserRole,
 } from "@taskflow/shared";
-import { and, eq } from "drizzle-orm";
 
-import { db, schema } from "@/db";
+import { schema } from "@/db";
+import {
+  getProjectAuthorization,
+  getTaskAuthorization,
+  isProjectParticipant,
+} from "@/lib/authorization";
 
-const { projectMembers, projects, tasks } = schema;
+const { projects, tasks } = schema;
 
 export type TaskRecord = typeof tasks.$inferSelect;
 export type ProjectRecord = typeof projects.$inferSelect;
@@ -58,23 +61,8 @@ export async function findProjectTaskAccess(
   projectId: string,
   user: SafeUser,
 ): Promise<ProjectTaskAccess> {
-  const [accessRecord] = await db
-    .select({
-      project: projects,
-      membershipId: projectMembers.id,
-    })
-    .from(projects)
-    .leftJoin(
-      projectMembers,
-      and(
-        eq(projectMembers.projectId, projects.id),
-        eq(projectMembers.userId, user.id),
-      ),
-    )
-    .where(eq(projects.id, projectId))
-    .limit(1);
-
-  const project = accessRecord?.project ?? null;
+  const authorization = await getProjectAuthorization(user, projectId);
+  const project = authorization.project;
 
   if (!project) {
     return {
@@ -84,13 +72,10 @@ export async function findProjectTaskAccess(
     };
   }
 
-  const isProjectParticipant =
-    project.ownerId === user.id || Boolean(accessRecord.membershipId);
-
   return {
     project,
-    isProjectParticipant,
-    canAccess: user.role === UserRole.Admin || isProjectParticipant,
+    isProjectParticipant: authorization.isProjectParticipant,
+    canAccess: authorization.canAccess,
   };
 }
 
@@ -98,25 +83,8 @@ export async function findTaskAccess(
   taskId: string,
   user: SafeUser,
 ): Promise<TaskAccess> {
-  const [accessRecord] = await db
-    .select({
-      task: tasks,
-      project: projects,
-      membershipId: projectMembers.id,
-    })
-    .from(tasks)
-    .leftJoin(projects, eq(tasks.projectId, projects.id))
-    .leftJoin(
-      projectMembers,
-      and(
-        eq(projectMembers.projectId, projects.id),
-        eq(projectMembers.userId, user.id),
-      ),
-    )
-    .where(eq(tasks.id, taskId))
-    .limit(1);
-
-  const task = accessRecord?.task ?? null;
+  const authorization = await getTaskAuthorization(user, taskId);
+  const task = authorization.task;
 
   if (!task) {
     return {
@@ -129,44 +97,17 @@ export async function findTaskAccess(
     };
   }
 
-  const project = accessRecord.project ?? null;
-  const isAdmin = user.role === UserRole.Admin;
-  const isProjectOwner = project?.ownerId === user.id;
-  const isParticipant = Boolean(
-    project && (isProjectOwner || accessRecord.membershipId),
-  );
-  const canAccessProjectTask = Boolean(project && (isAdmin || isParticipant));
-
   return {
     task,
-    project: project ?? null,
-    isProjectParticipant: isParticipant,
-    canView: canAccessProjectTask,
-    canUpdate: canAccessProjectTask,
-    canDelete: canAccessProjectTask,
+    project: authorization.project,
+    isProjectParticipant: authorization.isProjectParticipant,
+    canView: authorization.canAccess,
+    canUpdate: authorization.canAccess,
+    canDelete: authorization.canAccess,
   };
 }
 
-export async function isProjectParticipant(
-  project: ProjectRecord,
-  userId: string,
-) {
-  if (project.ownerId === userId) {
-    return true;
-  }
-
-  const membership = await db.query.projectMembers.findFirst({
-    columns: {
-      id: true,
-    },
-    where: and(
-      eq(projectMembers.projectId, project.id),
-      eq(projectMembers.userId, userId),
-    ),
-  });
-
-  return Boolean(membership);
-}
+export { isProjectParticipant };
 
 function serializeNullableTimestamp(value: Date | string | null) {
   return value ? serializeTimestamp(value, "Task timestamp is invalid.") : null;

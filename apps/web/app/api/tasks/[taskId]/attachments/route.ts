@@ -1,4 +1,4 @@
-import { idSchema, UserRole } from "@taskflow/shared";
+import { idSchema } from "@taskflow/shared";
 import { desc, eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
@@ -42,7 +42,7 @@ export async function GET(
       return apiError("Task not found.", 404);
     }
 
-    if (!canAccessAttachments(access, user.role)) {
+    if (!canAccessAttachments(access)) {
       return apiError("Task attachment access denied.", 403);
     }
 
@@ -82,7 +82,7 @@ export async function POST(
       return apiError("Task not found.", 404);
     }
 
-    if (!canAccessAttachments(access, user.role)) {
+    if (!canAccessAttachments(access)) {
       return apiError("Task attachment upload denied.", 403);
     }
 
@@ -149,8 +149,8 @@ export async function POST(
   }
 }
 
-function canAccessAttachments(access: TaskAccess, userRole: string) {
-  return userRole === UserRole.Admin || access.isProjectParticipant;
+function canAccessAttachments(access: TaskAccess) {
+  return access.canView;
 }
 
 async function parseTaskId(context: TaskAttachmentsRouteContext) {

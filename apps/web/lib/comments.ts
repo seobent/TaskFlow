@@ -2,14 +2,15 @@ import {
   type Comment,
   type ISODateString,
   type SafeUser,
-  UserRole,
 } from "@taskflow/shared";
-import { eq } from "drizzle-orm";
 
-import { db, schema } from "@/db";
-import { isProjectParticipant, type ProjectRecord } from "@/lib/tasks";
+import { schema } from "@/db";
+import {
+  getTaskAuthorization,
+  type ProjectRecord,
+} from "@/lib/authorization";
 
-const { comments, projects, tasks } = schema;
+const { comments, tasks } = schema;
 
 export type CommentRecord = typeof comments.$inferSelect;
 export type TaskRecord = typeof tasks.$inferSelect;
@@ -42,9 +43,8 @@ export async function findTaskCommentAccess(
   taskId: string,
   user: SafeUser,
 ): Promise<TaskCommentAccess> {
-  const task = await db.query.tasks.findFirst({
-    where: eq(tasks.id, taskId),
-  });
+  const authorization = await getTaskAuthorization(user, taskId);
+  const task = authorization.task;
 
   if (!task) {
     return {
@@ -54,24 +54,10 @@ export async function findTaskCommentAccess(
     };
   }
 
-  const project = task.projectId
-    ? await db.query.projects.findFirst({
-        where: eq(projects.id, task.projectId),
-      })
-    : null;
-
-  if (user.role === UserRole.Admin) {
-    return {
-      task,
-      project: project ?? null,
-      canAccess: true,
-    };
-  }
-
   return {
     task,
-    project: project ?? null,
-    canAccess: project ? await isProjectParticipant(project, user.id) : false,
+    project: authorization.project,
+    canAccess: authorization.canAccess,
   };
 }
 
