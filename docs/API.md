@@ -53,6 +53,8 @@ Protected route helpers read the bearer token first and then fall back to the we
 - `admin` users can access admin endpoints and manage all projects.
 - `user` accounts can access only projects they own or where they have a `project_members` row.
 - Project owners can update and delete their projects.
+- Project owners and admins can assign, update, and remove project members.
+- Project managers and project members can list members only for projects where they are assigned.
 - Project participants can list, create, and update tasks in the project.
 - A task can be deleted by an admin, the project owner, the task creator, or the task assignee.
 - Comments can be listed and created by admins and project participants.
@@ -74,6 +76,10 @@ Protected route helpers read the bearer token first and then fall back to the we
 | `GET` | `/api/projects/:id` | Required | Get one visible project. |
 | `PATCH` | `/api/projects/:id` | Required | Update an owned project, or any project for admins. |
 | `DELETE` | `/api/projects/:id` | Required | Delete an owned project, or any project for admins. |
+| `GET` | `/api/projects/:id/members` | Required | List project members for an accessible project. |
+| `POST` | `/api/projects/:id/members` | Required | Assign a user to an owned project, or any project for admins. |
+| `PATCH` | `/api/projects/:id/members/:userId` | Required | Update a member role for an owned project, or any project for admins. |
+| `DELETE` | `/api/projects/:id/members/:userId` | Required | Remove a member from an owned project, or any project for admins. |
 | `GET` | `/api/projects/:id/tasks` | Required | List tasks in an accessible project. |
 | `POST` | `/api/projects/:id/tasks` | Required | Create a task in an accessible project. |
 | `GET` | `/api/tasks/:taskId` | Required | Get one visible task. |
@@ -302,6 +308,104 @@ Delete response:
 ```
 
 Common errors: `400` invalid project id or request body, `401` unauthenticated, `403` access denied, `404` project not found.
+
+## Project Member Endpoints
+
+Project member inputs are validated with shared Zod schemas. Assignable roles are `manager` and `member`; the `owner` role is created with the project and cannot be changed through these endpoints.
+
+### List Project Members
+
+```http
+GET /api/projects/:id/members
+Authorization: Bearer <token>
+```
+
+Admins, project owners, project managers, and assigned project members can list members for projects they can access.
+
+Response:
+
+```json
+{
+  "data": {
+    "members": [
+      {
+        "id": "member-uuid",
+        "projectId": "project-uuid",
+        "userId": "user-uuid",
+        "role": "member",
+        "createdAt": "2026-05-09T09:00:00.000Z",
+        "updatedAt": "2026-05-09T09:00:00.000Z",
+        "user": {
+          "id": "user-uuid",
+          "email": "demo@taskflow.dev",
+          "name": "Demo User",
+          "role": "user",
+          "createdAt": "2026-05-08T09:00:00.000Z",
+          "updatedAt": "2026-05-08T09:00:00.000Z"
+        }
+      }
+    ]
+  }
+}
+```
+
+### Assign Project Member
+
+```http
+POST /api/projects/:id/members
+Content-Type: application/json
+Authorization: Bearer <token>
+```
+
+Request:
+
+```json
+{
+  "userId": "user-uuid",
+  "role": "member"
+}
+```
+
+Response `201 Created`:
+
+```json
+{
+  "data": {
+    "member": {
+      "id": "member-uuid",
+      "projectId": "project-uuid",
+      "userId": "user-uuid",
+      "role": "member",
+      "createdAt": "2026-05-09T09:00:00.000Z",
+      "updatedAt": "2026-05-09T09:00:00.000Z"
+    }
+  }
+}
+```
+
+Admins can assign members to any project. Project owners can assign members only to their own projects. Duplicate assignments return `409 Conflict`.
+
+### Update Or Remove Project Member
+
+```http
+PATCH /api/projects/:id/members/:userId
+DELETE /api/projects/:id/members/:userId
+Authorization: Bearer <token>
+```
+
+Patch request:
+
+```json
+{
+  "role": "manager"
+}
+```
+
+`PATCH` returns the updated member with `200 OK`. `DELETE` returns `204 No Content`.
+
+Admins and project owners can update or remove non-owner project members. The project owner cannot be demoted or removed through these endpoints.
+
+Common errors: `400` invalid id or body, `401` unauthenticated, `403` access denied, `404` project, user, or member not found, `409` duplicate assignment.
 
 ## Task Endpoints
 
