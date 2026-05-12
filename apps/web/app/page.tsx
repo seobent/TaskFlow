@@ -1,8 +1,7 @@
-import { TASKFLOW_APP_NAME, TaskPriority, TaskStatus } from "@taskflow/shared";
+import { TaskPriority, TaskStatus } from "@taskflow/shared";
 import Link from "next/link";
 
-import { TaskFlowLogo } from "@/components/TaskFlowLogo";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { PublicHeader } from "@/components/PublicHeader";
 
 const workspaceStats = [
   {
@@ -122,30 +121,7 @@ export default function Home() {
   return (
     <main className="min-h-screen px-5 py-5 sm:px-8 lg:px-10">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5">
-        <header className="flex min-h-14 flex-col gap-4 rounded-md border border-ink/10 bg-white/85 px-4 py-3 shadow-sm backdrop-blur sm:flex-row sm:items-center sm:justify-between">
-          <Link
-            aria-label={`${TASKFLOW_APP_NAME} home`}
-            className="inline-flex shrink-0 items-center"
-            href="/"
-          >
-            <TaskFlowLogo className="h-11 w-auto" />
-          </Link>
-          <nav className="flex flex-wrap items-center gap-2">
-            <Link
-              className="inline-flex min-h-10 items-center justify-center rounded-md px-3 text-sm font-semibold text-ink/65 transition hover:bg-ink/5 hover:text-ink"
-              href="/login"
-            >
-              Log in
-            </Link>
-            <Link
-              className="inline-flex min-h-10 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-              href="/register"
-            >
-              Create account
-            </Link>
-            <ThemeToggle />
-          </nav>
-        </header>
+        <PublicHeader />
 
         <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div className="rounded-md border border-ink/10 bg-white p-5 shadow-sm sm:p-6">
