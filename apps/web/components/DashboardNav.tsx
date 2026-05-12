@@ -18,7 +18,7 @@ export function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname();
   const navItems =
     user.role === UserRole.Admin
-      ? [...baseNavItems, { href: "/dashboard/admin", label: "Admin" }]
+      ? [...baseNavItems, { href: "/dashboard/admin", label: "Settings" }]
       : baseNavItems;
 
   return (
