@@ -1,7 +1,8 @@
 import { TASKFLOW_APP_NAME } from "@taskflow/shared";
 import type { StyleProp, ViewStyle } from "react-native";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 
+import { TASKFLOW_DARK_LOGO_URI } from "@/components/taskflow-logo-dark-svg";
 import { useTheme } from "@/lib/theme";
 
 type TaskFlowLogoProps = {
@@ -15,13 +16,32 @@ export function TaskFlowLogo({
   size = "large",
   style,
 }: TaskFlowLogoProps) {
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const isLarge = size === "large";
   const markSize = isLarge ? 82 : 48;
+  const darkLogoWidth = isLarge ? 292 : 174;
+  const darkLogoHeight = isLarge ? 82 : 49;
   const barHeight = isLarge ? 22 : 13;
   const barWidth = isLarge ? 64 : 38;
   const inset = isLarge ? 6 : 4;
   const borderWidth = isLarge ? 5 : 3;
+
+  if (isDark && showText) {
+    return (
+      <View
+        accessibilityLabel={`${TASKFLOW_APP_NAME} logo`}
+        accessibilityRole="image"
+        accessible
+        style={[styles.root, style]}
+      >
+        <Image
+          resizeMode="contain"
+          source={{ uri: TASKFLOW_DARK_LOGO_URI }}
+          style={{ height: darkLogoHeight, width: darkLogoWidth }}
+        />
+      </View>
+    );
+  }
 
   return (
     <View

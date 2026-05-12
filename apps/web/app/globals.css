@@ -70,3 +70,15 @@ body {
 .dark .hover\:bg-ink\/90:hover {
   background-color: rgb(var(--color-mint) / 0.9);
 }
+
+.taskflow-logo-dark {
+  display: none;
+}
+
+.dark .taskflow-logo-light {
+  display: none;
+}
+
+.dark .taskflow-logo-dark {
+  display: block;
+}
