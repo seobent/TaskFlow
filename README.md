@@ -36,7 +36,7 @@ demo123
 - Task comments for project collaboration.
 - Task attachment uploads with metadata stored in PostgreSQL and files stored in an S3-compatible object store such as Cloudflare R2.
 - Admin dashboard statistics.
-- Admin user list and role management.
+- Admin user search, user list, and role management.
 - Admin project list and project deletion.
 - Shared TypeScript types and Zod validation contracts for API input.
 - Web dashboard and Expo mobile client that both consume the same REST API.
@@ -44,7 +44,7 @@ demo123
 ## User Roles
 
 - `user`: Can access projects they own or belong to. Users can create projects, manage their owned projects, view project tasks, create and update tasks in accessible projects, comment on accessible tasks, and upload attachments to accessible tasks.
-- `admin`: Can view and manage all projects, view admin statistics, list users, update user roles, and delete any project. Admins still authenticate through the same JWT flow as normal users.
+- `admin`: Can view and manage all projects, view admin statistics, search and list users, update user roles, and delete any project. Admins still authenticate through the same JWT flow as normal users.
 
 ## Technology Stack
 
@@ -206,6 +206,7 @@ Main route groups:
 
 - Health: `GET /api/health`
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- Users: `GET /api/users?search=`
 - Projects: `GET /api/projects`, `POST /api/projects`, `GET/PATCH/DELETE /api/projects/:id`
 - Tasks: `GET/POST /api/projects/:id/tasks`, `GET/POST /api/tasks`, `GET/PATCH/DELETE /api/tasks/:taskId`
 - Comments: `GET/POST /api/tasks/:taskId/comments`, `DELETE /api/comments/:commentId`

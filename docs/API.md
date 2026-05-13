@@ -71,6 +71,7 @@ Protected route helpers read the bearer token first and then fall back to the we
 | `POST` | `/api/auth/login` | Public | Authenticate credentials, return user and token, set web cookie. |
 | `POST` | `/api/auth/logout` | Public | Clear web auth cookie. |
 | `GET` | `/api/auth/me` | Required | Return current user. |
+| `GET` | `/api/users?search=` | Admin | Search users by name or email. |
 | `GET` | `/api/projects` | Required | List visible projects. |
 | `POST` | `/api/projects` | Required | Create a project owned by current user. |
 | `GET` | `/api/projects/:id` | Required | Get one visible project. |
@@ -214,6 +215,37 @@ Response:
 ```
 
 Common error: `401` missing, invalid, or expired token.
+
+## User Endpoints
+
+### Search Users
+
+```http
+GET /api/users?search=ada
+Authorization: Bearer <admin-token>
+```
+
+Only admin users can list or search users. The optional `search` query matches name or email case-insensitively. Results are limited to 20 users and never include password hashes or sensitive fields.
+
+Response:
+
+```json
+{
+  "data": {
+    "users": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "name": "Ada Lovelace",
+        "email": "ada@example.com",
+        "role": "user",
+        "createdAt": "2026-05-09T09:00:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+Common errors: `400` invalid query parameters, `401` unauthenticated, `403` admin access required.
 
 ## Project Endpoints
 
