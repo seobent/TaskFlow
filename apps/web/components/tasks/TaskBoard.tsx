@@ -57,6 +57,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [statusTaskId, setStatusTaskId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -281,6 +282,18 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
     }
   }
 
+  function handleTaskDrop(taskId: string, status: TaskStatus) {
+    setDraggedTaskId(null);
+
+    const task = tasks.find((currentTask) => currentTask.id === taskId);
+
+    if (!task) {
+      return;
+    }
+
+    void handleStatusChange(task, status);
+  }
+
   async function handleDeleteTask() {
     if (!deleteTarget) {
       return;
@@ -383,6 +396,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
             {groupedTasks.map((column) => (
               <StatusColumn
                 currentUser={currentUser}
+                draggedTaskId={draggedTaskId}
                 isStatusUpdating={(taskId) => statusTaskId === taskId}
                 key={column.status}
                 onDeleteTask={setDeleteTarget}
@@ -396,6 +410,12 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
                   setSelectedTaskId(task.id);
                 }}
                 onStatusChange={handleStatusChange}
+                onTaskDragEnd={() => setDraggedTaskId(null)}
+                onTaskDragStart={(task) => {
+                  setActionError(null);
+                  setDraggedTaskId(task.id);
+                }}
+                onTaskDrop={handleTaskDrop}
                 status={column.status}
                 tasks={column.tasks}
               />

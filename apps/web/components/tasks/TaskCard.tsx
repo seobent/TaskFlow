@@ -1,6 +1,7 @@
 "use client";
 
 import { type SafeUser, type Task, TaskStatus } from "@taskflow/shared";
+import { type DragEvent } from "react";
 
 import { PriorityBadge } from "@/components/tasks/PriorityBadge";
 import { StatusBadge, statusLabels } from "@/components/tasks/StatusBadge";
@@ -12,8 +13,11 @@ import { Button } from "@/components/ui/Button";
 
 type TaskCardProps = {
   currentUser: SafeUser;
+  isDragging?: boolean;
   isStatusUpdating?: boolean;
   onDelete: (task: Task) => void;
+  onDragEnd: () => void;
+  onDragStart: (task: Task) => void;
   onEdit: (task: Task) => void;
   onOpen: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
@@ -28,8 +32,11 @@ const statusOptions = [
 
 export function TaskCard({
   currentUser,
+  isDragging = false,
   isStatusUpdating = false,
   onDelete,
+  onDragEnd,
+  onDragStart,
   onEdit,
   onOpen,
   onStatusChange,
@@ -38,8 +45,23 @@ export function TaskCard({
   const assigneeLabel = formatUserReference(task.assigneeId, currentUser);
   const creatorLabel = formatUserReference(task.createdById, currentUser);
 
+  function handleDragStart(event: DragEvent<HTMLElement>) {
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", task.id);
+    onDragStart(task);
+  }
+
   return (
-    <article className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
+    <article
+      aria-label={`Drag ${task.title}`}
+      className={[
+        "cursor-grab rounded-md border border-ink/10 bg-white p-4 shadow-sm transition active:cursor-grabbing",
+        isDragging ? "opacity-60 ring-2 ring-mint/20" : "hover:border-mint/25",
+      ].join(" ")}
+      draggable={!isStatusUpdating}
+      onDragEnd={onDragEnd}
+      onDragStart={handleDragStart}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h4 className="break-words text-base font-semibold leading-6 text-ink">
