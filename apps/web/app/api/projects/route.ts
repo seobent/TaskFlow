@@ -97,11 +97,21 @@ export async function POST(request: Request) {
         throw new Error("Project insert returned no row.");
       }
 
-      await tx.insert(projectMembers).values({
-        projectId: createdProject.id,
-        userId: user.id,
-        role: ProjectMemberRole.Owner,
-      });
+      const [createdMember] = await tx
+        .insert(projectMembers)
+        .values({
+          projectId: createdProject.id,
+          userId: user.id,
+          role: ProjectMemberRole.Owner,
+        })
+        .onConflictDoNothing({
+          target: [projectMembers.projectId, projectMembers.userId],
+        })
+        .returning({ id: projectMembers.id });
+
+      if (!createdMember) {
+        throw new Error("Project member insert returned no row.");
+      }
 
       return createdProject;
     });
