@@ -186,7 +186,7 @@ export async function DELETE(
       return apiError("Project member not found.", 404);
     }
 
-    return new Response(null, { status: 204 });
+    return apiSuccess({ ok: true });
   } catch (error) {
     if (error instanceof AuthError) {
       return apiError(error.message, error.status);

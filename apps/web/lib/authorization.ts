@@ -1,4 +1,4 @@
-import { type SafeUser, UserRole } from "@taskflow/shared";
+import { ProjectMemberRole, type SafeUser, UserRole } from "@taskflow/shared";
 import { and, eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
@@ -65,6 +65,7 @@ export async function getProjectAuthorization(
     .select({
       project: projects,
       membershipId: projectMembers.id,
+      membershipRole: projectMembers.role,
     })
     .from(projects)
     .leftJoin(
@@ -89,7 +90,9 @@ export async function getProjectAuthorization(
   }
 
   const isAdmin = currentUser.role === UserRole.Admin;
-  const isProjectOwner = project.ownerId === currentUser.id;
+  const isProjectOwner =
+    project.ownerId === currentUser.id ||
+    accessRecord.membershipRole === ProjectMemberRole.Owner;
   const isProjectMember = Boolean(accessRecord.membershipId);
   const isProjectParticipant = isProjectOwner || isProjectMember;
 

@@ -453,7 +453,7 @@ Patch request:
 }
 ```
 
-`PATCH` returns the updated member with `200 OK`. `DELETE` returns `204 No Content`.
+`PATCH` returns the updated member with `200 OK`. `DELETE` returns `{ "data": { "ok": true } }`.
 
 Admins and project owners can update or remove non-owner project members. The project owner cannot be demoted or removed through these endpoints.
 

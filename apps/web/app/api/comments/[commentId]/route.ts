@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { db, schema } from "@/db";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { AuthError, requireAuth } from "@/lib/auth";
+import { getTaskAuthorization } from "@/lib/authorization";
 
 const { comments } = schema;
 const commentIdSchema = idSchema.uuid("Invalid comment id.");
@@ -32,6 +33,20 @@ export async function DELETE(request: Request, context: CommentRouteContext) {
 
     if (!comment) {
       return apiError("Comment not found.", 404);
+    }
+
+    if (!comment.taskId) {
+      return apiError("Task not found.", 404);
+    }
+
+    const taskAccess = await getTaskAuthorization(user, comment.taskId);
+
+    if (!taskAccess.task) {
+      return apiError("Task not found.", 404);
+    }
+
+    if (!taskAccess.canAccess) {
+      return apiError("Task access denied.", 403);
     }
 
     if (user.role !== UserRole.Admin && comment.authorId !== user.id) {
