@@ -3,13 +3,20 @@
     "name": "TaskFlow",
     "slug": "taskflow-mobile",
     "version": "0.1.0",
+    "scheme": "taskflow",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "bundleIdentifier": "com.taskflow.mobile",
       "supportsTablet": true
     },
     "android": {
+      "package": "com.taskflow.mobile",
       "edgeToEdgeEnabled": true
     },
     "plugins": [
