@@ -25,6 +25,10 @@ type ProjectDetailsViewProps = {
   projectId: string;
 };
 
+type ProjectWithOwner = Project & {
+  owner?: SafeUser | null;
+};
+
 export function ProjectDetailsView({
   currentUser,
   projectId,
@@ -38,7 +42,7 @@ export function ProjectDetailsView({
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<ProjectWithOwner | null>(null);
 
   const canManage = useMemo(() => {
     if (!project) {
@@ -74,7 +78,7 @@ export function ProjectDetailsView({
           return;
         }
 
-        const payload = readApiData<{ project: Project }>(body);
+        const payload = readApiData<{ project: ProjectWithOwner }>(body);
         setProject(payload?.project ?? null);
       } catch {
         if (!controller.signal.aborted) {
@@ -119,7 +123,7 @@ export function ProjectDetailsView({
         return;
       }
 
-      const payload = readApiData<{ project: Project }>(body);
+      const payload = readApiData<{ project: ProjectWithOwner }>(body);
 
       if (payload?.project) {
         setProject(payload.project);
@@ -261,11 +265,12 @@ function ProjectOverview({
   deleteError: string | null;
   onDelete: () => void;
   onEdit: () => void;
-  project: Project;
+  project: ProjectWithOwner;
 }) {
+  const ownerName = project.owner?.name ?? "Unknown owner";
   const metadata = [
     { label: "Project ID", value: project.id },
-    { label: "Owner ID", value: project.ownerId },
+    { label: "Owner", value: ownerName },
     { label: "Created", value: formatProjectDateTime(project.createdAt) },
     { label: "Updated", value: formatProjectDateTime(project.updatedAt) },
   ];

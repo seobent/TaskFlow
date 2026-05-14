@@ -8,6 +8,7 @@ import { statusLabels } from "@/components/tasks/StatusBadge";
 import {
   formatTaskDate,
   formatUserReference,
+  type UserNameLookup,
 } from "@/components/tasks/task-formatting";
 
 type TaskCardProps = {
@@ -22,6 +23,7 @@ type TaskCardProps = {
   onOpen: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
   task: Task;
+  usersById?: UserNameLookup;
 };
 
 const statusOptions = [
@@ -42,9 +44,18 @@ export function TaskCard({
   onOpen,
   onStatusChange,
   task,
+  usersById,
 }: TaskCardProps) {
-  const assigneeLabel = formatUserReference(task.assigneeId, currentUser);
-  const creatorLabel = formatUserReference(task.createdById, currentUser);
+  const assigneeLabel = formatUserReference(
+    task.assigneeId,
+    currentUser,
+    usersById,
+  );
+  const creatorLabel = formatUserReference(
+    task.createdById,
+    currentUser,
+    usersById,
+  );
 
   function handleDragStart(event: DragEvent<HTMLElement>) {
     event.dataTransfer.effectAllowed = "move";
@@ -167,13 +178,23 @@ export function TaskDragPreview({
   currentUser,
   position,
   task,
+  usersById,
 }: {
   currentUser: SafeUser;
   position: { x: number; y: number };
   task: Task;
+  usersById?: UserNameLookup;
 }) {
-  const assigneeLabel = formatUserReference(task.assigneeId, currentUser);
-  const creatorLabel = formatUserReference(task.createdById, currentUser);
+  const assigneeLabel = formatUserReference(
+    task.assigneeId,
+    currentUser,
+    usersById,
+  );
+  const creatorLabel = formatUserReference(
+    task.createdById,
+    currentUser,
+    usersById,
+  );
 
   return (
     <div

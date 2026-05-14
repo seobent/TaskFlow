@@ -21,6 +21,7 @@ import { StatusColumn } from "@/components/tasks/StatusColumn";
 import { TaskDragPreview } from "@/components/tasks/TaskCard";
 import { TaskDetails } from "@/components/tasks/TaskDetails";
 import { TaskForm, type TaskFormValues } from "@/components/tasks/TaskForm";
+import type { UserNameLookup } from "@/components/tasks/task-formatting";
 import { Button } from "@/components/ui/Button";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import {
@@ -32,6 +33,11 @@ import {
 type TaskBoardProps = {
   currentUser: SafeUser;
   projectId: string;
+};
+
+type ProjectTasksPayload = {
+  tasks: Task[];
+  users?: SafeUser[];
 };
 
 const taskColumns = [
@@ -63,6 +69,9 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   } | null>(null);
   const [statusTaskId, setStatusTaskId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [usersById, setUsersById] = useState<UserNameLookup>(() =>
+    buildUserNameLookup(currentUser),
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -89,7 +98,8 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
           return;
         }
 
-        const payload = readApiData<{ tasks: Task[] }>(body);
+        const payload = readApiData<ProjectTasksPayload>(body);
+        setUsersById(buildUserNameLookup(currentUser, payload?.users));
         setTasks(sortTasks(Array.isArray(payload?.tasks) ? payload.tasks : []));
       } catch {
         if (!controller.signal.aborted) {
@@ -107,7 +117,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
     return () => {
       controller.abort();
     };
-  }, [projectId, reloadToken, router]);
+  }, [currentUser, projectId, reloadToken, router]);
 
   const groupedTasks = useMemo(
     () =>
@@ -357,6 +367,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
           currentUser={currentUser}
           position={dragPreviewPosition}
           task={draggedTask}
+          usersById={usersById}
         />
       ) : null}
 
@@ -455,6 +466,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
                 onTaskDrop={handleTaskDrop}
                 status={column.status}
                 tasks={column.tasks}
+                usersById={usersById}
               />
             ))}
           </div>
@@ -647,4 +659,19 @@ function sortTasks(tasks: Task[]) {
     (first, second) =>
       new Date(second.updatedAt).getTime() - new Date(first.updatedAt).getTime(),
   );
+}
+
+function buildUserNameLookup(
+  currentUser: SafeUser,
+  users: SafeUser[] = [],
+): UserNameLookup {
+  const userNames = new Map<string, string>();
+
+  userNames.set(currentUser.id, currentUser.name);
+
+  for (const user of users) {
+    userNames.set(user.id, user.name);
+  }
+
+  return userNames;
 }

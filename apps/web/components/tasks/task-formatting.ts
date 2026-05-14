@@ -1,5 +1,7 @@
 import type { SafeUser } from "@taskflow/shared";
 
+export type UserNameLookup = ReadonlyMap<string, string>;
+
 export function formatTaskDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     day: "numeric",
@@ -21,9 +23,16 @@ export function formatTaskDateTime(value: string) {
 export function formatUserReference(
   userId: string | null,
   currentUser: SafeUser,
+  usersById?: UserNameLookup,
 ) {
   if (!userId) {
     return "Unassigned";
+  }
+
+  const userName = usersById?.get(userId);
+
+  if (userName) {
+    return userName;
   }
 
   if (userId === currentUser.id) {

@@ -4,19 +4,20 @@ import {
   TaskPriority,
   TaskStatus,
 } from "@taskflow/shared";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
-import { AuthError, requireAuth } from "@/lib/auth";
+import { AuthError, requireAuth, sanitizeUser } from "@/lib/auth";
 import {
   findProjectTaskAccess,
   isProjectParticipant,
   serializeTask,
   type ProjectRecord,
+  type TaskRecord,
 } from "@/lib/tasks";
 
-const { tasks } = schema;
+const { tasks, users } = schema;
 const projectIdSchema = idSchema.uuid("Invalid project id.");
 
 type ProjectTasksRouteContext = {
@@ -55,6 +56,7 @@ export async function GET(request: Request, context: ProjectTasksRouteContext) {
 
     return apiSuccess({
       tasks: taskRecords.map(serializeTask),
+      users: await listReferencedTaskUsers(taskRecords, access.project.ownerId),
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -63,6 +65,45 @@ export async function GET(request: Request, context: ProjectTasksRouteContext) {
 
     return apiError("Unable to load tasks.", 500);
   }
+}
+
+async function listReferencedTaskUsers(
+  taskRecords: TaskRecord[],
+  projectOwnerId: string | null,
+) {
+  const userIds = new Set<string>();
+
+  if (projectOwnerId) {
+    userIds.add(projectOwnerId);
+  }
+
+  for (const task of taskRecords) {
+    if (task.assigneeId) {
+      userIds.add(task.assigneeId);
+    }
+
+    if (task.createdById) {
+      userIds.add(task.createdById);
+    }
+  }
+
+  if (userIds.size === 0) {
+    return [];
+  }
+
+  const userRecords = await db
+    .select({
+      createdAt: users.createdAt,
+      email: users.email,
+      id: users.id,
+      name: users.name,
+      role: users.role,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .where(inArray(users.id, [...userIds]));
+
+  return userRecords.map(sanitizeUser);
 }
 
 export async function POST(request: Request, context: ProjectTasksRouteContext) {

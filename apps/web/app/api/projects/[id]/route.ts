@@ -1,4 +1,6 @@
 import {
+  type Project,
+  type SafeUser,
   idSchema,
   updateProjectInputSchema,
 } from "@taskflow/shared";
@@ -6,11 +8,19 @@ import { eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
-import { AuthError, requireAuth } from "@/lib/auth";
-import { findProjectAccess, serializeProject } from "@/lib/projects";
+import { AuthError, requireAuth, sanitizeUser } from "@/lib/auth";
+import {
+  findProjectAccess,
+  serializeProject,
+  type ProjectRecord,
+} from "@/lib/projects";
 
-const { projects } = schema;
+const { projects, users } = schema;
 const projectIdSchema = idSchema.uuid("Invalid project id.");
+
+type ProjectWithOwner = Project & {
+  owner: SafeUser | null;
+};
 
 type ProjectRouteContext = {
   params: Promise<{
@@ -40,7 +50,9 @@ export async function GET(request: Request, context: ProjectRouteContext) {
       return apiError("Project access denied.", 403);
     }
 
-    return apiSuccess({ project: serializeProject(access.project) });
+    return apiSuccess({
+      project: await serializeProjectWithOwner(access.project),
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return apiError(error.message, error.status);
@@ -96,7 +108,9 @@ export async function PATCH(request: Request, context: ProjectRouteContext) {
       return apiError("Project not found.", 404);
     }
 
-    return apiSuccess({ project: serializeProject(updatedProject) });
+    return apiSuccess({
+      project: await serializeProjectWithOwner(updatedProject),
+    });
   } catch (error) {
     if (error instanceof AuthError) {
       return apiError(error.message, error.status);
@@ -104,6 +118,29 @@ export async function PATCH(request: Request, context: ProjectRouteContext) {
 
     return apiError("Unable to update project.", 500);
   }
+}
+
+async function serializeProjectWithOwner(
+  project: ProjectRecord,
+): Promise<ProjectWithOwner> {
+  const owner = project.ownerId
+    ? await db.query.users.findFirst({
+        columns: {
+          createdAt: true,
+          email: true,
+          id: true,
+          name: true,
+          role: true,
+          updatedAt: true,
+        },
+        where: eq(users.id, project.ownerId),
+      })
+    : null;
+
+  return {
+    ...serializeProject(project),
+    owner: owner ? sanitizeUser(owner) : null,
+  };
 }
 
 export async function DELETE(request: Request, context: ProjectRouteContext) {

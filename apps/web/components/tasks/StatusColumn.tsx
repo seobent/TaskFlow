@@ -5,6 +5,7 @@ import { type DragEvent, useState } from "react";
 
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { statusLabels } from "@/components/tasks/StatusBadge";
+import type { UserNameLookup } from "@/components/tasks/task-formatting";
 
 type StatusColumnProps = {
   currentUser: SafeUser;
@@ -21,6 +22,7 @@ type StatusColumnProps = {
   onTaskDrop: (taskId: string, status: TaskStatus) => void;
   status: TaskStatus;
   tasks: Task[];
+  usersById?: UserNameLookup;
 };
 
 export function StatusColumn({
@@ -38,6 +40,7 @@ export function StatusColumn({
   onTaskDrop,
   status,
   tasks,
+  usersById,
 }: StatusColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const canDropTask = Boolean(draggedTaskId);
@@ -118,6 +121,7 @@ export function StatusColumn({
               onOpen={onOpenTask}
               onStatusChange={onStatusChange}
               task={task}
+              usersById={usersById}
             />
           ))
         ) : (
