@@ -44,7 +44,7 @@ Node version: 20
 Next.js plugin: @netlify/plugin-nextjs
 ```
 
-The Next.js plugin adapts App Router pages and Route Handlers under `apps/web/app/api` for Netlify.
+The Next.js plugin adapts App Router pages and Route Handlers under `apps/web/src/app/api` for Netlify.
 
 ## Netlify Environment Variables
 

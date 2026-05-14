@@ -1,6 +1,6 @@
 # API
 
-TaskFlow exposes a JSON REST API through Next.js Route Handlers in `apps/web/app/api`. The same API is used by the web dashboard and the Expo mobile client.
+TaskFlow exposes a JSON REST API through Next.js Route Handlers in `apps/web/src/app/api`. The same API is used by the web dashboard and the Expo mobile client.
 
 ## Base URLs
 

@@ -7,18 +7,21 @@ TaskFlow is an npm workspace monorepo for a university capstone project and issu
 ```text
 apps/
   web/
-    app/
-      api/
-    components/
-    db/
+    src/
+      app/
+        api/
+      components/
+      db/
+      lib/
     drizzle/
-    lib/
   mobile/
-    app/
-    components/
-    lib/
+    src/
+      app/
+      components/
+      lib/
 packages/
   shared/
+    src/
 docs/
 ```
 
@@ -70,7 +73,7 @@ flowchart TB
 
 ## Next.js Web Frontend
 
-The web frontend lives in `apps/web` and uses the Next.js App Router. Public authentication pages live under `apps/web/app/login` and `apps/web/app/register`. Authenticated dashboard pages live under `apps/web/app/dashboard`.
+The web frontend lives in `apps/web` and uses the Next.js App Router. Public authentication pages live under `apps/web/src/app/login` and `apps/web/src/app/register`. Authenticated dashboard pages live under `apps/web/src/app/dashboard`.
 
 The web UI uses Tailwind CSS and focused component folders:
 
@@ -84,7 +87,7 @@ Web authentication is cookie-based. Successful login and registration set a `tas
 
 ## Next.js REST API Backend
 
-The backend is implemented with Next.js Route Handlers in `apps/web/app/api`. API routes are deployed with the web app and are available under `/api/...`.
+The backend is implemented with Next.js Route Handlers in `apps/web/src/app/api`. API routes are deployed with the web app and are available under `/api/...`.
 
 Implemented route areas:
 
@@ -135,7 +138,7 @@ Netlify stores production server-only environment variables such as `DATABASE_UR
 
 The mobile app lives in `apps/mobile` and uses Expo, React Native, and Expo Router. Screens include login, registration, dashboard, project list, project details, task creation, task details, and task status updates.
 
-The mobile API client lives in `apps/mobile/lib/api.ts`. It reads the API base URL from:
+The mobile API client lives in `apps/mobile/src/lib/api.ts`. It reads the API base URL from:
 
 ```text
 EXPO_PUBLIC_API_URL
@@ -185,7 +188,7 @@ Neon PostgreSQL is the persistent database. Only server-side code in `apps/web` 
 
 ## Drizzle ORM
 
-Drizzle ORM schema definitions live in `apps/web/db/schema.ts`. The database client lives in `apps/web/db/index.ts`. Generated migrations live in `apps/web/drizzle`.
+Drizzle ORM schema definitions live in `apps/web/src/db/schema.ts`. The database client lives in `apps/web/src/db/index.ts`. Generated migrations live in `apps/web/drizzle`.
 
 Schema changes must be represented by committed Drizzle migrations. Production migrations should be reviewed and run intentionally against the production Neon database; they should not be hidden inside every Netlify build.
 

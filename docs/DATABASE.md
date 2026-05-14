@@ -5,9 +5,9 @@ TaskFlow uses Neon PostgreSQL with Drizzle ORM. Database schema, migrations, dat
 ## Files
 
 ```text
-apps/web/db/schema.ts                 Drizzle table definitions
-apps/web/db/index.ts                  Neon serverless Drizzle client
-apps/web/db/seed.ts                   Idempotent demo seed script
+apps/web/src/db/schema.ts             Drizzle table definitions
+apps/web/src/db/index.ts              Neon serverless Drizzle client
+apps/web/src/db/seed.ts               Idempotent demo seed script
 apps/web/drizzle.config.ts            Drizzle Kit configuration
 apps/web/drizzle/0000_*.sql           Generated migration SQL
 apps/web/drizzle/meta/                Drizzle migration metadata
@@ -249,7 +249,7 @@ erDiagram
 
 ## Migration Process
 
-Drizzle migrations are generated from `apps/web/db/schema.ts` and committed under `apps/web/drizzle`.
+Drizzle migrations are generated from `apps/web/src/db/schema.ts` and committed under `apps/web/drizzle`.
 
 Generate a migration after schema changes:
 

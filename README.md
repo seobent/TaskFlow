@@ -51,7 +51,7 @@ demo123
 - Monorepo: npm workspaces.
 - Language: TypeScript.
 - Web frontend: Next.js App Router, React, Tailwind CSS.
-- Backend API: Next.js Route Handlers in `apps/web/app/api`.
+- Backend API: Next.js Route Handlers in `apps/web/src/app/api`.
 - Mobile client: Expo, React Native, Expo Router.
 - Shared contracts: `packages/shared`, Zod, TypeScript types.
 - Database: Neon PostgreSQL.
@@ -64,21 +64,21 @@ demo123
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Backend API with Next.js and PostgreSQL | Complete | Next.js Route Handlers in `apps/web/app/api` use Drizzle against PostgreSQL. |
-| Neon serverless PostgreSQL | Complete | Neon serverless client is configured in `apps/web/db/index.ts`. |
-| Drizzle ORM and migrations | Complete | Schema lives in `apps/web/db/schema.ts`; committed migration files live in `apps/web/drizzle`. |
+| Backend API with Next.js and PostgreSQL | Complete | Next.js Route Handlers in `apps/web/src/app/api` use Drizzle against PostgreSQL. |
+| Neon serverless PostgreSQL | Complete | Neon serverless client is configured in `apps/web/src/db/index.ts`. |
+| Drizzle ORM and migrations | Complete | Schema lives in `apps/web/src/db/schema.ts`; committed migration files live in `apps/web/drizzle`. |
 | Web app with Next.js, React, TypeScript, Tailwind | Complete | Web workspace is `apps/web` with App Router, React components, TypeScript, and Tailwind CSS. |
 | Mobile app with React Native and Expo | Complete | Expo Router app lives in `apps/mobile`. |
 | RESTful API communication | Complete | Web and mobile clients call `/api/...` JSON REST endpoints with shared envelopes. |
 | Monorepo structure | Complete | npm workspaces cover `apps/web`, `apps/mobile`, and `packages/shared`. |
 | Netlify deployment | Complete | `netlify.toml` deploys `apps/web` with `@netlify/plugin-nextjs`. |
-| JWT authentication | Complete | JWT helpers live in `apps/web/lib/auth.ts`; web uses an httpOnly cookie and mobile uses bearer tokens. |
+| JWT authentication | Complete | JWT helpers live in `apps/web/src/lib/auth.ts`; web uses an httpOnly cookie and mobile uses bearer tokens. |
 | Register, login, logout | Complete | Implemented under `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, plus web and mobile screens. |
 | Normal and admin roles | Complete | Shared role enum supports `user` and `admin`; server routes enforce authorization. |
-| Admin panel | Complete | Admin dashboard lives at `apps/web/app/dashboard/admin`. |
+| Admin panel | Complete | Admin dashboard lives at `apps/web/src/app/dashboard/admin`. |
 | Minimum 5 screens | Complete | Web and mobile together include login, register, dashboard, project list, project details, task details, task creation, task status, and admin screens. |
 | Minimum 4 database tables | Complete | The schema includes users, projects, project members, tasks, comments, and attachments. |
-| Relationships and indexes | Complete | Foreign keys and indexes are documented in `docs/DATABASE.md` and defined in `apps/web/db/schema.ts`. |
+| Relationships and indexes | Complete | Foreign keys and indexes are documented in `docs/DATABASE.md` and defined in `apps/web/src/db/schema.ts`. |
 | Documentation in repository | Complete | Documentation lives in `README.md` and `docs/`. |
 | AGENTS.md file | Complete | `AGENTS.md` is present at the repository root. |
 | Demo credentials | Complete | Seeded demo accounts are listed below and in setup/deployment docs. |
@@ -89,10 +89,10 @@ demo123
 
 ```mermaid
 flowchart LR
-  Web[Next.js Web UI<br/>apps/web] --> Api[Next.js REST API<br/>apps/web/app/api]
+  Web[Next.js Web UI<br/>apps/web] --> Api[Next.js REST API<br/>apps/web/src/app/api]
   Mobile[Expo Mobile App<br/>apps/mobile] --> Api
   Api --> Auth[JWT Auth Helpers<br/>cookie or bearer token]
-  Api --> Drizzle[Drizzle ORM<br/>apps/web/db]
+  Api --> Drizzle[Drizzle ORM<br/>apps/web/src/db]
   Drizzle --> Neon[(Neon PostgreSQL)]
   Api --> Storage[Optional R2 / S3 Object Storage]
   Web --> Shared[Shared Types and Zod Schemas<br/>packages/shared]
@@ -182,7 +182,7 @@ erDiagram
 
 ## API Overview
 
-All REST API routes live under `apps/web/app/api` and are served from `/api/...`.
+All REST API routes live under `apps/web/src/app/api` and are served from `/api/...`.
 
 Successful responses use:
 
@@ -358,20 +358,20 @@ Never expose `DATABASE_URL`, `JWT_SECRET`, or R2 credentials to browser JavaScri
 ## Key Folders And Files
 
 ```text
-apps/web/app/                         Next.js App Router pages and layouts
-apps/web/app/api/                     REST API Route Handlers
-apps/web/components/                  Web UI components
-apps/web/components/admin/            Admin dashboard components
-apps/web/components/projects/         Project web UI components
-apps/web/components/tasks/            Task, comment, and attachment web UI components
-apps/web/db/schema.ts                 Drizzle database schema
-apps/web/db/seed.ts                   Idempotent demo seed script
+apps/web/src/app/                     Next.js App Router pages and layouts
+apps/web/src/app/api/                 REST API Route Handlers
+apps/web/src/components/              Web UI components
+apps/web/src/components/admin/        Admin dashboard components
+apps/web/src/components/projects/     Project web UI components
+apps/web/src/components/tasks/        Task, comment, and attachment web UI components
+apps/web/src/db/schema.ts             Drizzle database schema
+apps/web/src/db/seed.ts               Idempotent demo seed script
 apps/web/drizzle/                     Generated Drizzle migrations
-apps/web/lib/auth.ts                  JWT, cookie, password, and auth helper logic
-apps/web/lib/r2-storage.ts            S3-compatible R2 upload helper
-apps/mobile/app/                      Expo Router screens
-apps/mobile/lib/api.ts                Typed mobile API client
-apps/mobile/lib/auth-storage.ts       SecureStore token persistence
+apps/web/src/lib/auth.ts              JWT, cookie, password, and auth helper logic
+apps/web/src/lib/r2-storage.ts        S3-compatible R2 upload helper
+apps/mobile/src/app/                  Expo Router screens
+apps/mobile/src/lib/api.ts            Typed mobile API client
+apps/mobile/src/lib/auth-storage.ts   SecureStore token persistence
 packages/shared/src/index.ts          Shared enums, types, constants, and Zod schemas
 docs/                                Capstone project documentation
 netlify.toml                         Netlify build and Next.js runtime configuration

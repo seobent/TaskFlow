@@ -9,7 +9,7 @@ const env = config({ path: resolve(currentDir, ".env.local") }).parsed;
 const databaseUrl = process.env.DATABASE_URL || env?.DATABASE_URL || "";
 
 export default defineConfig({
-  schema: "./db/schema.ts",
+  schema: "./src/db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {

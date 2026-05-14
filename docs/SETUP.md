@@ -100,7 +100,7 @@ The mobile app must never receive the Neon connection string. All database acces
 The Drizzle schema is defined in:
 
 ```text
-apps/web/db/schema.ts
+apps/web/src/db/schema.ts
 ```
 
 Generated migrations live in:

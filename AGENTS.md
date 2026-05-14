@@ -19,7 +19,7 @@ This file defines how AI coding agents must work in the TaskFlow repository. Tre
 - Language: TypeScript everywhere.
 - Web app: Next.js App Router in `apps/web`.
 - Web styling: Tailwind CSS.
-- Backend API: Next.js Route Handlers in `apps/web/app/api`.
+- Backend API: Next.js Route Handlers in `apps/web/src/app/api`.
 - Mobile app: React Native with Expo in `apps/mobile`.
 - Mobile navigation: Expo Router.
 - Database: Neon PostgreSQL.
@@ -37,32 +37,35 @@ This file defines how AI coding agents must work in the TaskFlow repository. Tre
 ```text
 apps/
   web/
-    app/
-      api/
-      dashboard/
-      login/
-      register/
-    components/
-    db/
+    src/
+      app/
+        api/
+        dashboard/
+        login/
+        register/
+      components/
+      db/
+      lib/
     drizzle/
-    lib/
   mobile/
-    app/
-    components/
-    lib/
+    src/
+      app/
+      components/
+      lib/
 packages/
   shared/
+    src/
 docs/
 ```
 
-- `apps/web/app/api` owns API Route Handlers.
-- `apps/web/db/schema.ts` owns Drizzle table definitions.
-- `apps/web/db/seed.ts` owns idempotent demo seed data.
+- `apps/web/src/app/api` owns API Route Handlers.
+- `apps/web/src/db/schema.ts` owns Drizzle table definitions.
+- `apps/web/src/db/seed.ts` owns idempotent demo seed data.
 - `apps/web/drizzle` owns generated migrations.
-- `apps/web/lib/auth.ts` owns JWT, cookie, password, and current-user helpers.
-- `apps/web/lib/r2-storage.ts` owns R2/S3-compatible upload logic.
-- `apps/mobile/lib/api.ts` owns the mobile API client.
-- `apps/mobile/lib/auth-storage.ts` owns SecureStore token persistence.
+- `apps/web/src/lib/auth.ts` owns JWT, cookie, password, and current-user helpers.
+- `apps/web/src/lib/r2-storage.ts` owns R2/S3-compatible upload logic.
+- `apps/mobile/src/lib/api.ts` owns the mobile API client.
+- `apps/mobile/src/lib/auth-storage.ts` owns SecureStore token persistence.
 - `packages/shared/src/index.ts` owns shared enums, types, constants, and Zod schemas.
 
 Do not import server-only web code into mobile or shared packages. Do not put Drizzle, Neon, JWT secrets, R2 credentials, Node-only APIs, or secret-dependent logic in `packages/shared`.
@@ -89,7 +92,7 @@ Attachment metadata is stored in PostgreSQL. Attachment file bytes are uploaded 
 
 ## 5. API Surface
 
-All API routes live under `/api/...` in `apps/web/app/api`.
+All API routes live under `/api/...` in `apps/web/src/app/api`.
 
 Implemented routes:
 
@@ -171,7 +174,7 @@ Validate request bodies, route params, and query params. Prefer shared Zod schem
 - Use Node.js 20 and `@netlify/plugin-nextjs`.
 - Netlify must provide server-only environment variables such as `DATABASE_URL`, `JWT_SECRET`, and optional R2 credentials.
 - Do not prefix server-only variables with `NEXT_PUBLIC_`.
-- Ensure Next.js Route Handlers under `apps/web/app/api` work correctly in Netlify.
+- Ensure Next.js Route Handlers under `apps/web/src/app/api` work correctly in Netlify.
 - The mobile app must call the deployed Netlify API URL through `EXPO_PUBLIC_API_URL`.
 - Update deployment documentation when build commands, environment variables, Netlify configuration, or deployment behavior changes.
 
@@ -227,7 +230,7 @@ Validate request bodies, route params, and query params. Prefer shared Zod schem
 - Never use Drizzle directly in the mobile app.
 - Never import Drizzle schemas, database clients, or server-only modules.
 - Store JWTs with Expo SecureStore.
-- Use the typed API client in `apps/mobile/lib/api.ts` for API calls where practical.
+- Use the typed API client in `apps/mobile/src/lib/api.ts` for API calls where practical.
 - Send mobile authentication as `Authorization: Bearer <token>`.
 - Handle token expiration, `401 Unauthorized`, and `403 Forbidden` responses properly.
 

@@ -3,8 +3,8 @@ const config = {
   content: {
     relative: true,
     files: [
-      "./app/**/*.{js,ts,jsx,tsx,mdx}",
-      "./components/**/*.{js,ts,jsx,tsx,mdx}",
+      "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+      "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     ],
   },
   theme: {
