@@ -32,6 +32,12 @@ const statusOptions = [
   TaskStatus.Done,
 ];
 
+const statusDotClasses: Record<TaskStatus, string> = {
+  [TaskStatus.Todo]: "bg-[#0c66e4]",
+  [TaskStatus.InProgress]: "bg-orange-500",
+  [TaskStatus.Done]: "bg-mint",
+};
+
 export function TaskCard({
   currentUser,
   isDragging = false,
@@ -85,7 +91,10 @@ export function TaskCard({
       <div className="flex items-start gap-2">
         <span
           aria-hidden="true"
-          className="mt-1.5 h-4 w-4 shrink-0 rounded-full bg-mint text-center text-[10px] font-bold leading-4 text-white"
+          className={[
+            "mt-1.5 h-4 w-4 shrink-0 rounded-full text-center text-[10px] font-bold leading-4 text-white",
+            statusDotClasses[task.status],
+          ].join(" ")}
         />
         <div className="min-w-0 flex-1">
           <button
@@ -206,7 +215,12 @@ export function TaskDragPreview({
       }}
     >
       <div className="flex items-start gap-2">
-        <span className="mt-1.5 h-4 w-4 shrink-0 rounded-full bg-mint" />
+        <span
+          className={[
+            "mt-1.5 h-4 w-4 shrink-0 rounded-full",
+            statusDotClasses[task.status],
+          ].join(" ")}
+        />
         <div className="min-w-0 flex-1">
           <p className="break-words text-sm font-semibold leading-5">
             {task.title}
