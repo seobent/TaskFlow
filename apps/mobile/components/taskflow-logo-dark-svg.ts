@@ -38,7 +38,3 @@ export const TASKFLOW_DARK_LOGO_SVG = `
   <text x="370" y="251" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="170" font-weight="900" letter-spacing="0">TaskFlow</text>
 </svg>
 `;
-
-export const TASKFLOW_DARK_LOGO_URI = `data:image/svg+xml;utf8,${encodeURIComponent(
-  TASKFLOW_DARK_LOGO_SVG,
-)}`;

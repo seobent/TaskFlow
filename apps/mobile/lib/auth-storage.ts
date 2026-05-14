@@ -1,16 +1,19 @@
-import * as SecureStore from "expo-secure-store";
+import {
+  deleteSecretValue,
+  getSecretValue,
+  saveSecretValue,
+} from "./web-storage";
 
 const AUTH_TOKEN_KEY = "taskflow.authToken";
 
 export async function saveAuthToken(token: string) {
-  await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
+  await saveSecretValue(AUTH_TOKEN_KEY, token);
 }
 
 export async function getAuthToken() {
-  return SecureStore.getItemAsync(AUTH_TOKEN_KEY);
+  return getSecretValue(AUTH_TOKEN_KEY);
 }
 
 export async function deleteAuthToken() {
-  await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
+  await deleteSecretValue(AUTH_TOKEN_KEY);
 }
-

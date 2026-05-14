@@ -54,9 +54,6 @@ export default function LoginScreen() {
           <View style={styles.header}>
             <View style={styles.headerTop}>
               <View style={styles.headerText}>
-                <Text style={[styles.eyebrow, { color: colors.primary }]}>
-                  Welcome back
-                </Text>
                 <TaskFlowLogo style={styles.logo} />
               </View>
               <ThemeToggle />
@@ -184,7 +181,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: "flex-start",
     padding: 24,
   },
   header: {
@@ -198,13 +195,6 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
-  },
-  eyebrow: {
-    color: "#2f9f89",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0,
-    textTransform: "uppercase",
   },
   logo: {
     marginTop: 8,

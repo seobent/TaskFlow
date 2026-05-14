@@ -41,6 +41,9 @@ DATABASE_URL=<local-or-neon-postgres-url>
 JWT_SECRET=<development-secret-at-least-32-characters>
 NEXT_PUBLIC_API_URL=http://localhost:3000
 NODE_ENV=development
+
+# Optional: production-only CORS origin if you deploy the Expo Web preview separately.
+MOBILE_WEB_ORIGIN=https://your-mobile-web-preview.example.com
 ```
 
 Optional attachment storage variables:
@@ -58,6 +61,7 @@ Important security notes:
 - Do not commit `.env.local`.
 - Do not prefix `DATABASE_URL`, `JWT_SECRET`, or R2 credential variables with `NEXT_PUBLIC_`.
 - `NEXT_PUBLIC_API_URL` is safe because it is only the public web/API origin.
+- `MOBILE_WEB_ORIGIN` is server-only and is only needed when a deployed Expo Web preview calls the API from a different origin.
 
 ## Configure Mobile Environment Variables
 
@@ -175,10 +179,22 @@ The web dev server binds to `0.0.0.0`, which allows physical mobile devices on t
 
 ## Run Mobile App
 
-Start Expo:
+Start the web app and Expo mobile dev server together:
+
+```bash
+npm run dev
+```
+
+Start only Expo:
 
 ```bash
 npm run dev:mobile
+```
+
+Start the mobile app in a browser with Expo Web:
+
+```bash
+npm run dev:mobile:web
 ```
 
 Alternative tunnel mode:
@@ -187,7 +203,7 @@ Alternative tunnel mode:
 npm run dev:mobile:tunnel
 ```
 
-Open the app in Expo Go or a simulator. After changing `apps/mobile/.env`, restart Expo so `EXPO_PUBLIC_API_URL` is rebuilt into the app.
+Open the app in Expo Go, a simulator, or the Expo Web browser preview. After changing `apps/mobile/.env`, restart Expo so `EXPO_PUBLIC_API_URL` is rebuilt into the app.
 
 ## Type Checking
 

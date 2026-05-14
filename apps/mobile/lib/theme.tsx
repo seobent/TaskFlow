@@ -1,6 +1,7 @@
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { Appearance } from "react-native";
-import * as SecureStore from "expo-secure-store";
+
+import { getPublicValue, savePublicValue } from "./web-storage";
 
 export type ThemeMode = "light" | "dark";
 
@@ -78,7 +79,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    SecureStore.getItemAsync(STORAGE_KEY).then((storedMode) => {
+    getPublicValue(STORAGE_KEY).then((storedMode) => {
       if (!isMounted) {
         return;
       }
@@ -97,7 +98,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (hasLoadedStoredMode) {
-      void SecureStore.setItemAsync(STORAGE_KEY, mode);
+      void savePublicValue(STORAGE_KEY, mode);
     }
   }, [hasLoadedStoredMode, mode]);
 

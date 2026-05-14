@@ -6,7 +6,8 @@
     "scheme": "taskflow",
     "platforms": [
       "ios",
-      "android"
+      "android",
+      "web"
     ],
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
@@ -18,6 +19,9 @@
     "android": {
       "package": "com.taskflow.mobile",
       "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro"
     },
     "plugins": [
       "expo-secure-store",

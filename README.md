@@ -244,6 +244,9 @@ JWT_SECRET=<local-development-secret>
 NEXT_PUBLIC_API_URL=http://localhost:3000
 NODE_ENV=development
 
+# Optional: production-only CORS origin if you deploy the Expo Web preview separately.
+MOBILE_WEB_ORIGIN=https://your-mobile-web-preview.example.com
+
 # Required only when testing attachment uploads:
 R2_ACCOUNT_ID=<cloudflare-account-id>
 R2_ACCESS_KEY_ID=<r2-access-key-id>
@@ -271,7 +274,13 @@ npm run db:migrate -w @taskflow/web
 npm run db:seed
 ```
 
-Run the web app:
+Run the web app and Expo mobile dev server together:
+
+```bash
+npm run dev
+```
+
+Run only the web app:
 
 ```bash
 npm run dev:web
@@ -282,6 +291,14 @@ Run the mobile app:
 ```bash
 npm run dev:mobile
 ```
+
+Run the mobile app in a browser with Expo Web:
+
+```bash
+npm run dev:mobile:web
+```
+
+The Expo Web preview uses `EXPO_PUBLIC_API_URL` for API calls, just like the Android and iOS clients.
 
 Type-check all workspaces:
 
@@ -312,6 +329,7 @@ Configure these Netlify environment variables:
 DATABASE_URL=<production-neon-postgres-url>
 JWT_SECRET=<strong-production-secret>
 NEXT_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
+MOBILE_WEB_ORIGIN=https://your-mobile-web-preview.example.com
 NODE_ENV=production
 R2_ACCOUNT_ID=<cloudflare-account-id>
 R2_ACCESS_KEY_ID=<r2-access-key-id>

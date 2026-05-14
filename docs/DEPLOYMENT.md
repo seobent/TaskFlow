@@ -54,6 +54,7 @@ Set these values in Netlify site settings:
 DATABASE_URL=<production-neon-postgres-url>
 JWT_SECRET=<strong-production-secret>
 NEXT_PUBLIC_API_URL=https://your-taskflow-demo.netlify.app
+MOBILE_WEB_ORIGIN=https://your-mobile-web-preview.example.com
 NODE_ENV=production
 ```
 
@@ -72,6 +73,7 @@ Variable rules:
 - `DATABASE_URL` is server-only and must point to the production Neon database.
 - `JWT_SECRET` is server-only and must be a strong production secret.
 - `NEXT_PUBLIC_API_URL` is public and should be the deployed Netlify origin.
+- `MOBILE_WEB_ORIGIN` is server-only and only required when an Expo Web deployment calls the API from a different origin.
 - `NODE_ENV=production` enables secure production cookie behavior.
 - R2 credential variables are server-only and must not use `NEXT_PUBLIC_`.
 - `R2_PUBLIC_URL` is returned in attachment metadata and should be a public file URL origin.

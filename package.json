@@ -9,8 +9,10 @@
     "packages/shared"
   ],
   "scripts": {
+    "dev": "node scripts/dev.mjs",
     "dev:web": "npm run dev -w @taskflow/web",
     "dev:mobile": "npm run start -w @taskflow/mobile",
+    "dev:mobile:web": "npm run web -w @taskflow/mobile",
     "dev:mobile:tunnel": "npm run start -w @taskflow/mobile -- --tunnel",
     "build": "npm run build -w @taskflow/shared && npm run build:web",
     "build:web": "npm run build -w @taskflow/web",
