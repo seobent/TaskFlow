@@ -138,6 +138,32 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
     [draggedTaskId, tasks],
   );
 
+  useEffect(() => {
+    if (!draggedTaskId) {
+      return;
+    }
+
+    function handleDragOver(event: DragEvent) {
+      if (event.clientX || event.clientY) {
+        setDragPreviewPosition({ x: event.clientX, y: event.clientY });
+        return;
+      }
+
+      if (event.pageX || event.pageY) {
+        setDragPreviewPosition({
+          x: event.pageX - window.scrollX,
+          y: event.pageY - window.scrollY,
+        });
+      }
+    }
+
+    window.addEventListener("dragover", handleDragOver);
+
+    return () => {
+      window.removeEventListener("dragover", handleDragOver);
+    };
+  }, [draggedTaskId]);
+
   const createTaskInitialValues = useMemo(
     () => ({
       priority: TaskPriority.Medium,
