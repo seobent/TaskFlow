@@ -34,7 +34,7 @@ export function Navbar({ user }: NavbarProps) {
         return;
       }
 
-      router.replace("/login");
+      router.replace("/");
       router.refresh();
     } catch {
       setError("Unable to sign out. Please try again.");
