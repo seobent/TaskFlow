@@ -18,6 +18,7 @@ import {
 } from "react";
 
 import { StatusColumn } from "@/components/tasks/StatusColumn";
+import { TaskDragPreview } from "@/components/tasks/TaskCard";
 import { TaskDetails } from "@/components/tasks/TaskDetails";
 import { TaskForm, type TaskFormValues } from "@/components/tasks/TaskForm";
 import { Button } from "@/components/ui/Button";
@@ -39,14 +40,12 @@ const taskColumns = [
   TaskStatus.Done,
 ];
 
-const createTaskInitialValues: Partial<TaskFormValues> = {
-  priority: TaskPriority.Medium,
-  status: TaskStatus.Todo,
-};
-
 export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   const router = useRouter();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [createTaskStatus, setCreateTaskStatus] = useState<TaskStatus>(
+    TaskStatus.Todo,
+  );
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
@@ -58,6 +57,10 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   const [reloadToken, setReloadToken] = useState(0);
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
+  const [dragPreviewPosition, setDragPreviewPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const [statusTaskId, setStatusTaskId] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -118,6 +121,19 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   const editTaskInitialValues = useMemo(
     () => (editingTask ? taskToFormValues(editingTask) : undefined),
     [editingTask],
+  );
+
+  const draggedTask = useMemo(
+    () => tasks.find((task) => task.id === draggedTaskId) ?? null,
+    [draggedTaskId, tasks],
+  );
+
+  const createTaskInitialValues = useMemo(
+    () => ({
+      priority: TaskPriority.Medium,
+      status: createTaskStatus,
+    }),
+    [createTaskStatus],
   );
 
   async function handleCreateTask(values: TaskFormValues) {
@@ -284,6 +300,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
 
   function handleTaskDrop(taskId: string, status: TaskStatus) {
     setDraggedTaskId(null);
+    setDragPreviewPosition(null);
 
     const task = tasks.find((currentTask) => currentTask.id === taskId);
 
@@ -335,11 +352,19 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
 
   return (
     <>
+      {draggedTask && dragPreviewPosition ? (
+        <TaskDragPreview
+          currentUser={currentUser}
+          position={dragPreviewPosition}
+          task={draggedTask}
+        />
+      ) : null}
+
       <section className="rounded-md border border-ink/10 bg-white p-4 shadow-sm sm:p-5">
         <div className="flex flex-col gap-3 border-b border-ink/10 pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wider text-mint">
-              Task board
+              Project board
             </p>
             <h2 className="mt-1 text-xl font-semibold text-ink">
               Issue workflow
@@ -349,6 +374,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
             onClick={() => {
               setActionError(null);
               setFormError(null);
+              setCreateTaskStatus(TaskStatus.Todo);
               setIsCreateModalOpen(true);
             }}
             type="button"
@@ -367,7 +393,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
         ) : null}
 
         {isLoading ? (
-          <div className="flex min-h-52 items-center justify-center text-ink/65" role="status">
+          <div className="flex min-h-72 items-center justify-center text-ink/65" role="status">
             <span
               aria-hidden="true"
               className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-mint border-r-transparent"
@@ -392,7 +418,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
             </Button>
           </div>
         ) : (
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="mt-4 flex min-h-[28rem] gap-3 overflow-x-auto">
             {groupedTasks.map((column) => (
               <StatusColumn
                 currentUser={currentUser}
@@ -409,11 +435,22 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
                   setActionError(null);
                   setSelectedTaskId(task.id);
                 }}
+                onAddTask={(status) => {
+                  setActionError(null);
+                  setFormError(null);
+                  setCreateTaskStatus(status);
+                  setIsCreateModalOpen(true);
+                }}
                 onStatusChange={handleStatusChange}
-                onTaskDragEnd={() => setDraggedTaskId(null)}
-                onTaskDragStart={(task) => {
+                onTaskDragEnd={() => {
+                  setDraggedTaskId(null);
+                  setDragPreviewPosition(null);
+                }}
+                onTaskDragMove={(position) => setDragPreviewPosition(position)}
+                onTaskDragStart={(task, position) => {
                   setActionError(null);
                   setDraggedTaskId(task.id);
+                  setDragPreviewPosition(position);
                 }}
                 onTaskDrop={handleTaskDrop}
                 status={column.status}

@@ -3,19 +3,21 @@
 import { type SafeUser, type Task, TaskStatus } from "@taskflow/shared";
 import { type DragEvent, useState } from "react";
 
-import { StatusBadge, statusLabels } from "@/components/tasks/StatusBadge";
 import { TaskCard } from "@/components/tasks/TaskCard";
+import { statusLabels } from "@/components/tasks/StatusBadge";
 
 type StatusColumnProps = {
   currentUser: SafeUser;
   draggedTaskId: string | null;
   isStatusUpdating: (taskId: string) => boolean;
+  onAddTask: (status: TaskStatus) => void;
   onDeleteTask: (task: Task) => void;
   onEditTask: (task: Task) => void;
   onOpenTask: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
   onTaskDragEnd: () => void;
-  onTaskDragStart: (task: Task) => void;
+  onTaskDragMove: (position: { x: number; y: number }) => void;
+  onTaskDragStart: (task: Task, position: { x: number; y: number }) => void;
   onTaskDrop: (taskId: string, status: TaskStatus) => void;
   status: TaskStatus;
   tasks: Task[];
@@ -25,11 +27,13 @@ export function StatusColumn({
   currentUser,
   draggedTaskId,
   isStatusUpdating,
+  onAddTask,
   onDeleteTask,
   onEditTask,
   onOpenTask,
   onStatusChange,
   onTaskDragEnd,
+  onTaskDragMove,
   onTaskDragStart,
   onTaskDrop,
   status,
@@ -66,12 +70,12 @@ export function StatusColumn({
     <section
       aria-label={`${statusLabels[status]} task column`}
       className={[
-        "flex min-h-64 flex-col rounded-md border bg-surface p-3 transition",
+        "flex max-h-[36rem] min-h-44 w-72 shrink-0 flex-col overflow-hidden rounded-md border bg-[#ebecf0] transition",
         isDragOver
-          ? "border-mint/60 ring-2 ring-mint/15"
+          ? "border-sky-400 ring-2 ring-sky-300"
           : canDropTask
-            ? "border-mint/25"
-            : "border-ink/10",
+            ? "border-white/50"
+            : "border-transparent",
       ].join(" ")}
       onDragEnter={() => {
         if (canDropTask) {
@@ -86,14 +90,19 @@ export function StatusColumn({
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      <div className="flex items-center justify-between gap-3 border-b border-ink/10 pb-3">
-        <StatusBadge status={status} />
-        <span className="rounded bg-white px-2 py-1 text-xs font-semibold text-ink/55">
+      <div className="flex items-center justify-between gap-3 px-3 py-3">
+        <h3 className="text-sm font-semibold text-[#172033]">
+          {statusLabels[status]}
+        </h3>
+        <span className="text-sm font-medium text-[#172033]/60">
           {tasks.length}
         </span>
       </div>
 
-      <div className="mt-3 flex flex-1 flex-col gap-3">
+      <div className="flex flex-1 flex-col gap-2 overflow-y-auto px-2 pb-2">
+        {isDragOver ? (
+          <div className="min-h-10 rounded-md bg-[#d8dce2] ring-1 ring-sky-300" />
+        ) : null}
         {tasks.length > 0 ? (
           tasks.map((task) => (
             <TaskCard
@@ -103,6 +112,7 @@ export function StatusColumn({
               key={task.id}
               onDelete={onDeleteTask}
               onDragEnd={onTaskDragEnd}
+              onDragMove={onTaskDragMove}
               onDragStart={onTaskDragStart}
               onEdit={onEditTask}
               onOpen={onOpenTask}
@@ -111,11 +121,19 @@ export function StatusColumn({
             />
           ))
         ) : (
-          <div className="flex min-h-32 items-center justify-center rounded-md border border-dashed border-ink/15 bg-white px-3 py-4 text-center text-sm font-medium text-ink/45">
-            No {statusLabels[status].toLowerCase()} tasks
+          <div className="flex min-h-20 items-center justify-center rounded-md bg-[#dfe1e6] px-3 py-4 text-center text-sm font-medium text-[#172033]/45">
+            Drop a card here
           </div>
         )}
       </div>
+      <button
+        className="mx-2 mb-2 flex min-h-10 items-center rounded-md px-2 text-left text-sm font-medium text-[#172033]/70 transition hover:bg-[#d8dce2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        onClick={() => onAddTask(status)}
+        type="button"
+      >
+        <span className="mr-2 text-lg leading-none">+</span>
+        Add a card
+      </button>
     </section>
   );
 }

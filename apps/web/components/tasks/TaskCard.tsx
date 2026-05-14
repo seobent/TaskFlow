@@ -4,12 +4,11 @@ import { type SafeUser, type Task, TaskStatus } from "@taskflow/shared";
 import { type DragEvent } from "react";
 
 import { PriorityBadge } from "@/components/tasks/PriorityBadge";
-import { StatusBadge, statusLabels } from "@/components/tasks/StatusBadge";
+import { statusLabels } from "@/components/tasks/StatusBadge";
 import {
   formatTaskDate,
   formatUserReference,
 } from "@/components/tasks/task-formatting";
-import { Button } from "@/components/ui/Button";
 
 type TaskCardProps = {
   currentUser: SafeUser;
@@ -17,7 +16,8 @@ type TaskCardProps = {
   isStatusUpdating?: boolean;
   onDelete: (task: Task) => void;
   onDragEnd: () => void;
-  onDragStart: (task: Task) => void;
+  onDragMove: (position: { x: number; y: number }) => void;
+  onDragStart: (task: Task, position: { x: number; y: number }) => void;
   onEdit: (task: Task) => void;
   onOpen: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
@@ -36,6 +36,7 @@ export function TaskCard({
   isStatusUpdating = false,
   onDelete,
   onDragEnd,
+  onDragMove,
   onDragStart,
   onEdit,
   onOpen,
@@ -48,120 +49,186 @@ export function TaskCard({
   function handleDragStart(event: DragEvent<HTMLElement>) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", task.id);
-    onDragStart(task);
+    setTransparentDragImage(event);
+    onDragStart(task, { x: event.clientX, y: event.clientY });
   }
 
   return (
     <article
       aria-label={`Drag ${task.title}`}
       className={[
-        "cursor-grab rounded-md border border-ink/10 bg-white p-4 shadow-sm transition active:cursor-grabbing",
-        isDragging ? "opacity-60 ring-2 ring-mint/20" : "hover:border-mint/25",
+        "cursor-grab rounded-md border border-[#c7ccd4] bg-white px-3 py-2 text-[#172033] shadow-sm transition active:cursor-grabbing",
+        isDragging
+          ? "rotate-1 opacity-30 ring-2 ring-sky-300"
+          : "hover:border-sky-300 hover:shadow-md",
       ].join(" ")}
       draggable={!isStatusUpdating}
       onDragEnd={onDragEnd}
+      onDrag={(event) => {
+        if (event.clientX || event.clientY) {
+          onDragMove({ x: event.clientX, y: event.clientY });
+        }
+      }}
       onDragStart={handleDragStart}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h4 className="break-words text-base font-semibold leading-6 text-ink">
-            <button
-              className="text-left transition hover:text-mint focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-              onClick={() => onOpen(task)}
-              type="button"
-            >
-              {task.title}
-            </button>
-          </h4>
-          <p className="mt-1 text-xs font-medium text-ink/45">
-            Updated {formatTaskDate(task.updatedAt)}
-          </p>
-        </div>
-        <PriorityBadge priority={task.priority} />
-      </div>
-
-      {task.description ? (
-        <p className="mt-3 whitespace-pre-line break-words text-sm leading-6 text-ink/65">
-          {task.description}
-        </p>
-      ) : null}
-
-      <dl className="mt-4 grid gap-3 text-xs text-ink/55">
-        <div>
-          <dt className="font-semibold uppercase tracking-wide">Due</dt>
-          <dd className="mt-1 font-medium text-ink/75">
-            {task.dueDate ? formatTaskDate(task.dueDate) : "No due date"}
-          </dd>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <dt className="font-semibold uppercase tracking-wide">Assignee</dt>
-            <dd
-              className="mt-1 break-words font-medium text-ink/75"
-              title={task.assigneeId ?? undefined}
-            >
-              {assigneeLabel}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-semibold uppercase tracking-wide">Creator</dt>
-            <dd
-              className="mt-1 break-words font-medium text-ink/75"
-              title={task.createdById}
-            >
-              {creatorLabel}
-            </dd>
-          </div>
-        </div>
-      </dl>
-
-      <div className="mt-4 rounded-md bg-surface p-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <StatusBadge status={task.status} />
-          <select
-            aria-label={`Change status for ${task.title}`}
-            className="min-h-9 rounded-md border border-ink/15 bg-white px-2 text-sm font-medium text-ink shadow-sm transition focus:border-mint focus:outline-none focus:ring-2 focus:ring-mint/20 disabled:cursor-not-allowed disabled:text-ink/45"
-            disabled={isStatusUpdating}
-            onChange={(event) =>
-              onStatusChange(task, event.target.value as TaskStatus)
-            }
-            value={task.status}
+      <div className="flex items-start gap-2">
+        <span
+          aria-hidden="true"
+          className="mt-1.5 h-4 w-4 shrink-0 rounded-full bg-mint text-center text-[10px] font-bold leading-4 text-white"
+        />
+        <div className="min-w-0 flex-1">
+          <button
+            className="block w-full break-words text-left text-sm font-medium leading-5 transition hover:text-[#0c66e4] focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c66e4]"
+            onClick={() => onOpen(task)}
+            type="button"
           >
-            {statusOptions.map((status) => (
-              <option key={status} value={status}>
-                {statusLabels[status]}
-              </option>
-            ))}
-          </select>
+            {task.title}
+          </button>
+          {task.description ? (
+            <p className="mt-1 max-h-10 overflow-hidden whitespace-pre-line break-words text-sm leading-5 text-[#172033]/65">
+              {task.description}
+            </p>
+          ) : null}
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-        <Button
-          onClick={() => onOpen(task)}
-          size="sm"
-          type="button"
-          variant="secondary"
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <PriorityBadge
+          className="min-h-5 px-1.5 text-[11px]"
+          priority={task.priority}
+        />
+        {task.dueDate ? (
+          <span className="rounded border border-[#c7ccd4] bg-[#f7f8fa] px-1.5 py-0.5 text-[11px] font-semibold text-[#172033]/65">
+            {formatTaskDate(task.dueDate)}
+          </span>
+        ) : null}
+        <span
+          className="max-w-full truncate rounded border border-[#c7ccd4] bg-[#f7f8fa] px-1.5 py-0.5 text-[11px] font-semibold text-[#172033]/55"
+          title={task.assigneeId ?? undefined}
         >
-          Details
-        </Button>
-        <Button
-          onClick={() => onEdit(task)}
-          size="sm"
-          type="button"
-          variant="secondary"
-        >
-          Edit
-        </Button>
-        <Button
-          onClick={() => onDelete(task)}
-          size="sm"
-          type="button"
-          variant="danger"
-        >
-          Delete
-        </Button>
+          {assigneeLabel}
+        </span>
+        {isStatusUpdating ? (
+          <span className="text-[11px] font-semibold text-[#0c66e4]">
+            Saving...
+          </span>
+        ) : null}
       </div>
+
+      <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#dfe1e6] pt-2">
+        <select
+          aria-label={`Change status for ${task.title}`}
+          className="min-h-8 min-w-0 flex-1 rounded-md border border-[#c7ccd4] bg-white px-2 text-xs font-medium text-[#172033] shadow-sm transition focus:border-[#0c66e4] focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:text-[#172033]/45"
+          disabled={isStatusUpdating}
+          onChange={(event) =>
+            onStatusChange(task, event.target.value as TaskStatus)
+          }
+          value={task.status}
+        >
+          {statusOptions.map((status) => (
+            <option key={status} value={status}>
+              {statusLabels[status]}
+            </option>
+          ))}
+        </select>
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            className="min-h-8 rounded-md px-2 text-xs font-semibold text-[#172033]/65 transition hover:bg-[#ebecf0] hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c66e4]"
+            onClick={() => onOpen(task)}
+            type="button"
+          >
+            Open
+          </button>
+          <button
+            className="min-h-8 rounded-md px-2 text-xs font-semibold text-[#172033]/65 transition hover:bg-[#ebecf0] hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c66e4]"
+            onClick={() => onEdit(task)}
+            type="button"
+          >
+            Edit
+          </button>
+          <button
+            className="min-h-8 rounded-md px-2 text-xs font-semibold text-berry transition hover:bg-berry/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-berry"
+            onClick={() => onDelete(task)}
+            type="button"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+
+      <p className="mt-2 truncate text-[11px] font-medium text-[#172033]/45">
+        Created by {creatorLabel} - Updated {formatTaskDate(task.updatedAt)}
+      </p>
     </article>
   );
+}
+
+export function TaskDragPreview({
+  currentUser,
+  position,
+  task,
+}: {
+  currentUser: SafeUser;
+  position: { x: number; y: number };
+  task: Task;
+}) {
+  const assigneeLabel = formatUserReference(task.assigneeId, currentUser);
+  const creatorLabel = formatUserReference(task.createdById, currentUser);
+
+  return (
+    <div
+      aria-hidden="true"
+      className="pointer-events-none fixed z-50 w-72 rotate-3 rounded-md border border-sky-300 bg-white px-3 py-2 text-[#172033] opacity-100 shadow-2xl"
+      style={{
+        left: position.x + 14,
+        top: position.y + 14,
+      }}
+    >
+      <div className="flex items-start gap-2">
+        <span className="mt-1.5 h-4 w-4 shrink-0 rounded-full bg-mint" />
+        <div className="min-w-0 flex-1">
+          <p className="break-words text-sm font-semibold leading-5">
+            {task.title}
+          </p>
+          {task.description ? (
+            <p className="mt-1 max-h-10 overflow-hidden whitespace-pre-line break-words text-sm leading-5 text-[#172033]/65">
+              {task.description}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <PriorityBadge
+          className="min-h-5 px-1.5 text-[11px]"
+          priority={task.priority}
+        />
+        {task.dueDate ? (
+          <span className="rounded border border-[#c7ccd4] bg-[#f7f8fa] px-1.5 py-0.5 text-[11px] font-semibold text-[#172033]/65">
+            {formatTaskDate(task.dueDate)}
+          </span>
+        ) : null}
+        <span className="max-w-full truncate rounded border border-[#c7ccd4] bg-[#f7f8fa] px-1.5 py-0.5 text-[11px] font-semibold text-[#172033]/55">
+          {assigneeLabel}
+        </span>
+      </div>
+      <p className="mt-2 truncate text-[11px] font-medium text-[#172033]/45">
+        Created by {creatorLabel} - Updated {formatTaskDate(task.updatedAt)}
+      </p>
+    </div>
+  );
+}
+
+function setTransparentDragImage(event: DragEvent<HTMLElement>) {
+  const dragImage = document.createElement("span");
+
+  dragImage.style.width = "1px";
+  dragImage.style.height = "1px";
+  dragImage.style.position = "fixed";
+  dragImage.style.top = "-1000px";
+  dragImage.style.opacity = "0";
+
+  document.body.appendChild(dragImage);
+  event.dataTransfer.setDragImage(dragImage, 0, 0);
+
+  window.setTimeout(() => dragImage.remove(), 0);
 }

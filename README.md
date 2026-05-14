@@ -32,7 +32,7 @@ demo123
 - Project creation, listing, detail, update, and deletion.
 - Project membership records for user access control.
 - Task creation, assignment, status tracking, priority tracking, due dates, updates, and deletion.
-- Task board views grouped by status.
+- Web task board views grouped by status, with drag-and-drop cards for moving tasks between workflow columns.
 - Task comments for project collaboration.
 - Task attachment uploads with metadata stored in PostgreSQL and files stored in an S3-compatible object store such as Cloudflare R2.
 - Admin dashboard statistics.
