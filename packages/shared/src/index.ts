@@ -13,8 +13,9 @@ export type EntityId = string;
 export type ISODateString = string;
 
 export enum UserRole {
-  User = "user",
-  Admin = "admin"
+  Admin = "admin",
+  Manager = "manager",
+  User = "user"
 }
 
 export enum ProjectMemberRole {

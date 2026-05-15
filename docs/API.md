@@ -50,13 +50,16 @@ Protected route helpers read the bearer token first and then fall back to the we
 
 ## Authorization Rules
 
-- `admin` users can access admin endpoints and manage all projects.
-- `user` accounts can access only projects they own or where they have a `project_members` row.
-- Project owners can update and delete their projects.
-- Project owners and admins can assign, update, and remove project members.
-- Project managers and project members can list members only for projects where they are assigned.
+- `admin` users can access admin endpoints, manage all projects, and manage
+  global user roles.
+- `manager` users can create projects, view projects they own/manage/are assigned to, and update or delete only projects they own or manage.
+- `user` accounts can access only assigned projects and tasks.
+- Admins can update and delete all projects.
+- Admins can list, assign, update, and remove project members in any project.
+- Project owners and project managers can list, assign, update, and remove members only in projects they own or manage.
+- Normal project members and unassigned users cannot access project member management endpoints.
 - Admins can access all tasks.
-- Project owners and project members can list, view, create, update, and delete tasks in the project.
+- Project participants can list and view tasks in the project; task creation requires global `admin` or `manager` access.
 - Comments can be listed and created by admins and project participants.
 - A comment can be deleted by its author or an admin.
 - Attachments can be listed and uploaded by admins and project participants.
@@ -71,20 +74,23 @@ Protected route helpers read the bearer token first and then fall back to the we
 | `POST` | `/api/auth/login` | Public | Authenticate credentials, return user and token, set web cookie. |
 | `POST` | `/api/auth/logout` | Public | Clear web auth cookie. |
 | `GET` | `/api/auth/me` | Required | Return current user. |
-| `GET` | `/api/users?search=` | Admin | Search users by name or email. |
+| `GET` | `/api/users?search=` | Admin | List users, optionally filtered by name or email. |
+| `GET` | `/api/users/:id` | Admin | Get one safe user object. |
+| `PATCH` | `/api/users/:id` | Admin | Update a user's global role. |
+| `DELETE` | `/api/users/:id` | Admin | Delete a user account. |
 | `GET` | `/api/projects` | Required | List visible projects. |
-| `POST` | `/api/projects` | Required | Create a project owned by current user. |
+| `POST` | `/api/projects` | Manager/Admin | Create a project owned by current user. |
 | `GET` | `/api/projects/:id` | Required | Get one visible project. |
-| `PATCH` | `/api/projects/:id` | Required | Update an owned project, or any project for admins. |
-| `DELETE` | `/api/projects/:id` | Required | Delete an owned project, or any project for admins. |
-| `GET` | `/api/projects/:id/members` | Required | List project members for an accessible project. |
-| `POST` | `/api/projects/:id/members` | Required | Assign a user to an owned project, or any project for admins. |
-| `PATCH` | `/api/projects/:id/members/:userId` | Required | Update a member role for an owned project, or any project for admins. |
-| `DELETE` | `/api/projects/:id/members/:userId` | Required | Remove a member from an owned project, or any project for admins. |
+| `PATCH` | `/api/projects/:id` | Required | Update a project as admin, or as a manager who owns or manages it. |
+| `DELETE` | `/api/projects/:id` | Required | Delete a project as admin, or as a manager who owns or manages it. |
+| `GET` | `/api/projects/:id/members` | Required | List project members as admin, project owner, or project manager. |
+| `POST` | `/api/projects/:id/members` | Required | Assign a user as admin, project owner, or project manager. |
+| `PATCH` | `/api/projects/:id/members/:userId` | Required | Update a member role as admin, project owner, or project manager. |
+| `DELETE` | `/api/projects/:id/members/:userId` | Required | Remove a member as admin, project owner, or project manager. |
 | `GET` | `/api/projects/:id/tasks` | Required | List tasks in an accessible project. |
-| `POST` | `/api/projects/:id/tasks` | Required | Create a task in an accessible project. |
+| `POST` | `/api/projects/:id/tasks` | Manager/Admin | Create a task in an accessible project. |
 | `GET` | `/api/tasks` | Required | List accessible tasks, optionally filtered by query params. |
-| `POST` | `/api/tasks` | Required | Create a task using `projectId` from the request body. |
+| `POST` | `/api/tasks` | Manager/Admin | Create a task using `projectId` from the request body. |
 | `GET` | `/api/tasks/:taskId` | Required | Get one visible task. |
 | `PATCH` | `/api/tasks/:taskId` | Required | Update a task in an accessible project. |
 | `DELETE` | `/api/tasks/:taskId` | Required | Delete a task in an accessible project. |
@@ -96,6 +102,7 @@ Protected route helpers read the bearer token first and then fall back to the we
 | `GET` | `/api/admin/stats` | Admin | Return system totals and task breakdowns. |
 | `GET` | `/api/admin/users` | Admin | List safe user objects. |
 | `PATCH` | `/api/admin/users/:id/role` | Admin | Update a user's role. |
+| `DELETE` | `/api/admin/users/:id` | Admin | Delete a user account with admin safeguards. |
 | `GET` | `/api/admin/projects` | Admin | List all projects. |
 | `DELETE` | `/api/admin/projects/:id` | Admin | Delete any project. |
 
@@ -218,14 +225,14 @@ Common error: `401` missing, invalid, or expired token.
 
 ## User Endpoints
 
-### Search Users
+### List Or Search Users
 
 ```http
 GET /api/users?search=ada
 Authorization: Bearer <admin-token>
 ```
 
-Only admin users can list or search users. The optional `search` query matches name or email case-insensitively. Results are limited to 20 users and never include password hashes or sensitive fields.
+Only admin users can list or search users. The optional `search` query matches name or email case-insensitively. Responses never include password hashes, tokens, or other sensitive fields.
 
 Response:
 
@@ -238,7 +245,8 @@ Response:
         "name": "Ada Lovelace",
         "email": "ada@example.com",
         "role": "user",
-        "createdAt": "2026-05-09T09:00:00.000Z"
+        "createdAt": "2026-05-09T09:00:00.000Z",
+        "updatedAt": "2026-05-09T09:00:00.000Z"
       }
     ]
   }
@@ -246,6 +254,65 @@ Response:
 ```
 
 Common errors: `400` invalid query parameters, `401` unauthenticated, `403` admin access required.
+
+### Get, Update, And Delete User
+
+```http
+GET /api/users/:id
+PATCH /api/users/:id
+DELETE /api/users/:id
+Authorization: Bearer <admin-token>
+```
+
+Only admins can use these user management endpoints. Managers and normal users
+receive `403 Forbidden`.
+
+Patch request:
+
+```json
+{
+  "role": "manager"
+}
+```
+
+Valid global roles are `admin`, `manager`, and `user`; invalid values return
+`400 Bad Request` with Zod validation details. Demoting the final admin returns
+`400 Bad Request`.
+
+Response:
+
+```json
+{
+  "data": {
+    "user": {
+      "id": "user-uuid",
+      "email": "demo@taskflow.dev",
+      "name": "Demo User",
+      "role": "manager",
+      "createdAt": "2026-05-08T09:00:00.000Z",
+      "updatedAt": "2026-05-09T09:00:00.000Z"
+    }
+  }
+}
+```
+
+Deleting a user removes project membership rows and clears nullable references
+from projects, tasks, comments, and attachments before deleting the account.
+Admins cannot delete their own account, and the final admin cannot be deleted.
+
+Delete response:
+
+```json
+{
+  "data": {
+    "ok": true
+  }
+}
+```
+
+Common errors: `400` invalid id or body, self-delete attempt, or final-admin
+operation; `401` unauthenticated; `403` admin access required; `404` user not
+found.
 
 ## Project Endpoints
 
@@ -311,7 +378,7 @@ Response `201 Created`:
 }
 ```
 
-The API also adds the creator to `project_members` with role `owner`.
+The API also adds the creator to `project_members`: global admins are added as `owner`, and global managers are added as `manager`. Only global `admin` and `manager` users can create projects.
 
 ### Get, Update, And Delete Project
 
@@ -341,6 +408,8 @@ Delete response:
 }
 ```
 
+Admins can view all projects. Global managers can view projects they own, manage, or are assigned to. Normal users can view only projects where they have a `project_members` assignment. Normal users cannot create, update, or delete projects.
+
 Common errors: `400` invalid project id or request body, `401` unauthenticated, `403` access denied, `404` project not found.
 
 ## Project Member Endpoints
@@ -354,7 +423,7 @@ GET /api/projects/:id/members
 Authorization: Bearer <token>
 ```
 
-Admins, project owners, project managers, and assigned project members can list members for projects they can access.
+Admins can list members for any project. Project owners and project managers can list members only for projects they own or manage. Normal project members and unassigned users receive `403 Forbidden`.
 
 Response:
 
@@ -399,7 +468,7 @@ Response:
 }
 ```
 
-`assignableUsers` contains safe user objects only when the requester can manage project members. Project managers and members receive an empty list and can view the member table only.
+`assignableUsers` contains safe user objects because only users who can manage project members can access this endpoint.
 
 ### Assign Project Member
 
@@ -435,7 +504,7 @@ Response `201 Created`:
 }
 ```
 
-Admins can assign members to any project. Project owners can assign members only to their own projects. Duplicate assignments return `409 Conflict`.
+Admins can assign members to any project. Project owners and project managers can assign members only to projects they own or manage. Duplicate assignments return `409 Conflict`.
 
 ### Update Or Remove Project Member
 
@@ -455,7 +524,7 @@ Patch request:
 
 `PATCH` returns the updated member with `200 OK`. `DELETE` returns `{ "data": { "ok": true } }`.
 
-Admins and project owners can update or remove non-owner project members. The project owner cannot be demoted or removed through these endpoints.
+Admins, project owners, and project managers can update or remove non-owner project members. The project owner cannot be demoted or removed through these endpoints.
 
 Common errors: `400` invalid id or body, `401` unauthenticated, `403` access denied, `404` project, user, or member not found, `409` duplicate assignment.
 
@@ -554,7 +623,7 @@ Response `201 Created`:
 
 If `assigneeId` is provided, the assignee must be the project owner or a project member.
 
-Tasks can also be created through `POST /api/tasks` by including a required `projectId` field in the JSON body. The current user must be an admin, the project owner, or a project member.
+Tasks can also be created through `POST /api/tasks` by including a required `projectId` field in the JSON body. The current user must have global `admin` or `manager` access and must be able to access the project.
 
 ### Get, Update, And Delete Task
 
@@ -815,7 +884,7 @@ Request:
 
 ```json
 {
-  "role": "admin"
+  "role": "manager"
 }
 ```
 
@@ -828,10 +897,31 @@ Response:
       "id": "user-uuid",
       "email": "demo@taskflow.dev",
       "name": "Demo User",
-      "role": "admin",
+      "role": "manager",
       "createdAt": "2026-05-08T09:00:00.000Z",
       "updatedAt": "2026-05-09T09:00:00.000Z"
     }
+  }
+}
+```
+
+### Delete User
+
+```http
+DELETE /api/admin/users/:id
+Authorization: Bearer <admin-token>
+```
+
+Deletes a user account after clearing nullable project, task, comment, and
+attachment references and removing project membership rows. Admins cannot delete
+their own account, and the final admin account cannot be deleted.
+
+Response:
+
+```json
+{
+  "data": {
+    "ok": true
   }
 }
 ```

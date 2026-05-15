@@ -10,6 +10,7 @@ import {
   ProjectForm,
   type ProjectFormValues,
 } from "@/components/projects/ProjectForm";
+import { ProjectMembersView } from "@/components/projects/ProjectMembersView";
 import { TaskBoard } from "@/components/tasks/TaskBoard";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -27,6 +28,11 @@ type ProjectDetailsViewProps = {
 
 type ProjectWithOwner = Project & {
   owner?: SafeUser | null;
+  permissions?: {
+    canCreateTask: boolean;
+    canManage: boolean;
+    canManageMembers: boolean;
+  };
 };
 
 export function ProjectDetailsView({
@@ -50,9 +56,19 @@ export function ProjectDetailsView({
     }
 
     return (
-      currentUser.role === UserRole.Admin || project.ownerId === currentUser.id
+      project.permissions?.canManage ??
+      (currentUser.role === UserRole.Admin ||
+        project.ownerId === currentUser.id)
     );
   }, [currentUser.id, currentUser.role, project]);
+
+  const canManageMembers = useMemo(() => {
+    if (!project) {
+      return false;
+    }
+
+    return project.permissions?.canManageMembers ?? canManage;
+  }, [canManage, project]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -234,6 +250,10 @@ export function ProjectDetailsView({
           )}
         </section>
 
+        {canManageMembers ? (
+          <ProjectMembersView embedded projectId={projectId} />
+        ) : null}
+
         <TaskBoard currentUser={currentUser} projectId={projectId} />
       </div>
 
@@ -288,28 +308,22 @@ function ProjectOverview({
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">
-          <Link
-            className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-            href={`/projects/${project.id}/settings/members`}
-          >
-            Members
-          </Link>
           {canManage ? (
             <>
-            <button
-              className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-              onClick={onEdit}
-              type="button"
-            >
-              Edit
-            </button>
-            <button
-              className="inline-flex min-h-10 items-center justify-center rounded-md bg-berry px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-berry/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-berry"
-              onClick={onDelete}
-              type="button"
-            >
-              Delete
-            </button>
+              <button
+                className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+                onClick={onEdit}
+                type="button"
+              >
+                Edit
+              </button>
+              <button
+                className="inline-flex min-h-10 items-center justify-center rounded-md bg-berry px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-berry/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-berry"
+                onClick={onDelete}
+                type="button"
+              >
+                Delete
+              </button>
             </>
           ) : null}
         </div>

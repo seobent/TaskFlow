@@ -66,12 +66,12 @@ Placeholder:
 ![Task details](screenshots/07-task-details.png)
 ```
 
-## Admin Panel
+## User Management
 
 Placeholder:
 
 ```markdown
-![Admin panel](screenshots/08-admin-panel.png)
+![User management](screenshots/08-user-management.png)
 ```
 
 ## Mobile Login

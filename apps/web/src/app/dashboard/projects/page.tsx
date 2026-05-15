@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { UserRole } from "@taskflow/shared";
 
 import { ProjectListView } from "@/components/projects/ProjectListView";
+import { requireDashboardUser } from "@/lib/dashboard-auth";
 
 export const metadata: Metadata = {
   title: "Projects | TaskFlow",
 };
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const user = await requireDashboardUser();
+  const canCreateProjects =
+    user.role === UserRole.Admin || user.role === UserRole.Manager;
+
   return (
     <div className="space-y-6">
       <section className="rounded-md border border-ink/10 bg-white p-6 shadow-sm">
@@ -24,16 +30,21 @@ export default function ProjectsPage() {
               that needs attention.
             </p>
           </div>
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-            href="/dashboard/projects/new"
-          >
-            New project
-          </Link>
+          {canCreateProjects ? (
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+              href="/dashboard/projects/new"
+            >
+              New project
+            </Link>
+          ) : null}
         </div>
       </section>
 
-      <ProjectListView />
+      <ProjectListView
+        canCreateProjects={canCreateProjects}
+        currentUser={user}
+      />
     </div>
   );
 }

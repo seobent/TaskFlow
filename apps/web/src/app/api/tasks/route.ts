@@ -3,14 +3,15 @@ import {
   idSchema,
   TaskPriority,
   TaskStatus,
+  type SafeUser,
   taskPrioritySchema,
   taskStatusSchema,
-  UserRole,
 } from "@taskflow/shared";
 import { and, desc, eq, isNotNull, or, type SQL } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
+import { isAdmin, isManager } from "@/lib/authorization";
 import { AuthError, requireAuth } from "@/lib/auth";
 import {
   findProjectTaskAccess,
@@ -40,9 +41,9 @@ export async function GET(request: Request) {
     }
 
     const taskRecords =
-      user.role === UserRole.Admin
+      isAdmin(user)
         ? await listAdminTasks(parsedFilters.conditions)
-        : await listAccessibleTasks(user.id, parsedFilters.conditions);
+        : await listAccessibleTasks(user, parsedFilters.conditions);
 
     return apiSuccess({
       tasks: taskRecords.map(serializeTask),
@@ -82,6 +83,10 @@ export async function POST(request: Request) {
 
     if (!access.canAccess) {
       return apiError("Project task access denied.", 403);
+    }
+
+    if (!access.canCreate) {
+      return apiError("Manager access required to create tasks.", 403);
     }
 
     if (!(await isValidProjectAssignee(access.project, parsed.data.assigneeId))) {
@@ -129,11 +134,11 @@ async function listAdminTasks(filterConditions: SQL[]) {
     : db.select().from(tasks).orderBy(desc(tasks.updatedAt), desc(tasks.createdAt));
 }
 
-async function listAccessibleTasks(userId: string, filterConditions: SQL[]) {
-  const accessCondition = or(
-    eq(projects.ownerId, userId),
-    isNotNull(projectMembers.id),
-  );
+async function listAccessibleTasks(
+  user: Pick<SafeUser, "id" | "role">,
+  filterConditions: SQL[],
+) {
+  const accessCondition = buildTaskListAccessCondition(user);
 
   if (!accessCondition) {
     throw new Error("Task access condition could not be built.");
@@ -149,13 +154,23 @@ async function listAccessibleTasks(userId: string, filterConditions: SQL[]) {
       projectMembers,
       and(
         eq(projectMembers.projectId, projects.id),
-        eq(projectMembers.userId, userId),
+        eq(projectMembers.userId, user.id),
       ),
     )
     .where(and(...filterConditions, accessCondition))
     .orderBy(desc(tasks.updatedAt), desc(tasks.createdAt));
 
   return rows.map((row) => row.task);
+}
+
+function buildTaskListAccessCondition(user: Pick<SafeUser, "id" | "role">) {
+  const assignedProjectCondition = isNotNull(projectMembers.id);
+
+  if (!isManager(user)) {
+    return assignedProjectCondition;
+  }
+
+  return or(eq(projects.ownerId, user.id), assignedProjectCondition);
 }
 
 function parseTaskFilters(searchParams: URLSearchParams) {

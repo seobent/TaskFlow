@@ -175,10 +175,13 @@ JWT cookies are configured with `httpOnly`, `sameSite: "lax"`, path `/`, a seven
 
 ## Authorization Model
 
-TaskFlow supports two roles:
+TaskFlow supports three global user roles:
 
-- `user`: Can access owned projects and projects where they have a `project_members` row.
 - `admin`: Can access admin routes and manage all users and projects.
+- `manager`: Can create projects and create tasks in projects they can access.
+- `user`: Can work only on assigned projects and tasks.
+
+Project membership roles stay separate from global roles. Membership controls access to specific projects, while the global role controls system-level permissions.
 
 Server-side authorization is enforced by API handlers and helper functions. UI controls may hide actions for usability, but authorization does not rely on hidden buttons or mobile navigation.
 

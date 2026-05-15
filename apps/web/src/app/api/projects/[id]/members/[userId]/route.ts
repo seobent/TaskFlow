@@ -60,7 +60,7 @@ export async function PATCH(
     }
 
     if (!access.canManage) {
-      return apiError("Project owner access required.", 403);
+      return apiError("Project manager access required.", 403);
     }
 
     const targetUser = await db.query.users.findFirst({
@@ -139,7 +139,7 @@ export async function DELETE(
     }
 
     if (!access.canManage) {
-      return apiError("Project owner access required.", 403);
+      return apiError("Project manager access required.", 403);
     }
 
     const targetUser = await db.query.users.findFirst({

@@ -5,28 +5,38 @@ import { UserRole } from "@taskflow/shared";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const baseNavItems = [
-  { href: "/dashboard", label: "Dashboard" },
+const baseNavItems: DashboardNavItem[] = [
+  { exact: true, href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/projects", label: "Projects" },
+];
+
+const adminNavItems: DashboardNavItem[] = [
+  { href: "/dashboard/admin/users", label: "Users" },
 ];
 
 type DashboardNavProps = {
   user: SafeUser;
 };
 
+type DashboardNavItem = {
+  exact?: boolean;
+  href: string;
+  label: string;
+};
+
 export function DashboardNav({ user }: DashboardNavProps) {
   const pathname = usePathname();
   const navItems =
     user.role === UserRole.Admin
-      ? [...baseNavItems, { href: "/dashboard/admin", label: "Settings" }]
+      ? [...baseNavItems, ...adminNavItems]
       : baseNavItems;
 
   return (
     <nav className="flex gap-2 overflow-x-auto rounded-md border border-ink/10 bg-white p-2 shadow-sm lg:flex-col lg:overflow-visible">
       {navItems.map((item) => {
-        const isActive =
-          pathname === item.href ||
-          (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
+        const isActive = item.exact
+          ? pathname === item.href
+          : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
         return (
           <Link

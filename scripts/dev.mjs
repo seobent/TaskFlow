@@ -1,7 +1,16 @@
 import { spawn } from "node:child_process";
+import { findAvailablePort, parsePort } from "./port-utils.mjs";
 
 const isWindows = process.platform === "win32";
 const npmCommand = isWindows ? "npm.cmd" : "npm";
+const defaultMobilePort = parsePort(process.env.TASKFLOW_MOBILE_PORT, 8081);
+const mobilePort = await findAvailablePort(defaultMobilePort);
+
+if (mobilePort !== defaultMobilePort) {
+  console.log(
+    `[dev] Expo port ${defaultMobilePort} is in use; using ${mobilePort} instead.`,
+  );
+}
 
 const processes = [
   {
@@ -11,19 +20,30 @@ const processes = [
   },
   {
     name: "mobile",
-    args: ["run", "dev:mobile:web"],
+    args: [
+      "run",
+      "web",
+      "-w",
+      "@taskflow/mobile",
+      "--",
+      "--port",
+      String(mobilePort),
+    ],
+    env: {
+      RCT_METRO_PORT: String(mobilePort),
+    },
     interactive: false,
   },
 ];
 
 let isShuttingDown = false;
 
-const children = processes.map(({ name, args, interactive }) => {
+const children = processes.map(({ name, args, env, interactive }) => {
   const command = isWindows ? `${npmCommand} ${args.join(" ")}` : npmCommand;
   const commandArgs = isWindows ? [] : args;
   const child = spawn(command, commandArgs, {
     cwd: process.cwd(),
-    env: process.env,
+    env: { ...process.env, ...env },
     shell: isWindows,
     stdio: interactive ? "inherit" : ["ignore", "pipe", "pipe"],
   });

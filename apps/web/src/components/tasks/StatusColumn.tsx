@@ -8,6 +8,9 @@ import { statusLabels } from "@/components/tasks/StatusBadge";
 import type { UserNameLookup } from "@/components/tasks/task-formatting";
 
 type StatusColumnProps = {
+  canCreateTasks: boolean;
+  canDeleteTasks: boolean;
+  canUpdateTasks: boolean;
   currentUser: SafeUser;
   draggedTaskId: string | null;
   isStatusUpdating: (taskId: string) => boolean;
@@ -26,6 +29,9 @@ type StatusColumnProps = {
 };
 
 export function StatusColumn({
+  canCreateTasks,
+  canDeleteTasks,
+  canUpdateTasks,
   currentUser,
   draggedTaskId,
   isStatusUpdating,
@@ -43,7 +49,7 @@ export function StatusColumn({
   usersById,
 }: StatusColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false);
-  const canDropTask = Boolean(draggedTaskId);
+  const canDropTask = canUpdateTasks && Boolean(draggedTaskId);
 
   function handleDragOver(event: DragEvent<HTMLElement>) {
     if (!canDropTask) {
@@ -109,6 +115,8 @@ export function StatusColumn({
         {tasks.length > 0 ? (
           tasks.map((task) => (
             <TaskCard
+              canDelete={canDeleteTasks}
+              canUpdate={canUpdateTasks}
               currentUser={currentUser}
               isDragging={draggedTaskId === task.id}
               isStatusUpdating={isStatusUpdating(task.id)}
@@ -126,18 +134,20 @@ export function StatusColumn({
           ))
         ) : (
           <div className="flex min-h-20 items-center justify-center rounded-md bg-[#dfe1e6] px-3 py-4 text-center text-sm font-medium text-[#172033]/45">
-            Drop a card here
+            {canCreateTasks ? "Drop a card here" : "No cards"}
           </div>
         )}
       </div>
-      <button
-        className="mx-2 mb-2 flex min-h-10 items-center rounded-md px-2 text-left text-sm font-medium text-[#172033]/70 transition hover:bg-[#d8dce2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-        onClick={() => onAddTask(status)}
-        type="button"
-      >
-        <span className="mr-2 text-lg leading-none">+</span>
-        Add a card
-      </button>
+      {canCreateTasks ? (
+        <button
+          className="mx-2 mb-2 flex min-h-10 items-center rounded-md px-2 text-left text-sm font-medium text-[#172033]/70 transition hover:bg-[#d8dce2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          onClick={() => onAddTask(status)}
+          type="button"
+        >
+          <span className="mr-2 text-lg leading-none">+</span>
+          Add a card
+        </button>
+      ) : null}
     </section>
   );
 }

@@ -85,7 +85,7 @@ export default function ProjectsScreen() {
         ) : (
           <EmptyState
             actionLabel="Refresh"
-            message="No projects are available for your account yet."
+            message="Your account has been created successfully. An Admin or Manager must assign you to a project before you can access project tasks."
             onAction={loadProjects}
             title="No projects yet"
           />

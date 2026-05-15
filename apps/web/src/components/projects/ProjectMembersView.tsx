@@ -44,6 +44,7 @@ type ProjectMembersPayload = {
 };
 
 type ProjectMembersViewProps = {
+  embedded?: boolean;
   projectId: string;
 };
 
@@ -59,10 +60,15 @@ const projectRoleLabels: Record<ProjectMemberRole, string> = {
   [ProjectMemberRole.Member]: "Member",
 };
 
-export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
+export function ProjectMembersView({
+  embedded = false,
+  projectId,
+}: ProjectMembersViewProps) {
   const router = useRouter();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
   const [assignError, setAssignError] = useState<string | null>(null);
+  const [assignMessage, setAssignMessage] = useState<string | null>(null);
   const [assignRole, setAssignRole] = useState<AssignableProjectMemberRole>(
     ProjectMemberRole.Member,
   );
@@ -86,7 +92,9 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
 
     async function loadMembers() {
       setActionError(null);
+      setActionMessage(null);
       setAssignError(null);
+      setAssignMessage(null);
       setIsLoading(true);
       setLoadError(null);
 
@@ -104,7 +112,11 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
 
         if (!response.ok) {
           setLoadError(
-            readApiErrorMessage(body, "Unable to load project members."),
+            readProjectMemberApiError(
+              response.status,
+              body,
+              "Unable to load project members.",
+            ),
           );
           return;
         }
@@ -157,15 +169,19 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
 
     if (!selectedUserId) {
       setAssignError("Choose a user to assign.");
+      setAssignMessage(null);
       return;
     }
 
     if (selectedUserIsAssigned) {
       setAssignError("That user is already assigned to this project.");
+      setAssignMessage(null);
       return;
     }
 
     setAssignError(null);
+    setAssignMessage(null);
+    setActionMessage(null);
     setIsAssigning(true);
 
     try {
@@ -191,12 +207,20 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
 
       if (!response.ok) {
         setAssignError(
-          readApiErrorMessage(body, "Unable to assign project member."),
+          readProjectMemberApiError(
+            response.status,
+            body,
+            "Unable to assign project member.",
+          ),
         );
         return;
       }
 
       const payload = readApiData<{ member: ProjectMemberWithUser }>(body);
+      const assignedUserName =
+        payload?.member?.user?.name ??
+        assignableUsers.find((user) => user.id === selectedUserId)?.name ??
+        "User";
 
       if (payload?.member) {
         setMembers((currentMembers) =>
@@ -204,6 +228,7 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
         );
       }
 
+      setAssignMessage(`${assignedUserName} was added to this project.`);
       setSelectedUserId("");
       setAssignRole(ProjectMemberRole.Member);
       setAssignSearchResetToken((token) => token + 1);
@@ -226,6 +251,8 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
     const previousMember = member;
 
     setActionError(null);
+    setActionMessage(null);
+    setAssignMessage(null);
     setUpdatingUserId(member.userId);
     setMembers((currentMembers) =>
       currentMembers.map((currentMember) =>
@@ -268,7 +295,11 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
           ),
         );
         setActionError(
-          readApiErrorMessage(body, "Unable to update project member role."),
+          readProjectMemberApiError(
+            response.status,
+            body,
+            "Unable to update project member role.",
+          ),
         );
         return;
       }
@@ -287,6 +318,9 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
         );
       }
 
+      setActionMessage(
+        `${member.user?.name ?? "Member"} is now a ${projectRoleLabels[role].toLowerCase()}.`,
+      );
       router.refresh();
     } catch {
       setMembers((currentMembers) =>
@@ -308,6 +342,8 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
     }
 
     setActionError(null);
+    setActionMessage(null);
+    setAssignMessage(null);
     setDeletingUserId(deleteTarget.userId);
 
     try {
@@ -327,17 +363,23 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
 
       if (!response.ok) {
         setActionError(
-          readApiErrorMessage(body, "Unable to remove project member."),
+          readProjectMemberApiError(
+            response.status,
+            body,
+            "Unable to remove project member.",
+          ),
         );
         setDeleteTarget(null);
         return;
       }
 
+      const removedUserName = deleteTarget.user?.name ?? "Member";
       setMembers((currentMembers) =>
         currentMembers.filter(
           (member) => member.userId !== deleteTarget.userId,
         ),
       );
+      setActionMessage(`${removedUserName} was removed from this project.`);
       setDeleteTarget(null);
       router.refresh();
     } catch {
@@ -373,27 +415,40 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
   return (
     <>
       <div className="space-y-6">
-        <section className="rounded-md border border-ink/10 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        {embedded ? (
+          <section className="rounded-md border border-ink/10 bg-white p-5 shadow-sm">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wider text-mint">
-                Project settings
+                Project members
               </p>
-              <h1 className="mt-2 text-3xl font-semibold text-ink">
-                Members
-              </h1>
-              <p className="mt-2 text-sm leading-6 text-ink/60">
-                {projectName}
-              </p>
+              <h2 className="mt-1 text-xl font-semibold text-ink">
+                Manage access
+              </h2>
             </div>
-            <Link
-              className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-              href={`/dashboard/projects/${projectId}`}
-            >
-              Back to project
-            </Link>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section className="rounded-md border border-ink/10 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-wider text-mint">
+                  Project settings
+                </p>
+                <h1 className="mt-2 text-3xl font-semibold text-ink">
+                  Members
+                </h1>
+                <p className="mt-2 text-sm leading-6 text-ink/60">
+                  {projectName}
+                </p>
+              </div>
+              <Link
+                className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+                href={`/dashboard/projects/${projectId}`}
+              >
+                Back to project
+              </Link>
+            </div>
+          </section>
+        )}
 
         {canManage ? (
           <section className="rounded-md border border-ink/10 bg-white p-5 shadow-sm">
@@ -471,6 +526,15 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
               </div>
             ) : null}
 
+            {assignMessage ? (
+              <div
+                className="mt-4 rounded-md border border-mint/30 bg-mint/10 px-3 py-2 text-sm font-medium text-ink"
+                role="status"
+              >
+                {assignMessage}
+              </div>
+            ) : null}
+
             {unassignedUserCount === 0 ? (
               <p className="mt-3 text-sm font-medium text-ink/55">
                 All users are already assigned to this project.
@@ -479,13 +543,14 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
           </section>
         ) : (
           <section className="rounded-md border border-ink/10 bg-white p-5 text-sm leading-6 text-ink/65 shadow-sm">
-            Project owners and admins can add, remove, and update member roles.
-            You can view the current member list.
+            Project owners, project managers, and admins can add, remove, and
+            update member roles. You can view the current member list.
           </section>
         )}
 
         <ProjectMembersTable
           actionError={actionError}
+          actionMessage={actionMessage}
           canManage={canManage}
           deletingUserId={deletingUserId}
           members={members}
@@ -518,6 +583,7 @@ export function ProjectMembersView({ projectId }: ProjectMembersViewProps) {
 
 function ProjectMembersTable({
   actionError,
+  actionMessage,
   canManage,
   deletingUserId,
   members,
@@ -526,6 +592,7 @@ function ProjectMembersTable({
   updatingUserId,
 }: {
   actionError: string | null;
+  actionMessage: string | null;
   canManage: boolean;
   deletingUserId: string | null;
   members: ProjectMemberWithUser[];
@@ -567,6 +634,15 @@ function ProjectMembersTable({
           role="alert"
         >
           {actionError}
+        </div>
+      ) : null}
+
+      {actionMessage ? (
+        <div
+          className="mx-5 mt-4 rounded-md border border-mint/30 bg-mint/10 px-3 py-2 text-sm font-medium text-ink"
+          role="status"
+        >
+          {actionMessage}
         </div>
       ) : null}
 
@@ -844,4 +920,18 @@ function formatDate(value: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function readProjectMemberApiError(
+  status: number,
+  payload: unknown,
+  fallback: string,
+) {
+  const statusFallbacks: Record<number, string> = {
+    403: "You do not have permission to manage members for this project.",
+    404: "This project or user could not be found.",
+    409: "That user is already assigned to this project.",
+  };
+
+  return readApiErrorMessage(payload, statusFallbacks[status] ?? fallback);
 }

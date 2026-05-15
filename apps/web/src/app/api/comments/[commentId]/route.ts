@@ -1,10 +1,10 @@
-import { idSchema, UserRole } from "@taskflow/shared";
+import { idSchema } from "@taskflow/shared";
 import { eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess } from "@/lib/api-response";
 import { AuthError, requireAuth } from "@/lib/auth";
-import { getTaskAuthorization } from "@/lib/authorization";
+import { getTaskAuthorization, isAdmin } from "@/lib/authorization";
 
 const { comments } = schema;
 const commentIdSchema = idSchema.uuid("Invalid comment id.");
@@ -49,7 +49,7 @@ export async function DELETE(request: Request, context: CommentRouteContext) {
       return apiError("Task access denied.", 403);
     }
 
-    if (user.role !== UserRole.Admin && comment.authorId !== user.id) {
+    if (!isAdmin(user) && comment.authorId !== user.id) {
       return apiError("Comment delete access denied.", 403);
     }
 

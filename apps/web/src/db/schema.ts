@@ -19,11 +19,20 @@ export const users = pgTable(
     name: text("name").notNull(),
     email: text("email").notNull(),
     passwordHash: text("password_hash").notNull(),
-    role: text("role").notNull().default("user"),
+    // Global system role; project membership roles are stored separately.
+    role: varchar("role", {
+      length: 24,
+      enum: ["admin", "manager", "user"],
+    })
+      .notNull()
+      .default("user"),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
   },
-  (table) => [uniqueIndex("users_email_idx").on(table.email)],
+  (table) => [
+    uniqueIndex("users_email_idx").on(table.email),
+    check("users_role_check", sql`${table.role} in ('admin', 'manager', 'user')`),
+  ],
 );
 
 export const projects = pgTable(

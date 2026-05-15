@@ -197,6 +197,8 @@ Start the mobile app in a browser with Expo Web:
 npm run dev:mobile:web
 ```
 
+The combined `npm run dev` command and the Expo Web command automatically use the next available Expo port if `8081` is already busy. Set `TASKFLOW_MOBILE_PORT` to choose a different starting port.
+
 Alternative tunnel mode:
 
 ```bash
@@ -228,7 +230,7 @@ npm run build
 - `http://localhost:3000/api/health` returns `data.ok: true`.
 - Web login works with both seeded accounts.
 - Project and task pages show seeded data.
-- Admin panel is available only to `admin@taskflow.dev`.
+- Admin user management is available only to `admin@taskflow.dev`.
 - Expo app can log in with the seeded user.
 - Expo app can list projects, open project details, view tasks, update task status, and create comments.
 - Attachment uploads work only when R2 variables are configured.

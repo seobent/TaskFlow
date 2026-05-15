@@ -20,6 +20,11 @@ const projectIdSchema = idSchema.uuid("Invalid project id.");
 
 type ProjectWithOwner = Project & {
   owner: SafeUser | null;
+  permissions?: {
+    canCreateTask: boolean;
+    canManage: boolean;
+    canManageMembers: boolean;
+  };
 };
 
 type ProjectRouteContext = {
@@ -51,7 +56,14 @@ export async function GET(request: Request, context: ProjectRouteContext) {
     }
 
     return apiSuccess({
-      project: await serializeProjectWithOwner(access.project),
+      project: {
+        ...(await serializeProjectWithOwner(access.project)),
+        permissions: {
+          canCreateTask: access.canCreateTask,
+          canManage: access.canManage,
+          canManageMembers: access.canManageMembers,
+        },
+      },
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -92,7 +104,7 @@ export async function PATCH(request: Request, context: ProjectRouteContext) {
     }
 
     if (!access.canManage) {
-      return apiError("Project owner access required.", 403);
+      return apiError("Project manager access required.", 403);
     }
 
     const [updatedProject] = await db
@@ -109,7 +121,14 @@ export async function PATCH(request: Request, context: ProjectRouteContext) {
     }
 
     return apiSuccess({
-      project: await serializeProjectWithOwner(updatedProject),
+      project: {
+        ...(await serializeProjectWithOwner(updatedProject)),
+        permissions: {
+          canCreateTask: access.canCreateTask,
+          canManage: access.canManage,
+          canManageMembers: access.canManageMembers,
+        },
+      },
     });
   } catch (error) {
     if (error instanceof AuthError) {
@@ -159,7 +178,7 @@ export async function DELETE(request: Request, context: ProjectRouteContext) {
     }
 
     if (!access.canManage) {
-      return apiError("Project owner access required.", 403);
+      return apiError("Project manager access required.", 403);
     }
 
     const [deletedProject] = await db

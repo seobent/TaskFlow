@@ -64,10 +64,13 @@ export async function findProjectMemberAccess(
     };
   }
 
+  const canManageMembers =
+    authorization.canManageMembers || authorization.isProjectManager;
+
   return {
     project,
-    canList: authorization.canAccess,
-    canManage: authorization.canManageMembers,
+    canList: canManageMembers,
+    canManage: canManageMembers,
   };
 }
 

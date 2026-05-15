@@ -12,6 +12,8 @@ import {
 } from "@/components/tasks/task-formatting";
 
 type TaskCardProps = {
+  canDelete: boolean;
+  canUpdate: boolean;
   currentUser: SafeUser;
   isDragging?: boolean;
   isStatusUpdating?: boolean;
@@ -39,6 +41,8 @@ const statusDotClasses: Record<TaskStatus, string> = {
 };
 
 export function TaskCard({
+  canDelete,
+  canUpdate,
   currentUser,
   isDragging = false,
   isStatusUpdating = false,
@@ -64,6 +68,11 @@ export function TaskCard({
   );
 
   function handleDragStart(event: DragEvent<HTMLElement>) {
+    if (!canUpdate) {
+      event.preventDefault();
+      return;
+    }
+
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", task.id);
     setTransparentDragImage(event);
@@ -72,14 +81,15 @@ export function TaskCard({
 
   return (
     <article
-      aria-label={`Drag ${task.title}`}
+      aria-label={canUpdate ? `Drag ${task.title}` : task.title}
       className={[
-        "cursor-grab rounded-md border border-[#c7ccd4] bg-white px-3 py-2 text-[#172033] shadow-sm transition active:cursor-grabbing",
+        "rounded-md border border-[#c7ccd4] bg-white px-3 py-2 text-[#172033] shadow-sm transition",
+        canUpdate ? "cursor-grab active:cursor-grabbing" : "",
         isDragging
           ? "rotate-1 opacity-30 ring-2 ring-sky-300"
           : "hover:border-sky-300 hover:shadow-md",
       ].join(" ")}
-      draggable={!isStatusUpdating}
+      draggable={canUpdate && !isStatusUpdating}
       onDragEnd={onDragEnd}
       onDrag={(event) => {
         if (event.clientX || event.clientY) {
@@ -136,21 +146,27 @@ export function TaskCard({
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-2 border-t border-[#dfe1e6] pt-2">
-        <select
-          aria-label={`Change status for ${task.title}`}
-          className="min-h-8 min-w-0 flex-1 rounded-md border border-[#c7ccd4] bg-white px-2 text-xs font-medium text-[#172033] shadow-sm transition focus:border-[#0c66e4] focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:text-[#172033]/45"
-          disabled={isStatusUpdating}
-          onChange={(event) =>
-            onStatusChange(task, event.target.value as TaskStatus)
-          }
-          value={task.status}
-        >
-          {statusOptions.map((status) => (
-            <option key={status} value={status}>
-              {statusLabels[status]}
-            </option>
-          ))}
-        </select>
+        {canUpdate ? (
+          <select
+            aria-label={`Change status for ${task.title}`}
+            className="min-h-8 min-w-0 flex-1 rounded-md border border-[#c7ccd4] bg-white px-2 text-xs font-medium text-[#172033] shadow-sm transition focus:border-[#0c66e4] focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:cursor-not-allowed disabled:text-[#172033]/45"
+            disabled={isStatusUpdating}
+            onChange={(event) =>
+              onStatusChange(task, event.target.value as TaskStatus)
+            }
+            value={task.status}
+          >
+            {statusOptions.map((status) => (
+              <option key={status} value={status}>
+                {statusLabels[status]}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <span className="min-h-8 min-w-0 flex-1 rounded-md border border-[#c7ccd4] bg-[#f7f8fa] px-2 py-2 text-xs font-semibold text-[#172033]/60">
+            {statusLabels[task.status]}
+          </span>
+        )}
         <div className="flex shrink-0 items-center gap-1">
           <button
             className="min-h-8 rounded-md px-2 text-xs font-semibold text-[#172033]/65 transition hover:bg-[#ebecf0] hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c66e4]"
@@ -159,20 +175,24 @@ export function TaskCard({
           >
             Open
           </button>
-          <button
-            className="min-h-8 rounded-md px-2 text-xs font-semibold text-[#172033]/65 transition hover:bg-[#ebecf0] hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c66e4]"
-            onClick={() => onEdit(task)}
-            type="button"
-          >
-            Edit
-          </button>
-          <button
-            className="min-h-8 rounded-md px-2 text-xs font-semibold text-berry transition hover:bg-berry/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-berry"
-            onClick={() => onDelete(task)}
-            type="button"
-          >
-            Delete
-          </button>
+          {canUpdate ? (
+            <button
+              className="min-h-8 rounded-md px-2 text-xs font-semibold text-[#172033]/65 transition hover:bg-[#ebecf0] hover:text-[#172033] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0c66e4]"
+              onClick={() => onEdit(task)}
+              type="button"
+            >
+              Edit
+            </button>
+          ) : null}
+          {canDelete ? (
+            <button
+              className="min-h-8 rounded-md px-2 text-xs font-semibold text-berry transition hover:bg-berry/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-berry"
+              onClick={() => onDelete(task)}
+              type="button"
+            >
+              Delete
+            </button>
+          ) : null}
         </div>
       </div>
 

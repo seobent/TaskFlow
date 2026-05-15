@@ -11,12 +11,15 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Link, router } from "expo-router";
+import { Link } from "expo-router";
 
 import { TaskFlowLogo } from "@/components/TaskFlowLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { register } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
+
+const REGISTRATION_SUCCESS_MESSAGE =
+  "Your account has been created successfully. An Admin or Manager must assign you to a project before you can access project tasks.";
 
 export default function RegisterScreen() {
   const { colors } = useTheme();
@@ -24,15 +27,20 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleRegister() {
     setError(null);
+    setSuccessMessage(null);
     setIsLoading(true);
 
     try {
       await register({ name, email, password });
-      router.replace("/dashboard");
+      setName("");
+      setEmail("");
+      setPassword("");
+      setSuccessMessage(REGISTRATION_SUCCESS_MESSAGE);
     } catch (caughtError) {
       setError(readErrorMessage(caughtError));
     } finally {
@@ -153,6 +161,22 @@ export default function RegisterScreen() {
               </Text>
             ) : null}
 
+            {successMessage ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                style={[
+                  styles.success,
+                  {
+                    backgroundColor: colors.primarySoft,
+                    borderColor: colors.border,
+                    color: colors.text,
+                  },
+                ]}
+              >
+                {successMessage}
+              </Text>
+            ) : null}
+
             <Pressable
               accessibilityRole="button"
               disabled={!formIsReady || isLoading}
@@ -270,6 +294,16 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     color: "#9a2d22",
+    fontSize: 14,
+    lineHeight: 20,
+    padding: 12,
+  },
+  success: {
+    backgroundColor: "#ebfaf4",
+    borderColor: "#b8e6d5",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#172033",
     fontSize: 14,
     lineHeight: 20,
     padding: 12,

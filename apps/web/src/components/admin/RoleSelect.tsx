@@ -4,6 +4,7 @@ import { UserRole } from "@taskflow/shared";
 
 type RoleSelectProps = {
   disabled?: boolean;
+  disabledRoles?: UserRole[];
   isUpdating?: boolean;
   onChange: (role: UserRole) => void;
   value: UserRole;
@@ -11,15 +12,19 @@ type RoleSelectProps = {
 
 const roleLabels: Record<UserRole, string> = {
   [UserRole.Admin]: "Admin",
+  [UserRole.Manager]: "Manager",
   [UserRole.User]: "User",
 };
 
 export function RoleSelect({
   disabled = false,
+  disabledRoles = [],
   isUpdating = false,
   onChange,
   value,
 }: RoleSelectProps) {
+  const disabledRoleSet = new Set(disabledRoles);
+
   return (
     <label className="block">
       <span className="sr-only">Change user role</span>
@@ -30,7 +35,7 @@ export function RoleSelect({
         value={value}
       >
         {Object.values(UserRole).map((role) => (
-          <option key={role} value={role}>
+          <option disabled={disabledRoleSet.has(role)} key={role} value={role}>
             {roleLabels[role]}
           </option>
         ))}

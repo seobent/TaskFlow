@@ -7,6 +7,7 @@ import {
   TaskPriority,
   TaskStatus,
   type UpdateTaskInput,
+  UserRole,
 } from "@taskflow/shared";
 import { useRouter } from "next/navigation";
 import {
@@ -36,8 +37,15 @@ type TaskBoardProps = {
 };
 
 type ProjectTasksPayload = {
+  permissions?: TaskBoardPermissions;
   tasks: Task[];
   users?: SafeUser[];
+};
+
+type TaskBoardPermissions = {
+  canCreate: boolean;
+  canDelete: boolean;
+  canUpdate: boolean;
 };
 
 const taskColumns = [
@@ -72,6 +80,14 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   const [usersById, setUsersById] = useState<UserNameLookup>(() =>
     buildUserNameLookup(currentUser),
   );
+  const [permissions, setPermissions] = useState<TaskBoardPermissions>({
+    canCreate: false,
+    canDelete: false,
+    canUpdate: false,
+  });
+  const canCreateTasks = permissions.canCreate;
+  const canDeleteTasks = permissions.canDelete;
+  const canUpdateTasks = permissions.canUpdate;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -99,6 +115,15 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
         }
 
         const payload = readApiData<ProjectTasksPayload>(body);
+        setPermissions(
+          payload?.permissions ?? {
+            canCreate:
+              currentUser.role === UserRole.Admin ||
+              currentUser.role === UserRole.Manager,
+            canDelete: currentUser.role === UserRole.Admin,
+            canUpdate: currentUser.role === UserRole.Admin,
+          },
+        );
         setUsersById(buildUserNameLookup(currentUser, payload?.users));
         setTasks(sortTasks(Array.isArray(payload?.tasks) ? payload.tasks : []));
       } catch {
@@ -173,6 +198,10 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   );
 
   async function handleCreateTask(values: TaskFormValues) {
+    if (!canCreateTasks) {
+      return;
+    }
+
     setFormError(null);
     setIsSubmitting(true);
 
@@ -213,7 +242,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   }
 
   async function handleUpdateTask(values: TaskFormValues) {
-    if (!editingTask) {
+    if (!editingTask || !canUpdateTasks) {
       return;
     }
 
@@ -263,7 +292,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   }
 
   async function handleStatusChange(task: Task, status: TaskStatus) {
-    if (task.status === status) {
+    if (task.status === status || !canUpdateTasks) {
       return;
     }
 
@@ -348,7 +377,7 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
   }
 
   async function handleDeleteTask() {
-    if (!deleteTarget) {
+    if (!deleteTarget || !canDeleteTasks) {
       return;
     }
 
@@ -407,17 +436,19 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
               Issue workflow
             </h2>
           </div>
-          <Button
-            onClick={() => {
-              setActionError(null);
-              setFormError(null);
-              setCreateTaskStatus(TaskStatus.Todo);
-              setIsCreateModalOpen(true);
-            }}
-            type="button"
-          >
-            New task
-          </Button>
+          {canCreateTasks ? (
+            <Button
+              onClick={() => {
+                setActionError(null);
+                setFormError(null);
+                setCreateTaskStatus(TaskStatus.Todo);
+                setIsCreateModalOpen(true);
+              }}
+              type="button"
+            >
+              New task
+            </Button>
+          ) : null}
         </div>
 
         {actionError ? (
@@ -458,6 +489,9 @@ export function TaskBoard({ currentUser, projectId }: TaskBoardProps) {
           <div className="mt-4 flex min-h-[28rem] gap-3 overflow-x-auto">
             {groupedTasks.map((column) => (
               <StatusColumn
+                canCreateTasks={canCreateTasks}
+                canDeleteTasks={canDeleteTasks}
+                canUpdateTasks={canUpdateTasks}
                 currentUser={currentUser}
                 draggedTaskId={draggedTaskId}
                 isStatusUpdating={(taskId) => statusTaskId === taskId}

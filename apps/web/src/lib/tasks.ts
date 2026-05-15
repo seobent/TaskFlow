@@ -22,6 +22,9 @@ export type ProjectTaskAccess = {
   project: ProjectRecord | null;
   isProjectParticipant: boolean;
   canAccess: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
 };
 
 export type TaskAccess = {
@@ -69,13 +72,19 @@ export async function findProjectTaskAccess(
       project: null,
       isProjectParticipant: false,
       canAccess: false,
+      canCreate: false,
+      canUpdate: false,
+      canDelete: false,
     };
   }
 
   return {
     project,
     isProjectParticipant: authorization.isProjectParticipant,
-    canAccess: authorization.canAccess,
+    canAccess: authorization.canView,
+    canCreate: authorization.canCreateTask,
+    canUpdate: authorization.canUpdateTask,
+    canDelete: authorization.canDeleteTask,
   };
 }
 
@@ -101,9 +110,9 @@ export async function findTaskAccess(
     task,
     project: authorization.project,
     isProjectParticipant: authorization.isProjectParticipant,
-    canView: authorization.canAccess,
-    canUpdate: authorization.canAccess,
-    canDelete: authorization.canAccess,
+    canView: authorization.canView,
+    canUpdate: authorization.canUpdate,
+    canDelete: authorization.canDelete,
   };
 }
 

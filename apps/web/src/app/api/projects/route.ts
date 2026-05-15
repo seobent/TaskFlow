@@ -1,13 +1,13 @@
 import {
   createProjectInputSchema,
   ProjectMemberRole,
-  UserRole,
 } from "@taskflow/shared";
 import { and, desc, eq, exists, or } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
 import { AuthError, requireAuth } from "@/lib/auth";
+import { canCreateProject, isAdmin, isManager } from "@/lib/authorization";
 import { serializeProject } from "@/lib/projects";
 
 const { projectMembers, projects } = schema;
@@ -27,32 +27,31 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
     const user = await requireAuth(request);
-    const projectRecords =
-      user.role === UserRole.Admin
-        ? await db
-            .select(projectSelection)
-            .from(projects)
-            .orderBy(desc(projects.updatedAt), desc(projects.createdAt))
-        : await db
-            .select(projectSelection)
-            .from(projects)
-            .where(
-              or(
-                eq(projects.ownerId, user.id),
-                exists(
-                  db
-                    .select({ id: projectMembers.id })
-                    .from(projectMembers)
-                    .where(
-                      and(
-                        eq(projectMembers.projectId, projects.id),
-                        eq(projectMembers.userId, user.id),
-                      ),
-                    ),
-                ),
-              ),
-            )
-            .orderBy(desc(projects.updatedAt), desc(projects.createdAt));
+    const assignedProjectExists = exists(
+      db
+        .select({ id: projectMembers.id })
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, projects.id),
+            eq(projectMembers.userId, user.id),
+          ),
+        ),
+    );
+    const visibleProjectFilter = isManager(user)
+      ? or(eq(projects.ownerId, user.id), assignedProjectExists)
+      : assignedProjectExists;
+
+    const projectRecords = isAdmin(user)
+      ? await db
+          .select(projectSelection)
+          .from(projects)
+          .orderBy(desc(projects.updatedAt), desc(projects.createdAt))
+      : await db
+          .select(projectSelection)
+          .from(projects)
+          .where(visibleProjectFilter)
+          .orderBy(desc(projects.updatedAt), desc(projects.createdAt));
 
     return apiSuccess({
       projects: projectRecords.map(serializeProject),
@@ -69,6 +68,11 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const user = await requireAuth(request);
+
+    if (!canCreateProject(user)) {
+      return apiError("Manager access required to create projects.", 403);
+    }
+
     let body: unknown;
 
     try {
@@ -102,7 +106,9 @@ export async function POST(request: Request) {
         .values({
           projectId: createdProject.id,
           userId: user.id,
-          role: ProjectMemberRole.Owner,
+          role: isManager(user)
+            ? ProjectMemberRole.Manager
+            : ProjectMemberRole.Owner,
         })
         .onConflictDoNothing({
           target: [projectMembers.projectId, projectMembers.userId],

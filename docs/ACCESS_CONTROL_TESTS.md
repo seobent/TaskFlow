@@ -29,6 +29,21 @@ Use these checks after running migrations and seeding a test database. The examp
 5. Confirm `GET /api/projects/:id/tasks` returns `403`.
 6. Confirm `GET /api/tasks/:taskId` for a task in that project returns `403`.
 
+### Normal User Cannot Manage Projects
+
+1. Sign in as a normal `user`.
+2. Confirm `POST /api/projects` returns `403`.
+3. For a project where the user is assigned, confirm `PATCH /api/projects/:id` returns `403`.
+4. Confirm `DELETE /api/projects/:id` returns `403`.
+
+### Manager Project Visibility And Management
+
+1. Sign in as a global `manager`.
+2. Confirm `GET /api/projects` includes projects the manager owns, manages, or is assigned to.
+3. Confirm `GET /api/projects` excludes projects where the manager has no ownership or assignment.
+4. Confirm `POST /api/projects` returns `201` and creates a `project_members` row for the manager with role `manager`.
+5. Confirm `PATCH /api/projects/:id` and `DELETE /api/projects/:id` return `200` only for projects the manager owns or manages.
+
 ### Admin Can Assign Users
 
 1. Sign in as an admin.
@@ -54,6 +69,6 @@ Use these checks after running migrations and seeding a test database. The examp
 
 ## Notes
 
-- Member management is allowed for admins and project owners only.
-- Managers and members can view the project member list for projects they are assigned to.
+- Member management is allowed for admins, project owners, and project managers.
+- Normal project members and unassigned users receive `403 Forbidden` from project member management endpoints, including the member list.
 - Project task, comment, and attachment endpoints must check access through the task's parent project.

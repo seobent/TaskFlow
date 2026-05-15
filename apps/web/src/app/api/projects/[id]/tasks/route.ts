@@ -55,6 +55,11 @@ export async function GET(request: Request, context: ProjectTasksRouteContext) {
       .orderBy(desc(tasks.updatedAt), desc(tasks.createdAt));
 
     return apiSuccess({
+      permissions: {
+        canCreate: access.canCreate,
+        canDelete: access.canDelete,
+        canUpdate: access.canUpdate,
+      },
       tasks: taskRecords.map(serializeTask),
       users: await listReferencedTaskUsers(taskRecords, access.project.ownerId),
     });
@@ -137,6 +142,10 @@ export async function POST(request: Request, context: ProjectTasksRouteContext) 
 
     if (!access.canAccess) {
       return apiError("Project task access denied.", 403);
+    }
+
+    if (!access.canCreate) {
+      return apiError("Manager access required to create tasks.", 403);
     }
 
     if (!(await isValidProjectAssignee(access.project, parsed.data.assigneeId))) {

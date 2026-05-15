@@ -2,7 +2,8 @@ import { desc } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess } from "@/lib/api-response";
-import { AuthError, requireAdmin, sanitizeUser } from "@/lib/auth";
+import { AuthError, sanitizeUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/authorization";
 
 const { users } = schema;
 

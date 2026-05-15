@@ -9,6 +9,7 @@ import {
 import { and, desc, eq, inArray, or } from "drizzle-orm";
 
 import { db, schema } from "@/db";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { PriorityBadge } from "@/components/tasks/PriorityBadge";
 import { statusLabels } from "@/components/tasks/StatusBadge";
 import { formatTaskDate } from "@/components/tasks/task-formatting";
@@ -74,6 +75,8 @@ function DashboardContent({
     status,
     tasks: dashboard.tasks.filter((task) => task.status === status),
   }));
+  const showProjectAssignmentState =
+    user.role === UserRole.User && dashboard.activeProjects === 0;
 
   return (
     <div className="space-y-6">
@@ -92,6 +95,13 @@ function DashboardContent({
           </div>
         </div>
       </section>
+
+      {showProjectAssignmentState ? (
+        <EmptyState
+          description={getProjectAssignmentDescription(user)}
+          title="Waiting for project assignment"
+        />
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-3">
         {summaryCards.map((card) => (
@@ -245,7 +255,12 @@ async function loadDashboardData(user: SafeUser): Promise<DashboardData> {
             ),
           )
           .where(
-            or(eq(projects.ownerId, user.id), eq(projectMembers.userId, user.id)),
+            user.role === UserRole.Manager
+              ? or(
+                  eq(projects.ownerId, user.id),
+                  eq(projectMembers.userId, user.id),
+                )
+              : eq(projectMembers.userId, user.id),
           )
           .orderBy(desc(projects.updatedAt), desc(projects.createdAt));
 
@@ -325,4 +340,20 @@ async function loadDashboardData(user: SafeUser): Promise<DashboardData> {
     tasks: dashboardTasks,
     teamMembers: memberIds.size,
   };
+}
+
+function getProjectAssignmentDescription(user: SafeUser) {
+  return isNewlyRegisteredUser(user)
+    ? "Your account has been created successfully. An Admin or Manager must assign you to a project before you can access project tasks."
+    : "You are not assigned to any project yet. Please contact your Admin or Manager.";
+}
+
+function isNewlyRegisteredUser(user: SafeUser) {
+  const createdAt = new Date(user.createdAt).getTime();
+
+  if (Number.isNaN(createdAt)) {
+    return false;
+  }
+
+  return Date.now() - createdAt < 24 * 60 * 60 * 1000;
 }

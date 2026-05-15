@@ -1,14 +1,13 @@
-import { asc, ilike, or } from "drizzle-orm";
+import { asc, desc, ilike, or } from "drizzle-orm";
 import { z } from "zod";
 import { userRoleSchema } from "@taskflow/shared";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess } from "@/lib/api-response";
-import { AuthError, requireAdmin } from "@/lib/auth";
+import { AuthError } from "@/lib/auth";
+import { requireAdmin } from "@/lib/authorization";
 
 const { users } = schema;
-
-const MAX_USERS = 20;
 
 const userSearchQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
@@ -20,6 +19,7 @@ const safeUserSearchSelection = {
   email: users.email,
   role: users.role,
   createdAt: users.createdAt,
+  updatedAt: users.updatedAt,
 };
 
 type UserSearchRecord = {
@@ -28,6 +28,7 @@ type UserSearchRecord = {
   email: string;
   role: string;
   createdAt: Date | string | null;
+  updatedAt: Date | string | null;
 };
 
 export const runtime = "nodejs";
@@ -62,12 +63,10 @@ export async function GET(request: Request) {
               ),
             )
             .orderBy(asc(users.name), asc(users.email))
-            .limit(MAX_USERS)
         : await db
             .select(safeUserSearchSelection)
             .from(users)
-            .orderBy(asc(users.name), asc(users.email))
-            .limit(MAX_USERS);
+            .orderBy(desc(users.createdAt), asc(users.name), asc(users.email));
 
     return apiSuccess({
       users: userRecords.map(serializeUserSearchResult),
@@ -77,13 +76,13 @@ export async function GET(request: Request) {
       return apiError(error.message, error.status);
     }
 
-    return apiError("Unable to search users.", 500);
+    return apiError("Unable to load users.", 500);
   }
 }
 
 function serializeUserSearchResult(user: UserSearchRecord) {
-  if (!user.createdAt) {
-    throw new Error("User created timestamp is missing.");
+  if (!user.createdAt || !user.updatedAt) {
+    throw new Error("User timestamp is missing.");
   }
 
   return {
@@ -95,5 +94,9 @@ function serializeUserSearchResult(user: UserSearchRecord) {
       user.createdAt instanceof Date
         ? user.createdAt.toISOString()
         : new Date(user.createdAt).toISOString(),
+    updatedAt:
+      user.updatedAt instanceof Date
+        ? user.updatedAt.toISOString()
+        : new Date(user.updatedAt).toISOString(),
   };
 }

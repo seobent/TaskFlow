@@ -1,3 +1,26 @@
 [mobile] The following packages should be updated for best compatibility with the installed expo version:
 [mobile]   react-native-svg@15.15.5 - expected version: 15.12.1
 [mobile] Your project may not work correctly until you install the expected versions of the packages.
+[web]  ⨯ Error: ENOENT: no such file or directory, open 'C:\Work\Projects_PHP\TaskFlow\apps\web\.next\server\vendor-chunks\zod.js'
+[web]     at <unknown> (C:\Work\Projects_PHP\TaskFlow\apps\web\.next\server\app\page.js:335:47)
+[web]     at Object.<anonymous> (C:\Work\Projects_PHP\TaskFlow\apps\web\.next\server\app\page.js:338:3) {
+[web]   errno: -4058,
+[web]   code: 'ENOENT',
+[web]   syscall: 'open',
+[web]   path: 'C:\\Work\\Projects_PHP\\TaskFlow\\apps\\web\\.next\\server\\vendor-chunks\\zod.js',
+[web]   page: '/'
+[web] }
+[web]  ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+[web]  ⨯ [Error: ENOENT: no such file or directory, open 'C:\Work\Projects_PHP\TaskFlow\apps\web\.next\server\app\page.js'] {
+[web]   errno: -4058,
+[web]   code: 'ENOENT',
+[web]   syscall: 'open',
+[web]   path: 'C:\\Work\\Projects_PHP\\TaskFlow\\apps\\web\\.next\\server\\app\\page.js',
+[web]   page: '/'
+[web] }
+[web]  ⨯ [Error: ENOENT: no such file or directory, open 'C:\Work\Projects_PHP\TaskFlow\apps\web\.next\server\pages\_document.js'] {
+[web]   errno: -4058,
+[web]   code: 'ENOENT',
+[web]   syscall: 'open',
+[web]   path: 'C:\\Work\\Projects_PHP\\TaskFlow\\apps\\web\\.next\\server\\pages\\_document.js'
+[web] }

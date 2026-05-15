@@ -1,16 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { readApiErrorMessage, readResponseJson } from "./api-error";
 
+const REGISTRATION_SUCCESS_MESSAGE =
+  "Your account has been created successfully. An Admin or Manager must assign you to a project before you can access project tasks.";
+
 export function RegisterForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,6 +25,7 @@ export function RegisterForm() {
     };
 
     setError(null);
+    setSuccessMessage(null);
     setIsSubmitting(true);
 
     try {
@@ -46,8 +49,8 @@ export function RegisterForm() {
         return;
       }
 
-      router.replace("/dashboard");
-      router.refresh();
+      setSuccessMessage(REGISTRATION_SUCCESS_MESSAGE);
+      event.currentTarget.reset();
     } catch {
       setError("Unable to reach TaskFlow. Please try again.");
     } finally {
@@ -63,6 +66,15 @@ export function RegisterForm() {
           role="alert"
         >
           {error}
+        </div>
+      ) : null}
+
+      {successMessage ? (
+        <div
+          className="rounded-md border border-mint/25 bg-mint/10 px-3 py-2 text-sm font-medium text-ink"
+          role="status"
+        >
+          {successMessage}
         </div>
       ) : null}
 

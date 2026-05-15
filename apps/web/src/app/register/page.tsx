@@ -30,7 +30,7 @@ export default function RegisterPage() {
                   </Link>
                 </p>
               }
-              subtitle="Create your TaskFlow account and open the dashboard."
+              subtitle="Create your TaskFlow account and wait for a project assignment."
               title="Start your workspace"
             >
               <RegisterForm />

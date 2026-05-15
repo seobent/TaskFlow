@@ -1,6 +1,7 @@
 "use client";
 
-import type { Project } from "@taskflow/shared";
+import type { Project, SafeUser } from "@taskflow/shared";
+import { UserRole } from "@taskflow/shared";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,7 +15,15 @@ import {
   readResponseJson,
 } from "@/lib/api-client";
 
-export function ProjectListView() {
+type ProjectListViewProps = {
+  canCreateProjects: boolean;
+  currentUser: SafeUser;
+};
+
+export function ProjectListView({
+  canCreateProjects,
+  currentUser,
+}: ProjectListViewProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,17 +97,24 @@ export function ProjectListView() {
   }
 
   if (projects.length === 0) {
+    const emptyDescription = getProjectEmptyDescription(
+      canCreateProjects,
+      currentUser,
+    );
+
     return (
       <EmptyState
         action={
-          <Link
-            className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-            href="/dashboard/projects/new"
-          >
-            Create project
-          </Link>
+          canCreateProjects ? (
+            <Link
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+              href="/dashboard/projects/new"
+            >
+              Create project
+            </Link>
+          ) : null
         }
-        description="Create the first project to start organizing issues, assignments, and team work."
+        description={emptyDescription}
         title="No projects yet"
       />
     );
@@ -111,4 +127,31 @@ export function ProjectListView() {
       ))}
     </section>
   );
+}
+
+function getProjectEmptyDescription(
+  canCreateProjects: boolean,
+  currentUser: SafeUser,
+) {
+  if (canCreateProjects) {
+    return "Create the first project to start organizing issues, assignments, and team work.";
+  }
+
+  if (currentUser.role !== UserRole.User) {
+    return "No projects are available to your account yet.";
+  }
+
+  return isNewlyRegisteredUser(currentUser)
+    ? "Your account has been created successfully. An Admin or Manager must assign you to a project before you can access project tasks."
+    : "You are not assigned to any project yet. Please contact your Admin or Manager.";
+}
+
+function isNewlyRegisteredUser(currentUser: SafeUser) {
+  const createdAt = new Date(currentUser.createdAt).getTime();
+
+  if (Number.isNaN(createdAt)) {
+    return false;
+  }
+
+  return Date.now() - createdAt < 24 * 60 * 60 * 1000;
 }

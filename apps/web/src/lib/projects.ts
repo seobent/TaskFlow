@@ -15,6 +15,8 @@ export type ProjectAccess = {
   project: ProjectRecord | null;
   canView: boolean;
   canManage: boolean;
+  canCreateTask: boolean;
+  canManageMembers: boolean;
 };
 
 export function serializeProject(project: ProjectRecord): Project {
@@ -44,13 +46,17 @@ export async function findProjectAccess(
       project: null,
       canView: false,
       canManage: false,
+      canCreateTask: false,
+      canManageMembers: false,
     };
   }
 
   return {
     project,
-    canView: authorization.canAccess,
-    canManage: authorization.canManageMembers,
+    canView: authorization.canView,
+    canManage: authorization.canManage,
+    canCreateTask: authorization.canCreateTask,
+    canManageMembers: authorization.canManageMembers,
   };
 }
 

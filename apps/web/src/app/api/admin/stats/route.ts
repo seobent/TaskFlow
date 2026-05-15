@@ -8,7 +8,8 @@ import { count } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess } from "@/lib/api-response";
-import { AuthError, requireAdmin } from "@/lib/auth";
+import { AuthError } from "@/lib/auth";
+import { requireAdmin } from "@/lib/authorization";
 
 const { comments, projects, tasks, users } = schema;
 

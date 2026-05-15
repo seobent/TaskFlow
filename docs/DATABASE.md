@@ -17,7 +17,7 @@ apps/web/drizzle/meta/                Drizzle migration metadata
 
 ### `users`
 
-Stores user identity, authentication data, and role.
+Stores user identity, authentication data, and the global system role.
 
 | Column | Type | Notes |
 | --- | --- | --- |
@@ -25,7 +25,7 @@ Stores user identity, authentication data, and role.
 | `name` | `text` | Required display name. |
 | `email` | `text` | Required, unique index. Stored lowercase by auth routes. |
 | `password_hash` | `text` | Required bcrypt hash. Never returned by API responses. |
-| `role` | `text` | Required application enum value, default `user`. |
+| `role` | `varchar(24)` | Required global system role, default `user`. Allowed values are `admin`, `manager`, and `user`. |
 | `created_at` | `timestamp` | Defaults to `now()`. |
 | `updated_at` | `timestamp` | Defaults to `now()`. Updated by application code. |
 
@@ -124,6 +124,7 @@ Cascade behavior:
 | Index/Constraint | Table | Columns | Purpose |
 | --- | --- | --- | --- |
 | `users_email_idx` | `users` | `email` | Unique login and registration lookup. |
+| `users_role_check` | `users` | `role` | Restricts global user roles to `admin`, `manager`, and `user`. |
 | `projects_owner_id_idx` | `projects` | `owner_id` | Project ownership and authorization checks. |
 | `project_members_project_id_idx` | `project_members` | `project_id` | Project member lookup. |
 | `project_members_user_id_idx` | `project_members` | `user_id` | User project list and authorization checks. |
@@ -137,13 +138,14 @@ Cascade behavior:
 
 ## Enums
 
-Most enum-like values are stored as `text` columns and validated at the application layer through `packages/shared`. Project member roles are stored as `varchar(24)` and also enforced with a database check constraint.
+Most enum-like values are stored as `text` columns and validated at the application layer through `packages/shared`. Global user roles and project member roles are stored as `varchar(24)` and also enforced with database check constraints.
 
 ### User roles
 
 ```text
-user
 admin
+manager
+user
 ```
 
 ### Project member roles
@@ -190,7 +192,7 @@ erDiagram
     text name
     text email UK
     text password_hash
-    text role
+    varchar role
     timestamp created_at
     timestamp updated_at
   }

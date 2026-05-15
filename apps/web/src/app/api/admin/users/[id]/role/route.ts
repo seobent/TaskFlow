@@ -1,9 +1,10 @@
-import { idSchema, updateUserRoleInputSchema } from "@taskflow/shared";
-import { eq } from "drizzle-orm";
+import { idSchema, updateUserRoleInputSchema, UserRole } from "@taskflow/shared";
+import { count, eq } from "drizzle-orm";
 
 import { db, schema } from "@/db";
 import { apiError, apiSuccess, validationError } from "@/lib/api-response";
-import { AuthError, requireAdmin, sanitizeUser } from "@/lib/auth";
+import { AuthError, sanitizeUser } from "@/lib/auth";
+import { requireAdmin } from "@/lib/authorization";
 
 const { users } = schema;
 const userIdSchema = idSchema.uuid("Invalid user id.");
@@ -52,14 +53,44 @@ export async function PATCH(
       return validationError(parsed.error);
     }
 
-    const [updatedUser] = await db
-      .update(users)
-      .set({
-        role: parsed.data.role,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, userId.value))
-      .returning(safeUserSelection);
+    const updatedUser = await db.transaction(async (tx) => {
+      const existingUser = await tx.query.users.findFirst({
+        columns: {
+          id: true,
+          role: true,
+        },
+        where: eq(users.id, userId.value),
+      });
+
+      if (!existingUser) {
+        return null;
+      }
+
+      if (
+        existingUser.role === UserRole.Admin &&
+        parsed.data.role !== UserRole.Admin
+      ) {
+        const [adminTotal] = await tx
+          .select({ value: count() })
+          .from(users)
+          .where(eq(users.role, UserRole.Admin));
+
+        if ((adminTotal?.value ?? 0) <= 1) {
+          throw new LastAdminError();
+        }
+      }
+
+      const [updated] = await tx
+        .update(users)
+        .set({
+          role: parsed.data.role,
+          updatedAt: new Date(),
+        })
+        .where(eq(users.id, userId.value))
+        .returning(safeUserSelection);
+
+      return updated ?? null;
+    });
 
     if (!updatedUser) {
       return apiError("User not found.", 404);
@@ -67,11 +98,22 @@ export async function PATCH(
 
     return apiSuccess({ user: sanitizeUser(updatedUser) });
   } catch (error) {
+    if (error instanceof LastAdminError) {
+      return apiError("Cannot remove the last admin.", 400);
+    }
+
     if (error instanceof AuthError) {
       return apiError(error.message, error.status);
     }
 
     return apiError("Unable to update user role.", 500);
+  }
+}
+
+class LastAdminError extends Error {
+  constructor() {
+    super("Last admin is protected.");
+    this.name = "LastAdminError";
   }
 }
 

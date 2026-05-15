@@ -126,7 +126,7 @@ export async function POST(
     }
 
     if (!access.canManage) {
-      return apiError("Project owner access required.", 403);
+      return apiError("Project manager access required.", 403);
     }
 
     if (access.project.ownerId === parsed.data.userId) {

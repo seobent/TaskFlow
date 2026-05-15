@@ -36,3 +36,44 @@
 [mobile] Web apps\mobile\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.9% (555/637)
 [mobile] Web Bundled 15672ms apps\mobile\node_modules\expo-router\entry.js (804 modules)
 [mobile]  LOG  [web] Logs will appear in the browser console
+[web]  ○ Compiling /dashboard/admin/users ...
+[web]  ✓ Compiled /dashboard/admin/users in 7.4s (875 modules)
+[web]  GET /dashboard/admin/users 307 in 8835ms
+[web]  ○ Compiling /login ...
+[web]  ✓ Compiled /login in 2.2s (890 modules)
+[web]  GET /login 200 in 2629ms
+[web]  ○ Compiling /middleware ...
+[web]  ✓ Compiled /middleware in 1173ms (115 modules)
+[web]  ○ Compiling /api/admin/users ...
+[web]  ✓ Compiled /api/admin/users in 765ms (898 modules)
+[web]  GET /api/admin/users 401 in 1348ms
+[web]  GET /api/admin/users 401 in 48ms
+[web]  ✓ Compiled in 546ms (573 modules)
+[web]  ✓ Compiled in 326ms (268 modules)
+[web]  ✓ Compiled in 287ms (268 modules)
+[web]  ○ Compiling / ...
+[web]  ✓ Compiled / in 1197ms (649 modules)
+[web]  ○ Compiling /_error ...
+[web]  ✓ Compiled /_error in 4.4s (996 modules)
+[web]  GET / 500 in 6881ms
+[mobile] Web apps\mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+[mobile] Web Bundled 2482ms apps\mobile\node_modules\expo-router\entry.js (1 module)
+[mobile]  LOG  [web] Logs will appear in the browser console
+[web]  ○ Compiling /_not-found ...
+[web]  ✓ Compiled /_not-found in 1289ms (1001 modules)
+[web]  GET / 404 in 1918ms
+[mobile] Web apps\mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+[mobile] Web Bundled 2229ms apps\mobile\node_modules\expo-router\entry.js (1 module)
+[web]  GET / 500 in 5463ms
+[mobile]  LOG  [web] Logs will appear in the browser console
+[web]  ✓ Compiled in 484ms (422 modules)
+[web]  ✓ Compiled in 265ms (422 modules)
+[web]  ✓ Compiled in 264ms (422 modules)
+[web]  ✓ Compiled in 424ms (422 modules)
+[web]  ✓ Compiled in 229ms (422 modules)
+[web]  ✓ Compiled in 213ms (422 modules)
+[web]  ✓ Compiled in 217ms (422 modules)
+[web]  ✓ Compiled in 217ms (422 modules)
+[web]  ✓ Compiled in 233ms (422 modules)
+[web]  ✓ Compiled in 234ms (422 modules)
+[web]  ✓ Compiled in 276ms (422 modules)

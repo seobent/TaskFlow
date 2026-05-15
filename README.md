@@ -28,23 +28,22 @@ demo123
 - JWT authentication for web and mobile clients.
 - Web JWT storage through secure httpOnly cookies.
 - Mobile JWT storage through Expo SecureStore.
-- Role-based access control with `admin` and `user` roles.
+- Role-based access control with `admin`, `manager`, and `user` roles.
 - Project creation, listing, detail, update, and deletion.
 - Project membership records for user access control.
 - Task creation, assignment, status tracking, priority tracking, due dates, updates, and deletion.
 - Web task board views grouped by status, with drag-and-drop cards for moving tasks between workflow columns.
 - Task comments for project collaboration.
 - Task attachment uploads with metadata stored in PostgreSQL and files stored in an S3-compatible object store such as Cloudflare R2.
-- Admin dashboard statistics.
 - Admin user search, user list, and role management.
-- Admin project list and project deletion.
 - Shared TypeScript types and Zod validation contracts for API input.
 - Web dashboard and Expo mobile client that both consume the same REST API.
 
 ## User Roles
 
-- `user`: Can access projects they own or belong to. Users can create projects, manage their owned projects, view project tasks, create and update tasks in accessible projects, comment on accessible tasks, and upload attachments to accessible tasks.
-- `admin`: Can view and manage all projects, view admin statistics, search and list users, update user roles, and delete any project. Admins still authenticate through the same JWT flow as normal users.
+- `admin`: Can view and manage all projects, list users, update user roles, delete user accounts, and delete any project. Admins still authenticate through the same JWT flow as normal users.
+- `manager`: Can create projects, manage members in projects they own or manage, and create tasks in accessible projects.
+- `user`: Can work only on assigned projects and tasks, including viewing accessible project tasks, updating accessible tasks, commenting on accessible tasks, and uploading attachments to accessible tasks.
 
 ## Technology Stack
 
@@ -74,8 +73,8 @@ demo123
 | Netlify deployment | Complete | `netlify.toml` deploys `apps/web` with `@netlify/plugin-nextjs`. |
 | JWT authentication | Complete | JWT helpers live in `apps/web/src/lib/auth.ts`; web uses an httpOnly cookie and mobile uses bearer tokens. |
 | Register, login, logout | Complete | Implemented under `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, plus web and mobile screens. |
-| Normal and admin roles | Complete | Shared role enum supports `user` and `admin`; server routes enforce authorization. |
-| Admin panel | Complete | Admin dashboard lives at `apps/web/src/app/dashboard/admin`. |
+| Global user roles | Complete | Shared role enum supports `admin`, `manager`, and `user`; server routes enforce authorization. |
+| Admin user management | Complete | User management lives at `apps/web/src/app/dashboard/admin/users`. |
 | Minimum 5 screens | Complete | Web and mobile together include login, register, dashboard, project list, project details, task details, task creation, task status, and admin screens. |
 | Minimum 4 database tables | Complete | The schema includes users, projects, project members, tasks, comments, and attachments. |
 | Relationships and indexes | Complete | Foreign keys and indexes are documented in `docs/DATABASE.md` and defined in `apps/web/src/db/schema.ts`. |
@@ -206,7 +205,7 @@ Main route groups:
 
 - Health: `GET /api/health`
 - Auth: `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
-- Users: `GET /api/users?search=`
+- Users: `GET /api/users?search=`, `GET/PATCH/DELETE /api/users/:id`
 - Projects: `GET /api/projects`, `POST /api/projects`, `GET/PATCH/DELETE /api/projects/:id`
 - Tasks: `GET/POST /api/projects/:id/tasks`, `GET/POST /api/tasks`, `GET/PATCH/DELETE /api/tasks/:taskId`
 - Comments: `GET/POST /api/tasks/:taskId/comments`, `DELETE /api/comments/:commentId`
@@ -298,6 +297,8 @@ Run the mobile app in a browser with Expo Web:
 npm run dev:mobile:web
 ```
 
+The combined `npm run dev` command and the Expo Web command automatically use the next available Expo port if `8081` is already busy. Set `TASKFLOW_MOBILE_PORT` to choose a different starting port.
+
 The Expo Web preview uses `EXPO_PUBLIC_API_URL` for API calls, just like the Android and iOS clients.
 
 Type-check all workspaces:
@@ -361,7 +362,7 @@ Never expose `DATABASE_URL`, `JWT_SECRET`, or R2 credentials to browser JavaScri
 apps/web/src/app/                     Next.js App Router pages and layouts
 apps/web/src/app/api/                 REST API Route Handlers
 apps/web/src/components/              Web UI components
-apps/web/src/components/admin/        Admin dashboard components
+apps/web/src/components/admin/        Admin user-management components
 apps/web/src/components/projects/     Project web UI components
 apps/web/src/components/tasks/        Task, comment, and attachment web UI components
 apps/web/src/db/schema.ts             Drizzle database schema
