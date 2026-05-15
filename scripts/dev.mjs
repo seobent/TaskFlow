@@ -11,8 +11,8 @@ const processes = [
   },
   {
     name: "mobile",
-    args: ["run", "dev:mobile"],
-    interactive: true,
+    args: ["run", "dev:mobile:web"],
+    interactive: false,
   },
 ];
 

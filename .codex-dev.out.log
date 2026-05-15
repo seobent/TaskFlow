@@ -1,0 +1,38 @@
+
+> taskflow@0.1.0 dev
+> node scripts/dev.mjs
+
+[web] 
+[web] > taskflow@0.1.0 dev:web
+[web] > npm run dev -w @taskflow/web
+[web] 
+[mobile] 
+[mobile] > taskflow@0.1.0 dev:mobile:web
+[mobile] > npm run web -w @taskflow/mobile
+[mobile] 
+[web] 
+[web] > @taskflow/web@0.1.0 dev
+[web] > next dev -H 0.0.0.0 -p 3000
+[web] 
+[mobile] 
+[mobile] > @taskflow/mobile@0.1.0 web
+[mobile] > expo start --web
+[mobile] 
+[mobile] Starting project at C:\Work\Projects_PHP\TaskFlow\apps\mobile
+[mobile] Using src/app as the root directory for Expo Router.
+[web]    ▲ Next.js 15.5.18
+[web]    - Local:        http://localhost:3000
+[web]    - Network:      http://0.0.0.0:3000
+[web]    - Environments: .env.local
+[web] 
+[web]  ✓ Starting...
+[mobile] Starting Metro Bundler
+[web]  ✓ Ready in 2.5s
+[mobile] Waiting on http://localhost:8081
+[mobile] Logs for your project will appear below.
+[mobile] Web apps\mobile\node_modules\expo-router\entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+[mobile] Web apps\mobile\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓░░░░░░ 64.8% (73/93)
+[mobile] Web apps\mobile\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.9% (206/338)
+[mobile] Web apps\mobile\node_modules\expo-router\entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 84.9% (555/637)
+[mobile] Web Bundled 15672ms apps\mobile\node_modules\expo-router\entry.js (804 modules)
+[mobile]  LOG  [web] Logs will appear in the browser console

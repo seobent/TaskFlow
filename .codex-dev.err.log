@@ -1,0 +1,3 @@
+[mobile] The following packages should be updated for best compatibility with the installed expo version:
+[mobile]   react-native-svg@15.15.5 - expected version: 15.12.1
+[mobile] Your project may not work correctly until you install the expected versions of the packages.
