@@ -117,10 +117,7 @@ export function UsersTable({
       <div className="space-y-4 border-b border-ink/10 p-5">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-mint">
-              Users
-            </p>
-            <h2 className="mt-1 text-xl font-semibold text-ink">
+            <h2 className="text-xl font-semibold text-mint">
               Account access
             </h2>
           </div>

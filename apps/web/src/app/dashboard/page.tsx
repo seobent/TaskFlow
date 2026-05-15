@@ -120,7 +120,7 @@ function DashboardContent({
       <section className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div className="rounded-md border border-ink/10 bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-ink/10 pb-4">
-            <h2 className="text-lg font-semibold text-ink">Issue board</h2>
+            <h2 className="text-lg font-semibold text-mint">Issue board</h2>
             <span className="rounded bg-ink/5 px-2 py-1 text-xs font-semibold text-ink/60">
               {dashboard.tasks.length} issues
             </span>
