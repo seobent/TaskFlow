@@ -11,7 +11,7 @@ const baseNavItems: DashboardNavItem[] = [
 ];
 
 const adminNavItems: DashboardNavItem[] = [
-  { href: "/dashboard/admin/users", label: "Users" },
+  { href: "/dashboard/users", label: "Users" },
 ];
 
 type DashboardNavProps = {

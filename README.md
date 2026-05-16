@@ -74,7 +74,7 @@ demo123
 | JWT authentication | Complete | JWT helpers live in `apps/web/src/lib/auth.ts`; web uses an httpOnly cookie and mobile uses bearer tokens. |
 | Register, login, logout | Complete | Implemented under `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, plus web and mobile screens. |
 | Global user roles | Complete | Shared role enum supports `admin`, `manager`, and `user`; server routes enforce authorization. |
-| Admin user management | Complete | User management lives at `apps/web/src/app/dashboard/admin/users`. |
+| Admin user management | Complete | User management lives at `apps/web/src/app/dashboard/users`. |
 | Minimum 5 screens | Complete | Web and mobile together include login, register, dashboard, project list, project details, task details, task creation, task status, and admin screens. |
 | Minimum 4 database tables | Complete | The schema includes users, projects, project members, tasks, comments, and attachments. |
 | Relationships and indexes | Complete | Foreign keys and indexes are documented in `docs/DATABASE.md` and defined in `apps/web/src/db/schema.ts`. |
