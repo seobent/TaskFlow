@@ -96,6 +96,12 @@ export async function getCurrentUser() {
   return data.user;
 }
 
+export async function getAdminUsers() {
+  const data = await apiRequest<{ users: SafeUser[] }>("/api/admin/users");
+
+  return data.users;
+}
+
 export async function getProjects() {
   const data = await apiRequest<{ projects: Project[] }>("/api/projects");
 

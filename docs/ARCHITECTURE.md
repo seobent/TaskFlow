@@ -136,7 +136,7 @@ Netlify stores production server-only environment variables such as `DATABASE_UR
 
 ## Expo Mobile Client
 
-The mobile app lives in `apps/mobile` and uses Expo, React Native, and Expo Router. Screens include login, registration, dashboard, project list, project details, task creation, task details, and task status updates.
+The mobile app lives in `apps/mobile` and uses Expo, React Native, and Expo Router. Screens include login, registration, dashboard, project list, project details, task creation, task details, and task status updates. Authenticated mobile screens are grouped under an Expo Router tabs layout so Home, Projects, Users for admins, and Profile share native bottom tab navigation.
 
 The mobile API client lives in `apps/mobile/src/lib/api.ts`. It reads the API base URL from:
 

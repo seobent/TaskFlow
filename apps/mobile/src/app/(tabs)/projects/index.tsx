@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Project } from "@taskflow/shared";
 
@@ -46,22 +46,6 @@ export default function ProjectsScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              {
-                backgroundColor: pressed
-                  ? colors.primarySoftPressed
-                  : colors.primarySoft,
-              },
-            ]}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
-              Back
-            </Text>
-          </Pressable>
           <Text style={[styles.eyebrow, { color: colors.primary }]}>Projects</Text>
           <Text style={[styles.title, { color: colors.text }]}>
             Workspace projects
@@ -120,20 +104,6 @@ const styles = StyleSheet.create({
   title: {
     color: "#172033",
     fontSize: 30,
-    fontWeight: "700",
-  },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#e8f5f2",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 14,
-  },
-  secondaryButtonText: {
-    color: "#2f7368",
-    fontSize: 15,
     fontWeight: "700",
   },
   list: {
