@@ -146,6 +146,17 @@ export const loginInputSchema = z.object({
   password: z.string().min(1).max(128)
 });
 
+export const changePasswordInputSchema = z
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: passwordSchema,
+    confirmPassword: passwordSchema
+  })
+  .refine((value) => value.newPassword === value.confirmPassword, {
+    message: "New passwords must match.",
+    path: ["confirmPassword"]
+  });
+
 export const createProjectInputSchema = z.object({
   name: nameSchema,
   description: projectDescriptionSchema.optional()
@@ -198,6 +209,7 @@ export const updateUserRoleInputSchema = z.object({
 
 export type RegisterInput = z.infer<typeof registerInputSchema>;
 export type LoginInput = z.infer<typeof loginInputSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordInputSchema>;
 export type CreateProjectInput = z.infer<typeof createProjectInputSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectInputSchema>;
 export type AssignProjectMemberInput = z.infer<typeof assignProjectMemberSchema>;

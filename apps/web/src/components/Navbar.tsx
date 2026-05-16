@@ -57,7 +57,16 @@ export function Navbar({ user }: NavbarProps) {
         <div className="flex items-center gap-3">
           <div className="hidden text-right sm:block">
             <p className="text-sm font-semibold text-ink">{user.name}</p>
-            <p className="text-xs capitalize text-ink/55">{user.role}</p>
+            <p className="text-xs text-ink/55">
+              <span className="capitalize">{user.role}</span>
+              <span className="mx-1 text-ink/35">|</span>
+              <Link
+                className="font-medium text-ink/70 transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
+                href="/dashboard/profile"
+              >
+                Profile
+              </Link>
+            </p>
           </div>
           {error ? (
             <p className="hidden text-sm font-medium text-berry md:block">

@@ -74,6 +74,7 @@ Protected route helpers read the bearer token first and then fall back to the we
 | `POST` | `/api/auth/login` | Public | Authenticate credentials, return user and token, set web cookie. |
 | `POST` | `/api/auth/logout` | Public | Clear web auth cookie. |
 | `GET` | `/api/auth/me` | Required | Return current user. |
+| `PATCH` | `/api/auth/password` | Required | Change the current user's password after verifying the current password. |
 | `GET` | `/api/users?search=` | Admin | List users, optionally filtered by name or email. |
 | `GET` | `/api/users/:id` | Admin | Get one safe user object. |
 | `PATCH` | `/api/users/:id` | Admin | Update a user's global role. |
@@ -222,6 +223,36 @@ Response:
 ```
 
 Common error: `401` missing, invalid, or expired token.
+
+### Change Password
+
+```http
+PATCH /api/auth/password
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+Request:
+
+```json
+{
+  "currentPassword": "current-password",
+  "newPassword": "new-secure-password",
+  "confirmPassword": "new-secure-password"
+}
+```
+
+Response:
+
+```json
+{
+  "data": {
+    "message": "Password updated."
+  }
+}
+```
+
+Common errors: `400` invalid request or incorrect current password, `401` missing, invalid, or expired token.
 
 ## User Endpoints
 

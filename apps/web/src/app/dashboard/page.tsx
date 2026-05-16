@@ -159,21 +159,6 @@ function DashboardContent({
         <aside className="space-y-4">
           <section className="rounded-md border border-ink/10 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-ink/55">
-              Account
-            </h2>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-md bg-mint/10 text-lg font-semibold text-mint">
-                {user.name.trim().charAt(0).toUpperCase() || "T"}
-              </div>
-              <div>
-                <p className="font-semibold text-ink">{user.name}</p>
-                <p className="text-sm capitalize text-ink/55">{user.role}</p>
-              </div>
-            </div>
-          </section>
-
-          <section className="rounded-md border border-ink/10 bg-white p-5 shadow-sm">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-ink/55">
               Next up
             </h2>
             <div className="mt-4 space-y-3">
