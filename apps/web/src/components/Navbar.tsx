@@ -62,7 +62,7 @@ export function Navbar({ user }: NavbarProps) {
               <span className="mx-1 text-ink/35">|</span>
               <Link
                 className="font-medium text-ink/70 transition hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-                href="/dashboard/profile"
+                href="/profile"
               >
                 Profile
               </Link>

@@ -7,11 +7,11 @@ import { usePathname } from "next/navigation";
 
 const baseNavItems: DashboardNavItem[] = [
   { exact: true, href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/projects", label: "Projects" },
+  { href: "/projects", label: "Projects" },
 ];
 
 const adminNavItems: DashboardNavItem[] = [
-  { href: "/dashboard/users", label: "Users" },
+  { href: "/users", label: "Users" },
 ];
 
 type DashboardNavProps = {

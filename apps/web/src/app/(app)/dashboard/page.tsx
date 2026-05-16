@@ -166,7 +166,7 @@ function DashboardContent({
                 dashboard.nextTasks.map((task) => (
                   <Link
                     className="block rounded border border-ink/10 bg-surface px-3 py-3 text-sm transition hover:border-mint/40 hover:bg-mint/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-                    href={`/dashboard/projects/${task.projectId}`}
+                    href={`/projects/${task.projectId}`}
                     key={task.id}
                   >
                     <span className="block font-semibold text-ink">{task.title}</span>
@@ -194,7 +194,7 @@ function IssueCard({ task }: { task: DashboardTask }) {
   return (
     <Link
       className="block rounded-md border border-ink/10 bg-white p-3 shadow-sm transition hover:border-mint/40 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-      href={`/dashboard/projects/${task.projectId}`}
+      href={`/projects/${task.projectId}`}
     >
       <div className="flex items-start justify-between gap-2">
         <h4 className="min-w-0 break-words text-sm font-semibold leading-5 text-ink">

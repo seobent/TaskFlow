@@ -442,7 +442,7 @@ export function ProjectMembersView({
               </div>
               <Link
                 className="inline-flex min-h-10 items-center justify-center rounded-md border border-ink/15 bg-white px-4 text-sm font-semibold text-ink shadow-sm transition hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-                href={`/dashboard/projects/${projectId}`}
+                href={`/projects/${projectId}`}
               >
                 Back to project
               </Link>

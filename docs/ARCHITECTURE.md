@@ -73,7 +73,7 @@ flowchart TB
 
 ## Next.js Web Frontend
 
-The web frontend lives in `apps/web` and uses the Next.js App Router. Public authentication pages live under `apps/web/src/app/login` and `apps/web/src/app/register`. Authenticated dashboard pages live under `apps/web/src/app/dashboard`.
+The web frontend lives in `apps/web` and uses the Next.js App Router. Public authentication pages live under `apps/web/src/app/login` and `apps/web/src/app/register`. Authenticated web pages share the layout in `apps/web/src/app/(app)` and are served through clean URLs such as `/dashboard`, `/projects`, `/users`, and `/profile`.
 
 The web UI uses Tailwind CSS and focused component folders:
 

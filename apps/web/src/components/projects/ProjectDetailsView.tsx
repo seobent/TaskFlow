@@ -176,7 +176,7 @@ export function ProjectDetailsView({
         return;
       }
 
-      router.replace("/dashboard/projects");
+      router.replace("/projects");
       router.refresh();
     } catch {
       setDeleteError("Unable to reach TaskFlow. Please try again.");
@@ -196,7 +196,7 @@ export function ProjectDetailsView({
         action={
           <Link
             className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-            href="/dashboard/projects"
+            href="/projects"
           >
             Back to projects
           </Link>

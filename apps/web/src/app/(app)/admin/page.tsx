@@ -17,5 +17,5 @@ export default async function AdminPage() {
     redirect("/dashboard");
   }
 
-  redirect("/dashboard/users");
+  redirect("/users");
 }

@@ -33,7 +33,7 @@ export default async function ProjectsPage() {
           {canCreateProjects ? (
             <Link
               className="inline-flex min-h-11 items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ink/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mint"
-              href="/dashboard/projects/new"
+              href="/projects/new"
             >
               New project
             </Link>

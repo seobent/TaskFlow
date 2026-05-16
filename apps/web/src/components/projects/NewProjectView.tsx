@@ -50,8 +50,8 @@ export function NewProjectView() {
       const payload = readApiData<{ project: Project }>(body);
       router.replace(
         payload?.project?.id
-          ? `/dashboard/projects/${payload.project.id}`
-          : "/dashboard/projects",
+          ? `/projects/${payload.project.id}`
+          : "/projects",
       );
       router.refresh();
     } catch {
@@ -63,7 +63,7 @@ export function NewProjectView() {
 
   return (
     <ProjectForm
-      cancelHref="/dashboard/projects"
+      cancelHref="/projects"
       error={error}
       isSubmitting={isSubmitting}
       onSubmit={handleSubmit}
