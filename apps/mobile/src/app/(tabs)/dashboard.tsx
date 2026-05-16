@@ -107,7 +107,7 @@ export default function DashboardScreen() {
                 {
                   backgroundColor: pressed
                     ? colors.primarySoftPressed
-                    : colors.primarySoft,
+                    : "transparent",
                   borderColor: colors.border,
                 },
                 isLoggingOut ? styles.buttonDisabled : null,

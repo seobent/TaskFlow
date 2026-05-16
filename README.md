@@ -38,6 +38,9 @@ demo123
 - Admin user search, user list, and role management.
 - Shared TypeScript types and Zod validation contracts for API input.
 - Web dashboard and Expo mobile client that both consume the same REST API.
+- Clean authenticated web URLs such as `/dashboard`, `/projects`, `/users`, and `/profile`.
+- Expo Router native bottom tabs for mobile Home, Projects, Profile, and admin-only Users.
+- Mobile project, task, user, and profile screens with shared theme switching and consistent back navigation.
 
 ## User Roles
 
@@ -74,8 +77,8 @@ demo123
 | JWT authentication | Complete | JWT helpers live in `apps/web/src/lib/auth.ts`; web uses an httpOnly cookie and mobile uses bearer tokens. |
 | Register, login, logout | Complete | Implemented under `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, plus web and mobile screens. |
 | Global user roles | Complete | Shared role enum supports `admin`, `manager`, and `user`; server routes enforce authorization. |
-| Admin user management | Complete | User management is served at `/users` from the authenticated web route group in `apps/web/src/app/(app)`. |
-| Minimum 5 screens | Complete | Web and mobile together include login, register, dashboard, project list, project details, task details, task creation, task status, and admin screens. |
+| Admin user management | Complete | User management is served at `/users` on web and appears as an admin-only Users tab in the mobile app. |
+| Minimum 5 screens | Complete | Web and mobile together include login, register, dashboard, project list, project details, task details, task creation, task status, profile, and admin user screens. |
 | Minimum 4 database tables | Complete | The schema includes users, projects, project members, tasks, comments, and attachments. |
 | Relationships and indexes | Complete | Foreign keys and indexes are documented in `docs/DATABASE.md` and defined in `apps/web/src/db/schema.ts`. |
 | Documentation in repository | Complete | Documentation lives in `README.md` and `docs/`. |
@@ -102,6 +105,24 @@ flowchart LR
 ```
 
 The web application and backend API are deployed together to Netlify. The mobile app is an API client and calls the deployed Netlify API in production through `EXPO_PUBLIC_API_URL`; it never connects directly to Neon.
+
+## Web And Mobile Navigation
+
+Authenticated web pages use clean top-level URLs:
+
+- `/dashboard`
+- `/projects`
+- `/projects/new`
+- `/projects/:id`
+- `/projects/:id/settings/members`
+- `/users`
+- `/profile`
+
+Legacy nested web URLs such as `/dashboard/projects` redirect to the clean equivalents.
+
+The mobile app uses Expo Router with a native bottom tabs layout. Admin users see `Home`, `Projects`, `Users`, and `Profile`; managers and normal users see `Home`, `Projects`, and `Profile`. Project details, task creation, task details, and task status editing are nested stack screens under the tabs, so they keep the bottom navigation without appearing as extra tab items.
+
+Mobile screens share a theme toggle. On top-level tab screens it appears beside the page title; on nested screens it appears on the same row as the Back button. Profile keeps its theme control inside the Appearance section.
 
 ## Database ER Diagram
 
@@ -273,7 +294,7 @@ npm run db:migrate -w @taskflow/web
 npm run db:seed
 ```
 
-Run the web app and Expo mobile dev server together:
+Run the web app and Expo Web preview together:
 
 ```bash
 npm run dev
@@ -285,10 +306,16 @@ Run only the web app:
 npm run dev:web
 ```
 
-Run the mobile app:
+Run the native Expo mobile app with the Expo QR code:
 
 ```bash
 npm run dev:mobile
+```
+
+Run the native Expo app through a tunnel for phone testing across networks:
+
+```bash
+npm run dev:mobile:tunnel
 ```
 
 Run the mobile app in a browser with Expo Web:
@@ -297,7 +324,7 @@ Run the mobile app in a browser with Expo Web:
 npm run dev:mobile:web
 ```
 
-The combined `npm run dev` command and the Expo Web command automatically use the next available Expo port if `8081` is already busy. Set `TASKFLOW_MOBILE_PORT` to choose a different starting port.
+The combined `npm run dev` command and the Expo Web command automatically use the next available Expo port if `8081` is already busy. Set `TASKFLOW_MOBILE_PORT` to choose a different starting port. Use `npm run dev:mobile` or `npm run dev:mobile:tunnel` when you need the Expo Go QR code.
 
 The Expo Web preview uses `EXPO_PUBLIC_API_URL` for API calls, just like the Android and iOS clients.
 
@@ -370,9 +397,10 @@ apps/web/src/db/seed.ts               Idempotent demo seed script
 apps/web/drizzle/                     Generated Drizzle migrations
 apps/web/src/lib/auth.ts              JWT, cookie, password, and auth helper logic
 apps/web/src/lib/r2-storage.ts        S3-compatible R2 upload helper
-apps/mobile/src/app/                  Expo Router screens
+apps/mobile/src/app/                  Expo Router screens, tab groups, and nested stacks
 apps/mobile/src/lib/api.ts            Typed mobile API client
 apps/mobile/src/lib/auth-storage.ts   SecureStore token persistence
+apps/mobile/src/components/BackButton.tsx  Shared mobile back navigation control
 packages/shared/src/index.ts          Shared enums, types, constants, and Zod schemas
 docs/                                Capstone project documentation
 netlify.toml                         Netlify build and Next.js runtime configuration

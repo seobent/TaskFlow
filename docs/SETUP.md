@@ -179,25 +179,25 @@ The web dev server binds to `0.0.0.0`, which allows physical mobile devices on t
 
 ## Run Mobile App
 
-Start the web app and Expo mobile dev server together:
+Start the web app and Expo Web preview together:
 
 ```bash
 npm run dev
 ```
 
-Start only Expo:
+Start native Expo with the Expo Go QR code:
 
 ```bash
 npm run dev:mobile
 ```
 
-Start the mobile app in a browser with Expo Web:
+Start only the mobile app in a browser with Expo Web:
 
 ```bash
 npm run dev:mobile:web
 ```
 
-The combined `npm run dev` command and the Expo Web command automatically use the next available Expo port if `8081` is already busy. Set `TASKFLOW_MOBILE_PORT` to choose a different starting port.
+The combined `npm run dev` command and the Expo Web command automatically use the next available Expo port if `8081` is already busy. Set `TASKFLOW_MOBILE_PORT` to choose a different starting port. Use `npm run dev:mobile` or `npm run dev:mobile:tunnel` when you need the Expo Go QR code.
 
 Alternative tunnel mode:
 
@@ -206,6 +206,13 @@ npm run dev:mobile:tunnel
 ```
 
 Open the app in Expo Go, a simulator, or the Expo Web browser preview. After changing `apps/mobile/.env`, restart Expo so `EXPO_PUBLIC_API_URL` is rebuilt into the app.
+
+The mobile app uses Expo Router bottom tabs after login:
+
+- Admin users see Home, Projects, Users, and Profile.
+- Managers and normal users see Home, Projects, and Profile.
+- Project details, task creation, task details, and task status editing open inside nested stacks and do not appear as extra tab items.
+- The theme toggle is available from page headers, except Profile where it lives in the Appearance section.
 
 ## Type Checking
 
@@ -229,8 +236,12 @@ npm run build
 - `npm run dev:web` starts the web app.
 - `http://localhost:3000/api/health` returns `data.ok: true`.
 - Web login works with both seeded accounts.
+- Web authenticated pages use `/dashboard`, `/projects`, `/users`, and `/profile`.
 - Project and task pages show seeded data.
 - Admin user management is available only to `admin@taskflow.dev`.
 - Expo app can log in with the seeded user.
-- Expo app can list projects, open project details, view tasks, update task status, and create comments.
+- Expo app shows role-based bottom tabs after login.
+- Expo app can list projects, open project details, create tasks, view task details, update task status, and create comments.
+- Expo admin login shows the Users tab and user directory.
+- Expo profile screen shows account details, theme settings, and logout.
 - Attachment uploads work only when R2 variables are configured.

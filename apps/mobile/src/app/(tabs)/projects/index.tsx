@@ -10,6 +10,7 @@ import {
   LoadingState,
   readErrorMessage,
 } from "@/components/ScreenState";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getProjects } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 
@@ -46,9 +47,12 @@ export default function ProjectsScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.title, { color: colors.primary }]}>
-            Workspace projects
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={[styles.title, { color: colors.primary }]}>
+              Workspace projects
+            </Text>
+            <ThemeToggle compact />
+          </View>
         </View>
 
         {isLoading ? (
@@ -93,8 +97,15 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 20,
   },
+  titleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+    justifyContent: "space-between",
+  },
   title: {
     color: "#172033",
+    flex: 1,
     fontSize: 30,
     fontWeight: "700",
   },

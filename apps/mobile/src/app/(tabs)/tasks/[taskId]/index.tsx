@@ -25,6 +25,7 @@ import {
   readErrorMessage,
 } from "@/components/ScreenState";
 import { statusLabels } from "@/components/StatusSection";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { createComment, getProjectTasks, getTaskComments } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 
@@ -107,7 +108,10 @@ export default function TaskDetailsScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={[styles.header, { borderBottomColor: colors.border }]}>
-            <BackButton onPress={() => router.back()} />
+            <View style={styles.headerTop}>
+              <BackButton onPress={() => router.back()} />
+              <ThemeToggle compact />
+            </View>
             <Text style={[styles.eyebrow, { color: colors.primary }]}>Task</Text>
             <Text style={[styles.title, { color: colors.text }]}>
               {task?.title ?? "Task details"}
@@ -275,6 +279,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
     paddingBottom: 20,
+  },
+  headerTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   eyebrow: {
     color: "#2f9f89",

@@ -6,6 +6,7 @@ import { Project, Task, TaskStatus } from "@taskflow/shared";
 import { BackButton } from "@/components/BackButton";
 import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
 import { StatusSection } from "@/components/StatusSection";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getProject, getProjectTasks } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 
@@ -70,7 +71,10 @@ export default function ProjectDetailsScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <BackButton onPress={() => router.back()} />
+          <View style={styles.headerTop}>
+            <BackButton onPress={() => router.back()} />
+            <ThemeToggle compact />
+          </View>
           <Text style={[styles.title, { color: colors.primary }]}>
             {project?.name ?? "Project details"}
           </Text>
@@ -152,6 +156,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
     paddingBottom: 20,
+  },
+  headerTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   title: {
     color: "#172033",

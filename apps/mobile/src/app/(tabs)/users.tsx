@@ -9,6 +9,7 @@ import {
   LoadingState,
   readErrorMessage,
 } from "@/components/ScreenState";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getAdminUsers } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 
@@ -44,9 +45,12 @@ export default function UsersScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.title, { color: colors.primary }]}>
-            User directory
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={[styles.title, { color: colors.primary }]}>
+              User directory
+            </Text>
+            <ThemeToggle compact />
+          </View>
           <Text style={[styles.subtitle, { color: colors.muted }]}>
             Admin view of TaskFlow accounts.
           </Text>
@@ -118,8 +122,15 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 20,
   },
+  titleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 14,
+    justifyContent: "space-between",
+  },
   title: {
     color: "#172033",
+    flex: 1,
     fontSize: 30,
     fontWeight: "700",
   },

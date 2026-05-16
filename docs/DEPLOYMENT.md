@@ -183,7 +183,10 @@ Verify core workflows:
 - Comments can be created on accessible tasks.
 - Attachment uploads succeed only when R2 variables are configured.
 - Mobile login works with `EXPO_PUBLIC_API_URL` set to the Netlify URL.
-- Mobile project and task screens load data from the deployed API.
+- Mobile role-based bottom tabs render correctly after login.
+- Mobile project, task, user directory, and profile screens load data from the deployed API.
+- Mobile admin users see the Users tab; non-admin users do not.
+- Mobile theme switching works on authenticated screens.
 
 ## Production Checklist
 

@@ -6,6 +6,7 @@ import { Task, TaskStatus } from "@taskflow/shared";
 import { BackButton } from "@/components/BackButton";
 import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
 import { statusLabels } from "@/components/StatusSection";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getProjectTasks, updateTask } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
 
@@ -75,7 +76,10 @@ export default function EditTaskStatusScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <BackButton onPress={() => router.back()} />
+          <View style={styles.headerTop}>
+            <BackButton onPress={() => router.back()} />
+            <ThemeToggle compact />
+          </View>
           <Text style={[styles.eyebrow, { color: colors.primary }]}>Status</Text>
           <Text style={[styles.title, { color: colors.text }]}>Edit task status</Text>
           {task ? (
@@ -174,6 +178,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
     paddingBottom: 20,
+  },
+  headerTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   eyebrow: {
     color: "#2f9f89",

@@ -73,7 +73,7 @@ flowchart TB
 
 ## Next.js Web Frontend
 
-The web frontend lives in `apps/web` and uses the Next.js App Router. Public authentication pages live under `apps/web/src/app/login` and `apps/web/src/app/register`. Authenticated web pages share the layout in `apps/web/src/app/(app)` and are served through clean URLs such as `/dashboard`, `/projects`, `/users`, and `/profile`.
+The web frontend lives in `apps/web` and uses the Next.js App Router. Public authentication pages live under `apps/web/src/app/login` and `apps/web/src/app/register`. Authenticated web pages share the layout in `apps/web/src/app/(app)` and are served through clean URLs such as `/dashboard`, `/projects`, `/users`, and `/profile`. Legacy nested dashboard URLs are kept as redirect stubs under `apps/web/src/app/(legacy)` so old links do not 404.
 
 The web UI uses Tailwind CSS and focused component folders:
 
@@ -136,7 +136,15 @@ Netlify stores production server-only environment variables such as `DATABASE_UR
 
 ## Expo Mobile Client
 
-The mobile app lives in `apps/mobile` and uses Expo, React Native, and Expo Router. Screens include login, registration, dashboard, project list, project details, task creation, task details, and task status updates. Authenticated mobile screens are grouped under an Expo Router tabs layout so Home, Projects, Users for admins, and Profile share native bottom tab navigation.
+The mobile app lives in `apps/mobile` and uses Expo, React Native, and Expo Router. Screens include login, registration, dashboard, project list, project details, task creation, task details, task status updates, admin user directory, and profile settings. Authenticated mobile screens are grouped under `apps/mobile/src/app/(tabs)` so Home, Projects, Users for admins, and Profile share native bottom tab navigation.
+
+The tab group contains nested stack layouts for project and task flows:
+
+- `projects/_layout.tsx` keeps project list, project details, and task creation inside the Projects tab.
+- `tasks/_layout.tsx` keeps task details and task status editing out of the bottom tab list.
+- The Users tab is hidden unless `/api/auth/me` returns an admin user.
+
+Mobile headers use a consistent UI pattern. Top-level tab pages place the theme toggle on the same row as the title. Nested pages place the theme toggle on the same row as the shared Back button. The Profile screen keeps theme switching in the Appearance card instead of the header.
 
 The mobile API client lives in `apps/mobile/src/lib/api.ts`. It reads the API base URL from:
 
