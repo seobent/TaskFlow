@@ -15,6 +15,7 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Comment, Task } from "@taskflow/shared";
 
 import { CommentItem } from "@/components/CommentItem";
+import { BackButton } from "@/components/BackButton";
 import { formatDisplayDate } from "@/components/date-format";
 import { PriorityBadge } from "@/components/PriorityBadge";
 import {
@@ -106,22 +107,7 @@ export default function TaskDetailsScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={[styles.header, { borderBottomColor: colors.border }]}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.back()}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                {
-                  backgroundColor: pressed
-                    ? colors.primarySoftPressed
-                    : colors.primarySoft,
-                },
-              ]}
-            >
-              <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
-                Back
-              </Text>
-            </Pressable>
+            <BackButton onPress={() => router.back()} />
             <Text style={[styles.eyebrow, { color: colors.primary }]}>Task</Text>
             <Text style={[styles.title, { color: colors.text }]}>
               {task?.title ?? "Task details"}
@@ -302,20 +288,6 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontWeight: "700",
     lineHeight: 36,
-  },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#e8f5f2",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 14,
-  },
-  secondaryButtonText: {
-    color: "#2f7368",
-    fontSize: 15,
-    fontWeight: "700",
   },
   panel: {
     backgroundColor: "#ffffff",

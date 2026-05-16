@@ -3,6 +3,7 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Project, Task, TaskStatus } from "@taskflow/shared";
 
+import { BackButton } from "@/components/BackButton";
 import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
 import { StatusSection } from "@/components/StatusSection";
 import { getProject, getProjectTasks } from "@/lib/api";
@@ -69,24 +70,8 @@ export default function ProjectDetailsScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              {
-                backgroundColor: pressed
-                  ? colors.primarySoftPressed
-                  : colors.primarySoft,
-              },
-            ]}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
-              Back
-            </Text>
-          </Pressable>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>Project</Text>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <BackButton onPress={() => router.back()} />
+          <Text style={[styles.title, { color: colors.primary }]}>
             {project?.name ?? "Project details"}
           </Text>
           {project?.description ? (
@@ -168,13 +153,6 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingBottom: 20,
   },
-  eyebrow: {
-    color: "#2f9f89",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0,
-    textTransform: "uppercase",
-  },
   title: {
     color: "#172033",
     fontSize: 30,
@@ -185,20 +163,6 @@ const styles = StyleSheet.create({
     color: "#566176",
     fontSize: 15,
     lineHeight: 22,
-  },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#e8f5f2",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 14,
-  },
-  secondaryButtonText: {
-    color: "#2f7368",
-    fontSize: 15,
-    fontWeight: "700",
   },
   actions: {
     marginTop: 20,

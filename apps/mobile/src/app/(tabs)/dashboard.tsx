@@ -89,9 +89,6 @@ export default function DashboardScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
           <View style={styles.headerText}>
-            <Text style={[styles.eyebrow, { color: colors.primary }]}>
-              Dashboard
-            </Text>
             <TaskFlowLogo size="small" style={styles.logo} />
             {user ? (
               <Text style={[styles.subtitle, { color: colors.muted }]}>
@@ -283,15 +280,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
-  eyebrow: {
-    color: "#2f9f89",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0,
-    textTransform: "uppercase",
-  },
   logo: {
-    marginTop: 8,
+    marginTop: 0,
   },
   subtitle: {
     color: "#566176",

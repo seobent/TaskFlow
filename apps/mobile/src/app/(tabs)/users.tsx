@@ -44,8 +44,7 @@ export default function UsersScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Text style={[styles.eyebrow, { color: colors.primary }]}>Users</Text>
-          <Text style={[styles.title, { color: colors.text }]}>
+          <Text style={[styles.title, { color: colors.primary }]}>
             User directory
           </Text>
           <Text style={[styles.subtitle, { color: colors.muted }]}>
@@ -118,13 +117,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     gap: 8,
     paddingBottom: 20,
-  },
-  eyebrow: {
-    color: "#2f9f89",
-    fontSize: 13,
-    fontWeight: "700",
-    letterSpacing: 0,
-    textTransform: "uppercase",
   },
   title: {
     color: "#172033",

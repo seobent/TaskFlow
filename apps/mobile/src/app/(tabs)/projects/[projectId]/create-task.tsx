@@ -14,6 +14,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { TaskPriority, TaskStatus } from "@taskflow/shared";
 
+import { BackButton } from "@/components/BackButton";
 import { readErrorMessage } from "@/components/ScreenState";
 import { createTask } from "@/lib/api";
 import { useTheme } from "@/lib/theme";
@@ -68,22 +69,7 @@ export default function CreateTaskScreen() {
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.keyboardView}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={[styles.header, { borderBottomColor: colors.border }]}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.back()}
-              style={({ pressed }) => [
-                styles.secondaryButton,
-                {
-                  backgroundColor: pressed
-                    ? colors.primarySoftPressed
-                    : colors.primarySoft,
-                },
-              ]}
-            >
-              <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
-                Back
-              </Text>
-            </Pressable>
+            <BackButton onPress={() => router.back()} />
             <Text style={[styles.eyebrow, { color: colors.primary }]}>New task</Text>
             <Text style={[styles.title, { color: colors.text }]}>Create task</Text>
           </View>
@@ -261,20 +247,6 @@ const styles = StyleSheet.create({
   title: {
     color: "#172033",
     fontSize: 30,
-    fontWeight: "700",
-  },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#e8f5f2",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 14,
-  },
-  secondaryButtonText: {
-    color: "#2f7368",
-    fontSize: 15,
     fontWeight: "700",
   },
   form: {

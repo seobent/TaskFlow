@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, SafeAreaView, ScrollView, StyleSheet, Tex
 import { router, useLocalSearchParams } from "expo-router";
 import { Task, TaskStatus } from "@taskflow/shared";
 
+import { BackButton } from "@/components/BackButton";
 import { ErrorState, LoadingState, readErrorMessage } from "@/components/ScreenState";
 import { statusLabels } from "@/components/StatusSection";
 import { getProjectTasks, updateTask } from "@/lib/api";
@@ -74,22 +75,7 @@ export default function EditTaskStatusScreen() {
     <SafeAreaView style={[styles.screen, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content}>
         <View style={[styles.header, { borderBottomColor: colors.border }]}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.back()}
-            style={({ pressed }) => [
-              styles.secondaryButton,
-              {
-                backgroundColor: pressed
-                  ? colors.primarySoftPressed
-                  : colors.primarySoft,
-              },
-            ]}
-          >
-            <Text style={[styles.secondaryButtonText, { color: colors.mutedStrong }]}>
-              Back
-            </Text>
-          </Pressable>
+          <BackButton onPress={() => router.back()} />
           <Text style={[styles.eyebrow, { color: colors.primary }]}>Status</Text>
           <Text style={[styles.title, { color: colors.text }]}>Edit task status</Text>
           {task ? (
@@ -205,20 +191,6 @@ const styles = StyleSheet.create({
     color: "#566176",
     fontSize: 15,
     lineHeight: 22,
-  },
-  secondaryButton: {
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: "#e8f5f2",
-    borderRadius: 8,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: 14,
-  },
-  secondaryButtonText: {
-    color: "#2f7368",
-    fontSize: 15,
-    fontWeight: "700",
   },
   options: {
     gap: 12,
